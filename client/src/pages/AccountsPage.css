@@ -1,0 +1,255 @@
+.accounts-layout {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-app);
+}
+
+.accounts-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 24px;
+}
+
+.accounts-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.accounts-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.accounts-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.accounts-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Unified card */
+.unified-card {
+  padding: 20px;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, var(--bg-card), var(--accent-light));
+  border-color: var(--accent-muted);
+}
+
+.unified-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.unified-card-icon { font-size: 28px; }
+.unified-card-title { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+.unified-card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.unified-badge {
+  width: 42px;
+  height: 42px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.unified-avatars {
+  display: flex;
+  margin-bottom: 16px;
+  padding-left: 6px;
+}
+
+.unified-open-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  transition: var(--transition);
+}
+.unified-open-link:hover { color: var(--accent-hover); }
+
+/* Account cards */
+.account-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-card {
+  padding: 16px 18px;
+}
+
+.account-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.account-type {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.account-email {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.account-unread {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.account-urgent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+  background: #FEE2E2;
+  border-radius: var(--radius-md);
+  padding: 5px 10px;
+  width: fit-content;
+}
+
+/* Add account card */
+.add-account-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-style: dashed;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.add-account-card:hover { border-color: var(--accent); background: var(--accent-light); }
+
+.add-account-icon {
+  width: 40px;
+  height: 40px;
+  border: 2px dashed var(--border-strong);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.add-account-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.add-account-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Right column */
+.accounts-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.weekly-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stat-block { text-align: center; }
+.stat-big-num { font-size: 26px; font-weight: 800; color: var(--accent); }
+.stat-big-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* Bar chart */
+.workload-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 80px;
+}
+
+.workload-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+
+.workload-bar-track {
+  flex: 1;
+  width: 100%;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.workload-bar-fill {
+  width: 100%;
+  background: linear-gradient(to top, #3B82F6, #6366F1);
+  border-radius: 4px;
+  transition: height 0.5s ease;
+}
+
+.workload-day {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Quote card */
+.quote-card {
+  padding: 20px;
+  background: linear-gradient(135deg, #1E3A5F, #1E1B4B);
+  border: none;
+  color: #fff;
+}
+
+.quote-icon { font-size: 20px; margin-bottom: 12px; }
+
+.quote-text {
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 12px;
+}
+
+.quote-author {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 600;
+}
