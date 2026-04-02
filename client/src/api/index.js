@@ -1,9 +1,9 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: '/api',
   withCredentials: true,
-  timeout: 15000, // 15 second default timeout
+  timeout: 15000,
 })
 
 // ── Response interceptor: handle 401 globally ──────────────────────────────────
@@ -11,7 +11,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear any stale state and redirect to login
       const currentPath = window.location.pathname
       if (currentPath !== '/login' && currentPath !== '/register') {
         window.location.href = '/login'
@@ -35,7 +34,7 @@ export const emailAPI = {
   get: (id) => api.get(`/emails/${id}`),
   send: (formData) => api.post('/emails/send', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
-    timeout: 30000, // 30s for uploads
+    timeout: 30000,
   }),
   draft: (formData) => api.post('/emails/draft', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -71,7 +70,7 @@ export const aiAPI = {
   draftIntent: (data) => api.post('/ai/draft/intent', data, { timeout: 60000 }),
   subscriptions: () => api.get('/ai/subscriptions', { timeout: 60000 }),
   unsubscribe: (address) => api.post('/ai/unsubscribe', { address }),
-  categorize: () => api.post('/ai/categorize', {}, { timeout: 120000 }), // 2 min for batch
+  categorize: () => api.post('/ai/categorize', {}, { timeout: 120000 }),
 }
 
 export default api
