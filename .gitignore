@@ -5,6 +5,7 @@ node_modules/
 .env
 .env.local
 .env.production
+vercel-production.env
 
 # Build output
 client/dist/
