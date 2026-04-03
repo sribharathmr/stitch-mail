@@ -34,17 +34,22 @@ app.use(helmet({
 app.use(compression());
 
 // ─── CORS ──────────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+const allowedOrigins = (process.env.CLIENT_URL || '')
   .split(',')
-  .map(s => s.trim());
+  .map(s => s.trim())
+  .filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    // Allow same-origin requests (no Origin header)
+    if (!origin) return callback(null, true);
+    // Allow explicitly configured origins
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Allow any Vercel deployment (*.vercel.app) — covers preview and prod deployments
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    // Allow localhost for local development
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return callback(null, true);
+    callback(new Error('Not allowed by CORS: ' + origin));
   },
   credentials: true,
 }));
