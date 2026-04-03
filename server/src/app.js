@@ -15,8 +15,6 @@ if (missing.length > 0) {
   if (process.env.VERCEL !== '1') process.exit(1);
 }
 
-const isProduction = process.env.NODE_ENV === 'production';
-
 const authRoutes     = require('./routes/auth');
 const emailRoutes    = require('./routes/emails');
 const threadRoutes   = require('./routes/threads');
@@ -103,23 +101,13 @@ app.get('/api/health', async (req, res) => {
   } catch {
     checks.database = 'error';
   }
-  try {
-    const ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-    const resp = await fetch(ollamaUrl.replace('/api/generate', ''), { signal: controller.signal });
-    clearTimeout(timeout);
-    checks.ai = resp.ok ? 'ok' : 'error';
-  } catch {
-    checks.ai = 'unavailable';
-  }
+  checks.gemini = process.env.GEMINI_API_KEY ? 'configured' : 'missing';
   const status = checks.database === 'ok' ? 200 : 503;
   res.status(status).json(checks);
 });
 
 // ─── Scheduled send endpoint (for Vercel Cron) ────────────────────────────────
 app.post('/api/cron/scheduled-send', async (req, res) => {
-  // Verify cron secret to prevent unauthorized calls
   const cronSecret = req.headers['authorization'];
   if (process.env.CRON_SECRET && cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -178,11 +166,12 @@ app.post('/api/cron/scheduled-send', async (req, res) => {
 });
 
 // ─── Global error handler ──────────────────────────────────────────────────────
+// NOTE: Always return the real error message so issues are visible in production
 app.use((err, req, res, next) => {
   const status = err.status || 500;
   console.error(`[${new Date().toISOString()}] ${req.method} ${req.path} — ${status}: ${err.message}`);
   res.status(status).json({
-    message: isProduction ? 'Internal Server Error' : err.message,
+    message: err.message || 'Internal Server Error',
   });
 });
 
