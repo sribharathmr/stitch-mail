@@ -1,27 +1,42 @@
 const supabase = require('../supabase');
-const ollamaService = require('../services/ollamaService');
+const geminiService = require('../services/geminiService');
 
 // 1. Conversation Memory
 exports.getMemory = async (req, res) => {
   try {
     const threadId = req.params.threadId;
 
-    const { data: emails } = await supabase
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(threadId);
+
+    let query = supabase
       .from('emails')
       .select('*')
-      .eq('user_id', req.user.id)
-      .eq('thread_id', threadId)
-      .order('created_at', { ascending: true });
+      .eq('user_id', req.user.id);
+
+    if (isUuid) {
+      query = query.or(`thread_id.eq.${threadId},id.eq.${threadId}`);
+    } else {
+      query = query.eq('thread_id', threadId);
+    }
+
+    const { data: emails, error } = await query.order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Supabase getMemory error:', error.message);
+      return res.status(500).json({ message: 'Database error fetching thread.' });
+    }
 
     if (!emails || emails.length === 0) {
       return res.status(404).json({ message: 'No emails found for this thread.' });
     }
 
-    const context = emails.map(e =>
-      `From: ${e.from_address?.name || e.from_address?.address}\nTime: ${e.created_at}\nSubject: ${e.subject}\n\n${e.body_text}`
-    ).join('\n\n----------\n\n');
+    const context = emails.map(e => {
+      const bodyText = e.body_text ||
+        (e.body_html ? e.body_html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '(no content)');
+      return `From: ${e.from_address?.name || e.from_address?.address}\nTime: ${e.created_at}\nSubject: ${e.subject}\n\n${bodyText}`;
+    }).join('\n\n----------\n\n');
 
-    const memory = await ollamaService.analyzeThreadMemory(context);
+    const memory = await geminiService.analyzeThreadMemory(context);
     res.json(memory);
   } catch (error) {
     console.error('getMemory Error:', error.message);
@@ -33,25 +48,42 @@ exports.getMemory = async (req, res) => {
 exports.generateIntentDraft = async (req, res) => {
   try {
     const { intent, tone, threadId } = req.body;
+
+    if (!intent || !intent.trim()) {
+      return res.status(400).json({ message: 'Intent is required to generate a draft.' });
+    }
+
     let context = '';
 
     if (threadId) {
-      const { data: emails } = await supabase
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(threadId);
+
+      let query = supabase
         .from('emails')
         .select('*')
-        .eq('user_id', req.user.id)
-        .eq('thread_id', threadId)
+        .eq('user_id', req.user.id);
+
+      if (isUuid) {
+        query = query.or(`thread_id.eq.${threadId},id.eq.${threadId}`);
+      } else {
+        query = query.eq('thread_id', threadId);
+      }
+
+      const { data: emails, error: threadError } = await query
         .order('created_at', { ascending: false })
         .limit(3);
 
-      if (emails && emails.length) {
+      if (threadError) {
+        console.error('Thread fetch error in generateIntentDraft:', threadError.message);
+        // Non-fatal — continue without context
+      } else if (emails && emails.length) {
         context = emails.map(e =>
           `From: ${e.from_address?.name || e.from_address?.address}\n\n${e.body_text}`
         ).join('\n\n----------\n\n');
       }
     }
 
-    const draftText = await ollamaService.generateDraftIntent(intent, tone || 'professional', context);
+    const draftText = await geminiService.generateDraftIntent(intent.trim(), tone || 'professional', context);
     res.json({ draft: draftText.trim() });
   } catch (error) {
     console.error('generateIntentDraft Error:', error.message);
@@ -86,7 +118,7 @@ exports.findSubscriptions = async (req, res) => {
     const results = [];
     for (let i = 0; i < Math.min(candidates.length, 5); i++) {
       const c = candidates[i];
-      const isNews = await ollamaService.isNewsletter(c.sampleSubject, c.address, c.sampleBody);
+      const isNews = await geminiService.isNewsletter(c.sampleSubject, c.address, c.sampleBody);
       if (isNews) {
         results.push({ name: c.name, address: c.address, count: c.count });
       }
@@ -165,7 +197,7 @@ exports.categorizeInbox = async (req, res) => {
         const senderStr = senderName ? `${senderName} <${senderEmail}>` : senderEmail;
         
         console.log(`Categorizing: [${senderStr}] ${email.subject}`);
-        const category = await ollamaService.categorizeEmail(email.subject, senderStr, email.body_text || '');
+        const category = await geminiService.categorizeEmail(email.subject, senderStr, email.body_text || '');
         console.log(`  -> ${category}`);
 
         const currentLabels = email.labels || [];
