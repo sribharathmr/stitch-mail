@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // ── Configuration ──────────────────────────────────────────────────────────────
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const MODEL_NAME = 'gemini-2.0-flash';
+const MODEL_NAME = 'gemini-1.5-flash';
 
 let genAI = null;
 let model = null;
@@ -313,8 +313,12 @@ Only output valid JSON, absolutely no extra text.
     };
   } catch (e) {
     console.error('Failed to parse Conversation Memory JSON from Gemini:', e.message);
+    // Friendly message for quota/rate-limit errors
+    const isQuota = e.message && (e.message.includes('429') || e.message.includes('quota') || e.message.includes('Too Many'));
     return {
-      summary: "AI analysis failed. " + e.message,
+      summary: isQuota
+        ? 'Gemini API quota exceeded. Please wait a moment and try again, or check your Google AI Studio billing settings.'
+        : 'AI analysis failed. ' + e.message,
       decisions: [],
       actionItems: []
     };
@@ -343,7 +347,10 @@ Output ONLY the raw content of the email you would write. Do not include subject
       return result.response.text().trim();
   } catch (e) {
       console.error('Gemini Draft Error:', e.message);
-      return 'AI failed to generate draft. ' + e.message;
+      const isQuota = e.message && (e.message.includes('429') || e.message.includes('quota') || e.message.includes('Too Many'));
+      return isQuota
+        ? 'Gemini API quota exceeded. Please wait a moment and try again.'
+        : 'AI failed to generate draft. ' + e.message;
   }
 }
 
