@@ -33,9 +33,12 @@ exports.getMemory = async (req, res) => {
     const context = emails.map(e => {
       const bodyText = e.body_text ||
         (e.body_html ? e.body_html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '(no content)');
-      return `From: ${e.from_address?.name || e.from_address?.address}\nTime: ${e.created_at}\nSubject: ${e.subject}\n\n${bodyText}`;
+      // Truncate per-email body to avoid token limits on newsletters
+      const truncated = bodyText.length > 3000 ? bodyText.substring(0, 3000) + '...[truncated]' : bodyText;
+      return `From: ${e.from_address?.name || e.from_address?.address}\nTime: ${e.created_at}\nSubject: ${e.subject}\n\n${truncated}`;
     }).join('\n\n----------\n\n');
 
+    console.log(`getMemory: found ${emails.length} emails, context length: ${context.length}`);
     const memory = await geminiService.analyzeThreadMemory(context);
     res.json(memory);
   } catch (error) {
