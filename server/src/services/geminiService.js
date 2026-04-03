@@ -1,19 +1,28 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 
 // ── Configuration ──────────────────────────────────────────────────────────────
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const MODEL_NAME = 'gemini-1.5-flash';
 
-let genAI = null;
-let model = null;
+let ai = null;
 
-function getModel() {
-  if (!model && GEMINI_API_KEY) {
-    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    model = genAI.getGenerativeModel({ model: MODEL_NAME });
+function getAI() {
+  if (!ai && GEMINI_API_KEY) {
+    ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
   }
-  return model;
+  return ai;
 }
+
+async function generateContent(prompt) {
+  const client = getAI();
+  if (!client) return null;
+  const response = await client.models.generateContent({
+    model: MODEL_NAME,
+    contents: prompt,
+  });
+  return response.text;
+}
+
 
 // ── Well-Known Domains Dictionary (~120 entries) ───────────────────────────────
 const KNOWN_DOMAINS = {
@@ -112,18 +121,16 @@ async function resolveOrgName(domain) {
   const parsed = domainToOrgName(domain);
 
   // 4. If Gemini API key is available, use AI for better resolution
-  const geminiModel = getModel();
-  if (geminiModel) {
+  if (getAI()) {
     try {
-      const result = await geminiModel.generateContent(
+      const text = await generateContent(
         `What company or organization uses the email domain "${domain}"? ` +
         `Reply with ONLY the organization name (e.g., "Acme Corporation"). ` +
         `If you don't know, reply with "${parsed}".`
       );
-      const text = result.response.text().trim();
       // Sanity check: if it's too long or looks weird, use parsed version
       if (text && text.length < 60 && !text.includes('\n')) {
-        return text;
+        return text.trim();
       }
     } catch (err) {
       console.error('Gemini org resolution fallback error:', err.message);
@@ -265,8 +272,7 @@ async function buildEmailTree(emails, searchQuery = '') {
  * @returns {Promise<{summary: string, decisions: string[], actionItems: string[]}>}
  */
 async function analyzeThreadMemory(threadContext) {
-  const model = getModel();
-  if (!model) return { summary: 'AI unavailable. Missing API Key.', decisions: [], actionItems: [] };
+  if (!getAI()) return { summary: 'AI unavailable. Missing API Key.', decisions: [], actionItems: [] };
 
   const prompt = `
 You are an advanced Conversation Memory AI for an email client.
@@ -285,12 +291,13 @@ Only output valid JSON, absolutely no extra text.
 `;
 
   try {
-    const result = await model.generateContent(prompt);
-    let text = result.response.text().trim();
-    if (text.startsWith('\`\`\`json')) {
-      text = text.replace(/^\`\`\`json/, '').replace(/\`\`\`$/, '').trim();
-    } else if (text.startsWith('\`\`\`')) {
-      text = text.replace(/^\`\`\`/, '').replace(/\`\`\`$/, '').trim();
+    let text = await generateContent(prompt);
+    if (!text) throw new Error('No response from Gemini');
+    text = text.trim();
+    if (text.startsWith('```json')) {
+      text = text.replace(/^```json/, '').replace(/```$/, '').trim();
+    } else if (text.startsWith('```')) {
+      text = text.replace(/^```/, '').replace(/```$/, '').trim();
     }
 
     const parsed = JSON.parse(text);
@@ -333,8 +340,7 @@ Only output valid JSON, absolutely no extra text.
  * @returns {Promise<string>}
  */
 async function generateDraftIntent(intent, tone, context = '') {
-  const model = getModel();
-  if (!model) return 'AI unavailable (Missing API Key).';
+  if (!getAI()) return 'AI unavailable (Missing API Key).';
 
   const prompt = `
 You are an expert Intent-Based Email Writer. Write a ${tone} email based on the user's intent: "${intent}".
@@ -343,8 +349,8 @@ ${context ? `Here is the related previous conversation context:\n${context}` : '
 Output ONLY the raw content of the email you would write. Do not include subject lines unless requested. Do not include placeholder text like "[Your Name]". Write it ready to send.
 `;
   try {
-      const result = await model.generateContent(prompt);
-      return result.response.text().trim();
+      const text = await generateContent(prompt);
+      return (text || '').trim();
   } catch (e) {
       console.error('Gemini Draft Error:', e.message);
       const isQuota = e.message && (e.message.includes('429') || e.message.includes('quota') || e.message.includes('Too Many'));
@@ -362,8 +368,7 @@ Output ONLY the raw content of the email you would write. Do not include subject
  * @returns {Promise<boolean>}
  */
 async function isNewsletter(subject, sender, bodyText) {
-  const model = getModel();
-  if (!model) return false;
+  if (!getAI()) return false;
 
   const preview = (bodyText || '').substring(0, 1000);
   
@@ -379,8 +384,8 @@ Answer only with a single word: YES if it is a mass newsletter/promotional, or N
 `;
 
   try {
-    const result = await model.generateContent(prompt);
-    return result.response.text().trim().toUpperCase().includes('YES');
+    const text = await generateContent(prompt);
+    return (text || '').trim().toUpperCase().includes('YES');
   } catch (e) {
     console.error('Gemini isNewsletter Error:', e.message);
     return false;
@@ -395,8 +400,7 @@ Answer only with a single word: YES if it is a mass newsletter/promotional, or N
  * @returns {Promise<string>}
  */
 async function categorizeEmail(subject, sender, bodyText) {
-  const model = getModel();
-  if (!model) return 'PRIMARY';
+  if (!getAI()) return 'PRIMARY';
 
   const preview = (bodyText || '').substring(0, 500);
   
@@ -417,10 +421,10 @@ Answer with exactly one word: PRIMARY, SOCIAL, or PROMOTIONS.
 `;
 
   try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim().toUpperCase();
-    if (text.includes('SOCIAL')) return 'SOCIAL';
-    if (text.includes('PROMOTION')) return 'PROMOTIONS';
+    const text = await generateContent(prompt);
+    const upper = (text || '').trim().toUpperCase();
+    if (upper.includes('SOCIAL')) return 'SOCIAL';
+    if (upper.includes('PROMOTION')) return 'PROMOTIONS';
     return 'PRIMARY';
   } catch(e) {
     console.error('Categorize error:', e.message);
