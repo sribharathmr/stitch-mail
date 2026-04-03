@@ -64,7 +64,8 @@ export default function MailReaderPage() {
       setInsights(res.data)
     } catch (err) {
       console.error(err)
-      alert('Failed to analyze thread.')
+      const msg = err.response?.data?.message || err.message || 'Unknown error'
+      alert('Failed to analyze thread: ' + msg)
     } finally {
       setIsAnalyzing(false)
     }
