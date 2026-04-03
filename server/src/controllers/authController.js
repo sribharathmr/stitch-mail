@@ -29,10 +29,10 @@ const toSafeUser = (user) => {
   return safe;
 };
 
-const getOAuthClient = () => new google.auth.OAuth2(
+const getOAuthClient = (redirectUri) => new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback'
+  redirectUri || process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback'
 );
 
 // ─── Input validation helpers ───────────────────────────────────────────────────
@@ -131,7 +131,11 @@ exports.login = async (req, res) => {
 
 // ─── Google OAuth — Step 1: Redirect to Google ────────────────────────────────
 exports.googleAuth = (req, res) => {
-  const oAuth2Client = getOAuthClient();
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers.host;
+  const dynamicRedirectUri = `${protocol}://${host}/api/auth/google/callback`;
+
+  const oAuth2Client = getOAuthClient(dynamicRedirectUri);
   const url = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',
@@ -146,12 +150,16 @@ exports.googleAuth = (req, res) => {
 
 // ─── Google OAuth — Step 2: Handle Callback ───────────────────────────────────
 exports.googleAuthCallback = async (req, res) => {
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers.host;
+  const dynamicRedirectUri = `${protocol}://${host}/api/auth/google/callback`;
+  const clientUrl = host.includes('localhost') ? 'http://localhost:5173' : `${protocol}://${host}`;
+
   try {
     const { code } = req.query;
     if (!code) return res.redirect(`${clientUrl}/login?error=no_code`);
 
-    const oAuth2Client = getOAuthClient();
+    const oAuth2Client = getOAuthClient(dynamicRedirectUri);
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
 

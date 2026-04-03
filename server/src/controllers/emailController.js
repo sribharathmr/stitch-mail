@@ -491,6 +491,79 @@ exports.schedule = async (req, res) => {
   }
 };
 
+// GET /api/emails/tree — Structured Inbox Tree View
+exports.getTree = async (req, res) => {
+  try {
+    const { search = '', folder = 'inbox' } = req.query;
+    const { buildEmailTree } = require('../services/geminiService');
+
+    // Fetch all emails for the user in the requested folder (up to 500 for tree)
+    let query = supabase
+      .from('emails')
+      .select('*')
+      .eq('user_id', req.user.id);
+
+    if (folder === 'starred') {
+      query = query.eq('is_starred', true);
+    } else {
+      query = query.eq('folder', folder);
+    }
+
+    const { data: emails, error } = await query
+      .order('received_at', { ascending: false })
+      .limit(500);
+
+    if (error) throw error;
+
+    // Build hierarchical tree
+    const tree = await buildEmailTree(emails || [], search);
+
+    // Map emails inside tree nodes for frontend compatibility
+    const mappedTree = tree.map(org => ({
+      ...org,
+      contacts: org.contacts.map(contact => ({
+        ...contact,
+        emails: contact.emails.map(mapEmail),
+      })),
+    }));
+
+    res.json({
+      tree: mappedTree,
+      totalOrgs: mappedTree.length,
+      totalEmails: (emails || []).length,
+      totalUnread: (emails || []).filter(e => !e.is_read).length,
+    });
+  } catch (err) {
+    console.error('getTree error:', err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PATCH /api/emails/:id/tree-override — Save drag-drop reassignment
+exports.treeOverride = async (req, res) => {
+  try {
+    const { orgDomain } = req.body;
+    if (orgDomain === undefined) {
+      return res.status(400).json({ message: 'orgDomain is required' });
+    }
+
+    const { data: email, error } = await supabase
+      .from('emails')
+      .update({ tree_org_override: orgDomain || '' })
+      .eq('id', req.params.id)
+      .eq('user_id', req.user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!email) return res.status(404).json({ message: 'Email not found' });
+
+    res.json({ email: mapEmail(email) });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Export getTransporter and getFullUser for scheduledSend job
 exports._getTransporter = getTransporter;
 exports._getFullUser = getFullUser;

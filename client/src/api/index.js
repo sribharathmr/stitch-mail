@@ -44,6 +44,8 @@ export const emailAPI = {
   delete: (id) => api.delete(`/emails/${id}`),
   schedule: (id, scheduledAt) => api.post(`/emails/${id}/schedule`, { scheduledAt }),
   search: (params) => api.get('/emails/search', { params }),
+  tree: (params) => api.get('/emails/tree', { params }),
+  treeOverride: (id, orgDomain) => api.patch(`/emails/${id}/tree-override`, { orgDomain }),
 }
 
 // Threads

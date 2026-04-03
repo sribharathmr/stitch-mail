@@ -13,6 +13,7 @@ import SettingsPage from './pages/SettingsPage'
 import InboxZeroPage from './pages/InboxZeroPage'
 import AccountsPage from './pages/AccountsPage'
 import SubscriptionsPage from './pages/SubscriptionsPage'
+import TreeViewPage from './pages/TreeViewPage'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -50,6 +51,7 @@ function AppRoutes() {
         <Route path="inbox-zero" element={<InboxZeroPage />} />
         <Route path="accounts" element={<AccountsPage />} />
         <Route path="subscriptions" element={<SubscriptionsPage />} />
+        <Route path="tree-view" element={<TreeViewPage />} />
       </Route>
       {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/inbox" replace />} />

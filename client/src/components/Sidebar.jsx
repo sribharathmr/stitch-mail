@@ -89,6 +89,10 @@ export default function Sidebar() {
           <span className="nav-icon">🔄</span>
           <span className="nav-label">Unified Switcher</span>
         </NavLink>
+        <NavLink to="/tree-view" id="nav-tree-view" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
+          <span className="nav-icon">🌳</span>
+          <span className="nav-label">Structured Inbox</span>
+        </NavLink>
         <NavLink to="/search" id="nav-search" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">🔍</span>
           <span className="nav-label">Search</span>
