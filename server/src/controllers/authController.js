@@ -27,7 +27,8 @@ const toSafeUser = (user) => {
   if (!user) return null;
   const { password_hash, google_tokens, imap_config, smtp_config, ...safe } = user;
   
-  const hasGoogleAuth = !!(google_tokens?.refreshToken);
+  // Check for both camelCase and snake_case (handle legacy data)
+  const hasGoogleAuth = !!(google_tokens?.refreshToken || google_tokens?.refresh_token);
   const hasSmtpConfig = !!(smtp_config?.host && smtp_config?.user && smtp_config?.pass);
 
   return { 
@@ -200,13 +201,18 @@ exports.googleAuthCallback = async (req, res) => {
     }
 
     if (user) {
+      // Get the existing tokens to merge
+      const existingTokens = user.google_tokens || {};
+      
       // Update existing user with fresh tokens
       const updateData = {
         google_id: profile.id,
         google_tokens: {
-          ...googleTokens,
-          refreshToken: tokens.refresh_token || user.google_tokens?.refreshToken,
-        },
+          accessToken: googleTokens.accessToken,
+          expiryDate: googleTokens.expiryDate,
+          // If google didn't return a new refresh token, keep the one we have
+          refreshToken: googleTokens.refreshToken || existingTokens.refreshToken || existingTokens.refresh_token,
+        }
       };
       if (profile.picture && !user.avatar) updateData.avatar = profile.picture;
 
