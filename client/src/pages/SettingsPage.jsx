@@ -8,6 +8,7 @@ import './SettingsPage.css'
 const SETTINGS_NAV = [
   { id: 'general', label: 'General', icon: '⚙️' },
   { id: 'account', label: 'Account', icon: '👤' },
+  { id: 'connectivity', label: 'Connectivity', icon: '🔗' },
   { id: 'themes', label: 'Themes', icon: '🎨', default: true },
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
   { id: 'signatures', label: 'Signatures', icon: '✍️' },
@@ -33,6 +34,8 @@ export default function SettingsPage() {
     name: '',
     title: ''
   })
+  const [smtpConfig, setSmtpConfig] = useState({ host: '', port: '587', user: '', pass: '' })
+  const [imapConfig, setImapConfig] = useState({ host: '', port: '993', user: '', pass: '' })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -44,13 +47,20 @@ export default function SettingsPage() {
     if (settings) {
       setPrefs(p => ({ ...p, ...settings.preferences }))
       setSignature(s => ({ ...s, ...settings.signature }))
+      if (settings.smtpConfig) setSmtpConfig(s => ({ ...s, ...settings.smtpConfig }))
+      if (settings.imapConfig) setImapConfig(i => ({ ...i, ...settings.imapConfig }))
     }
   }, [settings])
 
   const handleApply = async () => {
     setSaving(true)
     try {
-      await settingsAPI.update({ preferences: { ...prefs, theme }, signature })
+      await settingsAPI.update({ 
+        preferences: { ...prefs, theme }, 
+        signature,
+        smtpConfig,
+        imapConfig
+      })
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
     } catch (_) {} finally { setSaving(false) }
@@ -419,6 +429,82 @@ export default function SettingsPage() {
                   <button className="btn btn-sm" style={{ background: 'var(--danger)', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Delete</button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeSection === 'connectivity' && (
+          <div className="settings-section fade-in">
+            <div className="settings-section-header">
+              <h2 className="settings-section-title">Accounts & Connectivity</h2>
+              <p className="settings-section-desc">Manage your email server settings for sending and receiving.</p>
+            </div>
+
+            {user?.google_id && (
+              <div className="settings-block" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.1)', borderRadius: 12, padding: 16, marginBottom: 24 }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <div style={{ fontSize: 24 }}>🛡️</div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>Connected via Google</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>You are using Google OAuth for secure sync and sending.</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="settings-block">
+              <h3 className="settings-block-title">OUTGOING MAIL (SMTP)</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12, marginBottom: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>SMTP HOST</label>
+                  <input className="input" placeholder="smtp.gmail.com" value={smtpConfig.host} onChange={e => setSmtpConfig(s => ({ ...s, host: e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>PORT</label>
+                  <input className="input" placeholder="587" value={smtpConfig.port} onChange={e => setSmtpConfig(s => ({ ...s, port: e.target.value }))} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>USERNAME</label>
+                  <input className="input" placeholder="you@example.com" value={smtpConfig.user} onChange={e => setSmtpConfig(s => ({ ...s, user: e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>APP PASSWORD</label>
+                  <input className="input" type="password" placeholder="••••••••••••" value={smtpConfig.pass} onChange={e => setSmtpConfig(s => ({ ...s, pass: e.target.value }))} />
+                </div>
+              </div>
+            </div>
+
+            <div className="settings-block" style={{ marginTop: 24 }}>
+              <h3 className="settings-block-title">INCOMING MAIL (IMAP)</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12, marginBottom: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>IMAP HOST</label>
+                  <input className="input" placeholder="imap.gmail.com" value={imapConfig.host} onChange={e => setImapConfig(i => ({ ...i, host: e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>PORT</label>
+                  <input className="input" placeholder="993" value={imapConfig.port} onChange={e => setImapConfig(i => ({ ...i, port: e.target.value }))} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>USERNAME</label>
+                  <input className="input" placeholder="you@example.com" value={imapConfig.user} onChange={e => setImapConfig(i => ({ ...i, user: e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>APP PASSWORD</label>
+                  <input className="input" type="password" placeholder="••••••••••••" value={imapConfig.pass} onChange={e => setImapConfig(i => ({ ...i, pass: e.target.value }))} />
+                </div>
+              </div>
+            </div>
+
+            <div className="settings-footer">
+              <button className="btn btn-secondary" onClick={() => loadSettings()}>Discard Changes</button>
+              <button className="btn btn-primary" onClick={handleApply} disabled={saving}>
+                {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save Connectivity Settings'}
+              </button>
             </div>
           </div>
         )}

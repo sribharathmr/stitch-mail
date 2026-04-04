@@ -5,12 +5,19 @@ exports.getSettings = async (req, res) => {
   try {
     const { data: user, error } = await supabase
       .from('users')
-      .select('preferences, signature')
+      .select('preferences, signature, imap_config, smtp_config')
       .eq('id', req.user.id)
       .single();
 
     if (error) throw error;
-    res.json({ settings: { preferences: user.preferences, signature: user.signature } });
+    res.json({ 
+      settings: { 
+        preferences: user.preferences, 
+        signature: user.signature,
+        imapConfig: user.imap_config || {},
+        smtpConfig: user.smtp_config || {}
+      } 
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -30,11 +37,18 @@ exports.updateSettings = async (req, res) => {
       .from('users')
       .update(updates)
       .eq('id', req.user.id)
-      .select('preferences, signature')
+      .select('preferences, signature, imap_config, smtp_config')
       .single();
 
     if (error) throw error;
-    res.json({ settings: { preferences: user.preferences, signature: user.signature } });
+    res.json({ 
+      settings: { 
+        preferences: user.preferences, 
+        signature: user.signature,
+        imapConfig: user.imap_config || {},
+        smtpConfig: user.smtp_config || {}
+      } 
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

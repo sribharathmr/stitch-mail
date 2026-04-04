@@ -27,33 +27,53 @@ const getFullUser = async (userId) => {
 const getTransporter = async (user) => {
   // Option 1: Use Google OAuth2 tokens
   if (user.google_tokens?.refreshToken) {
-    const oAuth2Client = getOAuth2Client(user.google_tokens.refreshToken);
-    const { token: accessToken } = await oAuth2Client.getAccessToken();
+    try {
+      const oAuth2Client = getOAuth2Client(user.google_tokens.refreshToken);
+      const { token: accessToken } = await oAuth2Client.getAccessToken();
 
+      return nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          type: 'OAuth2',
+          user: user.email,
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          refreshToken: user.google_tokens.refreshToken,
+          accessToken,
+        },
+      });
+    } catch (err) {
+      console.error('OAuth token error:', err.message);
+      // Fall through to other options or throw
+    }
+  }
+
+  // Option 2: Use user's manual SMTP config if they provided it
+  if (user.smtp_config?.host && user.smtp_config?.user && user.smtp_config?.pass) {
     return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: user.email,
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        refreshToken: user.google_tokens.refreshToken,
-        accessToken,
-      },
+      host: user.smtp_config.host,
+      port: user.smtp_config.port || 587,
+      secure: user.smtp_config.port === 465,
+      auth: { user: user.smtp_config.user, pass: user.smtp_config.pass }
     });
   }
 
-  // Option 2: Fallback to SMTP credentials
-  const smtp = user.smtp_config?.host
-    ? user.smtp_config
-    : { host: process.env.SMTP_HOST, port: process.env.SMTP_PORT, user: process.env.SMTP_USER, pass: process.env.SMTP_PASS };
+  // If Google user but we reached here, their refresh token is missing/invalid
+  if (user.google_id) {
+    throw new Error('MISSING_GOOGLE_AUTH: Your Google account is not fully authorized for sending. Please Sign Out and Sign In again to re-link your account.');
+  }
 
-  return nodemailer.createTransport({
-    host: smtp.host,
-    port: smtp.port || 587,
-    secure: smtp.port === 465,
-    auth: { user: smtp.user, pass: smtp.pass }
-  });
+  // Option 3: Final fallback to system SMTP (only for app owner/specific setup)
+  if (process.env.SMTP_USER && process.env.SMTP_PASS && user.email === process.env.SMTP_USER) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: process.env.SMTP_PORT || 587,
+      secure: process.env.SMTP_PORT === '465',
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    });
+  }
+
+  throw new Error('NO_ACCOUNT_LINKED: No email sending method found. Please link your Google account or provide SMTP settings in Settings.');
 };
 
 // ── Gmail Sync Helper ──────────────────────────────────────────────────────────

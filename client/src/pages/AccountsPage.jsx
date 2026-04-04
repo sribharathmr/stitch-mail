@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useAuth } from '../context/AuthContext'
+import { accountsAPI } from '../api'
 import './AccountsPage.css'
 
 const WORKLOAD_DATA = [
@@ -35,13 +36,37 @@ export default function AccountsPage() {
     navigate('/inbox')
   }
 
-  const handleAddAccount = () => {
+  const handleAddAccount = async () => {
     setAddingAccount(true)
-    setTimeout(() => {
-      setAddingAccount(false)
+    try {
+      // Map form to API expected structure
+      const data = {
+        email: addForm.email,
+        provider: addForm.provider,
+        smtpConfig: {
+          host: addForm.provider === 'Gmail' ? 'smtp.gmail.com' : '',
+          port: 587,
+          user: addForm.email,
+          pass: addForm.password
+        },
+        imapConfig: {
+          host: addForm.provider === 'Gmail' ? 'imap.gmail.com' : '',
+          port: 993,
+          user: addForm.email,
+          pass: addForm.password
+        }
+      }
+      
+      await accountsAPI.add(data)
       setShowAddModal(false)
       setAddForm({ provider: '', email: '', password: '' })
-    }, 1500)
+      // Navigate to inbox or refresh
+      fetchEmails('inbox')
+    } catch (err) {
+      alert('Failed to connect: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setAddingAccount(false)
+    }
   }
 
   return (

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useEmail } from '../context/EmailContext'
 import { emailAPI, aiAPI } from '../api'
+import { useAuth } from '../context/AuthContext'
 import './ComposeModal.css'
 
 function RecipientChip({ value, onRemove }) {
@@ -18,6 +19,7 @@ function RecipientChip({ value, onRemove }) {
 
 export default function ComposeModal() {
   const { composeDraft, dispatch, fetchEmails, folder } = useEmail()
+  const { user } = useAuth()
   const [to, setTo] = useState([])
   const [toInput, setToInput] = useState('')
   const [cc, setCc] = useState([])
@@ -137,6 +139,40 @@ export default function ComposeModal() {
 
         {/* Body */}
         <div className="compose-body">
+          {user?.missingGoogleAuth && (
+            <div className="compose-warning" style={{ background: '#FEF2F2', border: '1px solid #FECACA', padding: '12px 16px', margin: '0 12px 12px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ fontSize: 20 }}>⚠️</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#991B1B' }}>Account not fully linked</div>
+                <div style={{ fontSize: 12, color: '#B91C1C' }}>Your Google login didn't provide sending permissions. Please re-link to send emails.</div>
+              </div>
+              <button
+                className="btn btn-sm"
+                style={{ background: '#991B1B', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                onClick={() => window.location.href = '/api/auth/google'}
+              >
+                Re-link Now
+              </button>
+            </div>
+          )}
+
+          {!user?.canSend && !user?.missingGoogleAuth && (
+            <div className="compose-warning" style={{ background: '#FFF7ED', border: '1px solid #FFEDD5', padding: '12px 16px', margin: '0 12px 12px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ fontSize: 20 }}>⚙️</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#9A3412' }}>No sending method</div>
+                <div style={{ fontSize: 12, color: '#C2410C' }}>Please connect a Google account or enter SMTP settings in Settings.</div>
+              </div>
+              <button
+                className="btn btn-sm"
+                style={{ background: '#9A3412', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                onClick={() => { close(); window.location.href = '/settings?section=connectivity' }}
+              >
+                Go to Settings
+              </button>
+            </div>
+          )}
+
           {/* To */}
           <div className="compose-field">
             <span className="field-label">To</span>

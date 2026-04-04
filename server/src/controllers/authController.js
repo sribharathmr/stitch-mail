@@ -26,7 +26,16 @@ const setCookie = (res, token) =>
 const toSafeUser = (user) => {
   if (!user) return null;
   const { password_hash, google_tokens, imap_config, smtp_config, ...safe } = user;
-  return safe;
+  
+  const hasGoogleAuth = !!(google_tokens?.refreshToken);
+  const hasSmtpConfig = !!(smtp_config?.host && smtp_config?.user && smtp_config?.pass);
+
+  return { 
+    ...safe, 
+    canSend: hasGoogleAuth || hasSmtpConfig,
+    isGoogleUser: !!user.google_id,
+    missingGoogleAuth: !!(user.google_id && !hasGoogleAuth)
+  };
 };
 
 const getOAuthClient = (redirectUri) => new google.auth.OAuth2(
