@@ -22,7 +22,6 @@ module.exports = async (req, res, next) => {
 
     if (error || !user) return res.status(401).json({ message: 'User not found' });
 
-    // Remove ALL sensitive fields
     const {
       password_hash,
       google_tokens,
@@ -31,8 +30,17 @@ module.exports = async (req, res, next) => {
       ...safeUser
     } = user;
 
-    // Attach raw tokens separately for internal use only (not exposed in API responses)
-    req.user = safeUser;
+    // Pre-calculate flags so they aren't lost when stripped
+    const hasGoogleAuth = !!(google_tokens?.refreshToken || google_tokens?.refresh_token);
+    const hasSmtpConfig = !!(smtp_config?.host && smtp_config?.user && smtp_config?.pass);
+
+    // Attach raw tokens separately for internal use (not exposed in API responses)
+    req.user = { 
+      ...safeUser,
+      canSend: hasGoogleAuth || hasSmtpConfig,
+      isGoogleUser: !!user.google_id,
+      missingGoogleAuth: !!(user.google_id && !hasGoogleAuth)
+    };
     req.userTokens = { google_tokens, imap_config, smtp_config };
     next();
   } catch (err) {

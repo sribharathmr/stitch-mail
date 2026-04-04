@@ -25,9 +25,16 @@ const setCookie = (res, token) =>
 
 const toSafeUser = (user) => {
   if (!user) return null;
+  
+  // If this user already has the pre-calculated flags (from the auth middleware)
+  // we return it immediately as the sensitive data is already stripped.
+  if (user.canSend !== undefined) {
+    return user;
+  }
+
   const { password_hash, google_tokens, imap_config, smtp_config, ...safe } = user;
   
-  // Check for both camelCase and snake_case (handle legacy data)
+  // Calculate flags for fresh database records (login, registration, callback)
   const hasGoogleAuth = !!(google_tokens?.refreshToken || google_tokens?.refresh_token);
   const hasSmtpConfig = !!(smtp_config?.host && smtp_config?.user && smtp_config?.pass);
 
