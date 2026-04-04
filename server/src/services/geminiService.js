@@ -1,26 +1,31 @@
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // ── Configuration ──────────────────────────────────────────────────────────────
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const MODEL_NAME = 'gemini-1.5-flash';
 
-let ai = null;
+let genAI = null;
 
 function getAI() {
-  if (!ai && GEMINI_API_KEY) {
-    ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  if (!genAI && GEMINI_API_KEY) {
+    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   }
-  return ai;
+  return genAI;
 }
 
 async function generateContent(prompt) {
   const client = getAI();
   if (!client) return null;
-  const response = await client.models.generateContent({
-    model: MODEL_NAME,
-    contents: prompt,
-  });
-  return response.text;
+  
+  try {
+    const model = client.getGenerativeModel({ model: MODEL_NAME });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error('Gemini generateContent error:', error.message);
+    throw error;
+  }
 }
 
 
