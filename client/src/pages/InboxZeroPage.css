@@ -125,3 +125,31 @@
 .zero-action-icon { font-size: 20px; }
 .zero-action-label { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: var(--accent); }
 .zero-action-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+@media (max-width: 768px) {
+  .inbox-zero-layout {
+    padding: 24px 16px;
+  }
+
+  .zero-heading {
+    font-size: 26px;
+  }
+
+  .zero-subtext {
+    font-size: 15px;
+  }
+
+  .zero-quick-actions {
+    flex-direction: column;
+  }
+
+  .zero-ctas {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .zero-ctas .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

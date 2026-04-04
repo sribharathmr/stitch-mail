@@ -342,3 +342,49 @@ img { display: block; max-width: 100%; }
   z-index: 100;
 }
 [data-tooltip]:hover::after { opacity: 1; }
+
+/* --- Mobile Responsiveness --- */
+.topbar-mobile-menu { display: none; }
+.mobile-backdrop { display: none; }
+
+@media (max-width: 768px) {
+  .topbar-mobile-menu {
+    display: flex;
+  }
+  
+  /* Make app full width and hide strict layout boundaries */
+  .app-shell { flex-direction: column; }
+  
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 1001; /* Ensure above backdrop and other elements */
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  /* Topbar adjustments */
+  .topbar { padding: 0 10px; gap: 8px; }
+  .topbar-search { max-width: none; flex: 1; padding: 6px 10px; }
+  .topbar-search-input { font-size: 13px; }
+
+  /* Inbox list taking full width if stacked */
+  .inbox-list-col { border-right: none; }
+  
+  /* Improve touch targets */
+  .email-item { padding: 14px 12px; gap: 10px; }
+}

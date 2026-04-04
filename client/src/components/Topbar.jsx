@@ -6,7 +6,7 @@ import './Topbar.css'
 
 export default function Topbar() {
   const { dispatch } = useEmail()
-  const { searchQuery, setSearchQuery } = useUI()
+  const { searchQuery, setSearchQuery, setMobileMenuOpen } = useUI()
   const navigate = useNavigate()
   const [localQ, setLocalQ] = useState(searchQuery)
 
@@ -20,6 +20,15 @@ export default function Topbar() {
 
   return (
     <header className="topbar">
+      <button 
+        className="topbar-mobile-menu btn-icon" 
+        onClick={() => setMobileMenuOpen(true)}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
       <form className="topbar-search" onSubmit={handleSearch}>
         <svg className="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>

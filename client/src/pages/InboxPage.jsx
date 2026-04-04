@@ -41,6 +41,14 @@ export default function InboxPage({ folder = 'inbox' }) {
   const { settings } = useUI()
   const [activeTab, setActiveTab] = useState('primary')
   const [categorizing, setCategorizing] = useState(false)
+  
+  const [tasks, setTasks] = useState(UPCOMING_TASKS)
+  const [editingTaskId, setEditingTaskId] = useState(null)
+  
+  const handleTaskChange = (id, newTitle) => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, title: newTitle } : t))
+  }
+
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -231,16 +239,36 @@ export default function InboxPage({ folder = 'inbox' }) {
             <div className="card" style={{ padding: '18px 20px', marginBottom: 16 }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 14 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700 }}>Upcoming Tasks</h3>
-                <span className="badge badge-accent">{UPCOMING_TASKS.length}</span>
+                <span className="badge badge-accent">{tasks.length}</span>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap: 10 }}>
-                {UPCOMING_TASKS.map(task => (
+                {tasks.map(task => (
                   <div key={task.id} className="task-item">
-                    <div className="task-dot" style={{ background: task.color }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{task.title}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{task.time}</div>
-                    </div>
+                     <div className="task-dot" style={{ background: task.color }} />
+                     <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                       {editingTaskId === task.id ? (
+                         <input 
+                           autoFocus
+                           className="input"
+                           style={{ padding: '4px 8px', fontSize: '13px' }}
+                           value={task.title}
+                           onChange={e => handleTaskChange(task.id, e.target.value)}
+                           onBlur={() => setEditingTaskId(null)}
+                           onKeyDown={e => e.key === 'Enter' && setEditingTaskId(null)}
+                         />
+                       ) : (
+                         <div 
+                           style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', cursor: 'text', flex: 1 }} 
+                           onClick={() => setEditingTaskId(task.id)}
+                           title="Click to edit"
+                         >
+                           {task.title}
+                         </div>
+                       )}
+                       {!editingTaskId && (
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{task.time}</div>
+                       )}
+                     </div>
                   </div>
                 ))}
               </div>
@@ -300,16 +328,36 @@ export default function InboxPage({ folder = 'inbox' }) {
             <div className="card" style={{ padding: '18px 20px', marginBottom: 16 }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 14 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700 }}>Upcoming Tasks</h3>
-                <span className="badge badge-accent">{UPCOMING_TASKS.length}</span>
+                <span className="badge badge-accent">{tasks.length}</span>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap: 10 }}>
-                {UPCOMING_TASKS.map(task => (
+                {tasks.map(task => (
                   <div key={task.id} className="task-item">
-                    <div className="task-dot" style={{ background: task.color }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{task.title}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{task.time}</div>
-                    </div>
+                     <div className="task-dot" style={{ background: task.color }} />
+                     <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                       {editingTaskId === task.id ? (
+                         <input 
+                           autoFocus
+                           className="input"
+                           style={{ padding: '4px 8px', fontSize: '13px' }}
+                           value={task.title}
+                           onChange={e => handleTaskChange(task.id, e.target.value)}
+                           onBlur={() => setEditingTaskId(null)}
+                           onKeyDown={e => e.key === 'Enter' && setEditingTaskId(null)}
+                         />
+                       ) : (
+                         <div 
+                           style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', cursor: 'text', flex: 1 }} 
+                           onClick={() => setEditingTaskId(task.id)}
+                           title="Click to edit"
+                         >
+                           {task.title}
+                         </div>
+                       )}
+                       {!editingTaskId && (
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{task.time}</div>
+                       )}
+                     </div>
                   </div>
                 ))}
               </div>

@@ -253,3 +253,22 @@
   color: rgba(255,255,255,0.5);
   font-weight: 600;
 }
+
+@media (max-width: 768px) {
+  .accounts-content {
+    padding: 20px 14px;
+  }
+
+  .accounts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .accounts-title {
+    font-size: 20px;
+  }
+
+  .accounts-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

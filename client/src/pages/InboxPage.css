@@ -301,3 +301,23 @@
 .inbox-layout.compact .email-item-content {
   gap: 1px;
 }
+
+@media (max-width: 768px) {
+  .inbox-layout {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  .inbox-list-col {
+    overflow-y: visible; /* Let it expand or scroll with the page */
+    flex: none;
+  }
+  
+  .inbox-right-col {
+    width: 100%;
+    min-width: 0;
+    border-top: 1px solid var(--border);
+    padding: 20px 16px;
+    overflow-y: visible;
+  }
+}

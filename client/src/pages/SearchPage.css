@@ -148,3 +148,27 @@
   width: 100%;
 }
 .suggestion-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+@media (max-width: 768px) {
+  .search-header {
+    padding: 14px 14px 0;
+  }
+
+  .search-bar-large {
+    padding: 8px 12px;
+  }
+
+  .search-main-input {
+    font-size: 14px;
+  }
+
+  .filter-chips {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 10px;
+  }
+
+  .search-result-item {
+    padding: 12px 14px;
+  }
+}

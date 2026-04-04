@@ -34,10 +34,13 @@ export function UIProvider({ children }) {
     } catch (_) {}
   }
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
   return (
     <UIContext.Provider value={{
       theme, setTheme,
       sidebarCollapsed, setSidebarCollapsed,
+      mobileMenuOpen, setMobileMenuOpen,
       searchQuery, setSearchQuery,
       activeFilters, setActiveFilters,
       settings, setSettings, loadSettings,
