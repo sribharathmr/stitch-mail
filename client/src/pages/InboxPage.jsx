@@ -42,11 +42,31 @@ export default function InboxPage({ folder = 'inbox' }) {
   const [activeTab, setActiveTab] = useState('primary')
   const [categorizing, setCategorizing] = useState(false)
   
-  const [tasks, setTasks] = useState(UPCOMING_TASKS)
+  const [tasks, setTasks] = useState(UPCOMING_TASKS.map(t => ({ ...t, completed: false })))
   const [editingTaskId, setEditingTaskId] = useState(null)
   
   const handleTaskChange = (id, newTitle) => {
     setTasks(tasks.map(t => t.id === id ? { ...t, title: newTitle } : t))
+  }
+
+  const handleAddTask = () => {
+    const newTask = {
+      id: Date.now(),
+      title: 'New Task',
+      time: 'Today',
+      color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
+      completed: false
+    }
+    setTasks([newTask, ...tasks])
+    setEditingTaskId(newTask.id)
+  }
+
+  const handleDeleteTask = (id) => {
+    setTasks(tasks.filter(t => t.id !== id))
+  }
+
+  const handleToggleTask = (id) => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
   }
 
   const navigate = useNavigate()
@@ -239,18 +259,31 @@ export default function InboxPage({ folder = 'inbox' }) {
             <div className="card" style={{ padding: '18px 20px', marginBottom: 16 }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 14 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700 }}>Upcoming Tasks</h3>
-                <span className="badge badge-accent">{tasks.length}</span>
+                <button 
+                  onClick={handleAddTask}
+                  className="task-add-btn"
+                  style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg-active)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 'bold', cursor: 'pointer', border: 'none' }}
+                  title="Add Task"
+                >
+                  +
+                </button>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap: 10 }}>
                 {tasks.map(task => (
-                  <div key={task.id} className="task-item">
-                     <div className="task-dot" style={{ background: task.color }} />
+                  <div key={task.id} className="task-item" style={{ opacity: task.completed ? 0.6 : 1 }}>
+                     <div 
+                        className="task-dot" 
+                        style={{ background: task.completed ? 'var(--text-muted)' : task.color, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                        onClick={() => handleToggleTask(task.id)}
+                     >
+                        {task.completed && <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />}
+                     </div>
                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                        {editingTaskId === task.id ? (
                          <input 
                            autoFocus
                            className="input"
-                           style={{ padding: '4px 8px', fontSize: '13px' }}
+                           style={{ padding: '4px 8px', fontSize: '13px', width: '100%', background: 'var(--bg-card)', border: '1px solid var(--accent)', borderRadius: '4px', outline: 'none' }}
                            value={task.title}
                            onChange={e => handleTaskChange(task.id, e.target.value)}
                            onBlur={() => setEditingTaskId(null)}
@@ -258,7 +291,14 @@ export default function InboxPage({ folder = 'inbox' }) {
                          />
                        ) : (
                          <div 
-                           style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', cursor: 'text', flex: 1 }} 
+                           style={{ 
+                             fontSize: 13, 
+                             fontWeight: 600, 
+                             color: 'var(--text-primary)', 
+                             cursor: 'text', 
+                             flex: 1,
+                             textDecoration: task.completed ? 'line-through' : 'none'
+                           }} 
                            onClick={() => setEditingTaskId(task.id)}
                            title="Click to edit"
                          >
@@ -266,9 +306,19 @@ export default function InboxPage({ folder = 'inbox' }) {
                          </div>
                        )}
                        {!editingTaskId && (
-                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{task.time}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{task.time}</div>
                        )}
                      </div>
+                     {!editingTaskId && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }}
+                          style={{ color: 'var(--text-muted)', fontSize: 18, opacity: 0, cursor: 'pointer', border: 'none', background: 'none', padding: '0 4px' }}
+                          className="hover-danger"
+                          title="Delete"
+                        >
+                          ×
+                        </button>
+                     )}
                   </div>
                 ))}
               </div>
@@ -328,18 +378,31 @@ export default function InboxPage({ folder = 'inbox' }) {
             <div className="card" style={{ padding: '18px 20px', marginBottom: 16 }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 14 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 700 }}>Upcoming Tasks</h3>
-                <span className="badge badge-accent">{tasks.length}</span>
+                <button 
+                  onClick={handleAddTask}
+                  className="task-add-btn"
+                  style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg-active)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 'bold', cursor: 'pointer', border: 'none' }}
+                  title="Add Task"
+                >
+                  +
+                </button>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap: 10 }}>
                 {tasks.map(task => (
-                  <div key={task.id} className="task-item">
-                     <div className="task-dot" style={{ background: task.color }} />
+                  <div key={task.id} className="task-item" style={{ opacity: task.completed ? 0.6 : 1 }}>
+                     <div 
+                        className="task-dot" 
+                        style={{ background: task.completed ? 'var(--text-muted)' : task.color, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                        onClick={() => handleToggleTask(task.id)}
+                     >
+                        {task.completed && <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff' }} />}
+                     </div>
                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                        {editingTaskId === task.id ? (
                          <input 
                            autoFocus
                            className="input"
-                           style={{ padding: '4px 8px', fontSize: '13px' }}
+                           style={{ padding: '4px 8px', fontSize: '13px', width: '100%', background: 'var(--bg-card)', border: '1px solid var(--accent)', borderRadius: '4px', outline: 'none' }}
                            value={task.title}
                            onChange={e => handleTaskChange(task.id, e.target.value)}
                            onBlur={() => setEditingTaskId(null)}
@@ -347,7 +410,14 @@ export default function InboxPage({ folder = 'inbox' }) {
                          />
                        ) : (
                          <div 
-                           style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', cursor: 'text', flex: 1 }} 
+                           style={{ 
+                             fontSize: 13, 
+                             fontWeight: 600, 
+                             color: 'var(--text-primary)', 
+                             cursor: 'text', 
+                             flex: 1,
+                             textDecoration: task.completed ? 'line-through' : 'none'
+                           }} 
                            onClick={() => setEditingTaskId(task.id)}
                            title="Click to edit"
                          >
@@ -355,9 +425,19 @@ export default function InboxPage({ folder = 'inbox' }) {
                          </div>
                        )}
                        {!editingTaskId && (
-                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{task.time}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{task.time}</div>
                        )}
                      </div>
+                     {!editingTaskId && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }}
+                          style={{ color: 'var(--text-muted)', fontSize: 18, opacity: 0, cursor: 'pointer', border: 'none', background: 'none', padding: '0 4px' }}
+                          className="hover-danger"
+                          title="Delete"
+                        >
+                          ×
+                        </button>
+                     )}
                   </div>
                 ))}
               </div>
