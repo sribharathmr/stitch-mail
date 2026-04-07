@@ -390,11 +390,11 @@ export default function InboxPage({ folder = 'inbox' }) {
               </div>
               <div className="weekly-stats">
                 <div className="stat-item">
-                  <span className="stat-num">{emails.length}</span>
+                  <span className="stat-num">{filteredEmails.length}</span>
                   <span className="stat-label">Received</span>
                 </div>
                 <div className="stat-item">
-                  <span className="stat-num">{emails.filter(e => e.isRead).length}</span>
+                  <span className="stat-num">{filteredEmails.filter(e => e.isRead).length}</span>
                   <span className="stat-label">Read</span>
                 </div>
                 <div className="stat-item">

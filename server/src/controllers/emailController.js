@@ -260,20 +260,33 @@ exports.list = async (req, res) => {
 
     if (error) throw error;
 
-    // Get unread count
-    const { count: unreadCount } = await supabase
+    // Get unread count — count unique threads, not individual messages
+    const { data: unreadEmails } = await supabase
       .from('emails')
-      .select('*', { count: 'exact', head: true })
+      .select('thread_id')
       .eq('user_id', req.user.id)
       .eq('folder', 'inbox')
       .eq('is_read', false);
 
+    // Count unique threads (emails without thread_id count as 1 each)
+    const unreadThreads = new Set();
+    (unreadEmails || []).forEach(e => {
+      unreadThreads.add(e.thread_id || `no-thread-${Math.random()}`);
+    });
+    const unreadCount = unreadThreads.size;
+
+    // Also count unique threads for total to match what the UI displays
+    const threadSet = new Set();
+    (emails || []).forEach(e => {
+      threadSet.add(e.thread_id || `no-thread-${e.id}`);
+    });
+
     res.json({
       emails: (emails || []).map(mapEmail),
-      total: count || 0,
+      total: threadSet.size,
       page: parseInt(page),
       pages: Math.ceil((count || 0) / lim),
-      unreadCount: unreadCount || 0
+      unreadCount
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
