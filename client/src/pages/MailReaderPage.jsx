@@ -41,6 +41,8 @@ export default function MailReaderPage() {
   const [threadEmails, setThreadEmails] = useState([])
   const [showThread, setShowThread] = useState(true)
   const [expandedThreadIds, setExpandedThreadIds] = useState(new Set())
+  const [showMoveMenu, setShowMoveMenu] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
 
   useEffect(() => {
     setInsights(null)
@@ -101,9 +103,13 @@ export default function MailReaderPage() {
   const mediaAttachments = allAttachments.filter(isMediaAttachment)
   const docAttachments = allAttachments.filter(a => !isMediaAttachment(a))
 
-  const handleArchive = () => { moveEmail(email._id, 'archive'); navigate('/inbox') }
-  const handleDelete  = () => { deleteEmail(email._id); navigate('/inbox') }
+  const handleArchive = () => { moveEmail(email._id, 'archive'); navigate('/inbox'); window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Conversation archived' } })) }
+  const handleDelete  = () => { moveEmail(email._id, 'trash'); navigate('/inbox'); window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Conversation moved to Trash' } })) }
   const handleStar    = () => starEmail(email._id, !email.isStarred)
+  const handleSpam    = () => { moveEmail(email._id, 'spam'); navigate('/inbox'); window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Conversation reported as spam' } })) }
+  const handleMoveTo  = (folder) => { moveEmail(email._id, folder); setShowMoveMenu(false); navigate('/inbox'); window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: `Moved to ${folder}` } })) }
+  const handleMarkUnread = async () => { try { const { emailAPI } = await import('../api'); await emailAPI.update(email._id, { isRead: false }); navigate('/inbox'); window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'info', message: 'Marked as unread' } })) } catch(_){} }
+  const handlePrint = () => { const w = window.open('','_blank'); w.document.write(`<html><head><title>${email.subject}</title></head><body><h2>${email.subject}</h2><p>From: ${email.from?.name} &lt;${email.from?.address}&gt;</p><hr>${email.bodyHtml || email.bodyText || ''}</body></html>`); w.document.close(); w.print() }
   const handleReply   = () => dispatch({ type: 'OPEN_COMPOSE', payload: {
     to: email.from?.address ? [email.from.address] : [], subject: `Re: ${email.subject}`, bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\nDate: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}\n\n${email.bodyText || ''}`
   }})
@@ -167,9 +173,19 @@ export default function MailReaderPage() {
             <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
           </svg>
         </button>
-        <button className="btn-icon" id="reader-delete" onClick={handleDelete} data-tooltip="Delete">
+        <button className="btn-icon" id="reader-spam" onClick={handleSpam} data-tooltip="Report Spam">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+        </button>
+        <button className="btn-icon" id="reader-delete" onClick={handleDelete} data-tooltip="Move to Trash">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+        </button>
+        <button className="btn-icon" id="reader-unread" onClick={handleMarkUnread} data-tooltip="Mark as unread">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/>
           </svg>
         </button>
         <button className={`btn-icon ${email.isStarred ? 'starred' : ''}`} id="reader-star" onClick={handleStar} data-tooltip="Star">
@@ -182,6 +198,49 @@ export default function MailReaderPage() {
             <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/>
           </svg>
         </button>
+
+        {/* More options dropdown */}
+        <div style={{ position: 'relative' }}>
+          <button className="btn-icon" onClick={() => setShowMoreMenu(!showMoreMenu)} data-tooltip="More">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+            </svg>
+          </button>
+          {showMoreMenu && (
+            <div className="reader-dropdown" style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, boxShadow: 'var(--shadow-lg)', minWidth: 200, padding: '4px 0', zIndex: 100 }} onClick={() => setShowMoreMenu(false)}>
+              <button onClick={handleReplyAll} style={{ width: '100%', padding: '10px 16px', textAlign: 'left', background: 'none', border: 'none', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
+                Reply all
+              </button>
+              <button onClick={handleForward} style={{ width: '100%', padding: '10px 16px', textAlign: 'left', background: 'none', border: 'none', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 014-4h12"/></svg>
+                Forward
+              </button>
+              <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+              <button onClick={handleMarkUnread} style={{ width: '100%', padding: '10px 16px', textAlign: 'left', background: 'none', border: 'none', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+                Mark as unread
+              </button>
+              <button onClick={handlePrint} style={{ width: '100%', padding: '10px 16px', textAlign: 'left', background: 'none', border: 'none', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Print
+              </button>
+              <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+              <button onClick={() => handleMoveTo('inbox')} style={{ width: '100%', padding: '10px 16px', textAlign: 'left', background: 'none', border: 'none', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+                📥 Move to Inbox
+              </button>
+              <button onClick={() => handleMoveTo('spam')} style={{ width: '100%', padding: '10px 16px', textAlign: 'left', background: 'none', border: 'none', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+                🛡️ Move to Spam
+              </button>
+              <button onClick={() => handleMoveTo('trash')} style={{ width: '100%', padding: '10px 16px', textAlign: 'left', background: 'none', border: 'none', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+                🗑️ Move to Trash
+              </button>
+              <button onClick={() => handleMoveTo('archive')} style={{ width: '100%', padding: '10px 16px', textAlign: 'left', background: 'none', border: 'none', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+                📦 Move to Archive
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Email content */}

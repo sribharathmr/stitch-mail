@@ -38,6 +38,10 @@
 
 .reader-toolbar .starred svg { color: #F59E0B; }
 
+.reader-dropdown button:hover {
+  background: var(--bg-hover) !important;
+}
+
 .reader-content {
   flex: 1;
   overflow-y: auto;
