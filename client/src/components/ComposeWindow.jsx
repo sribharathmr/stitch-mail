@@ -96,6 +96,11 @@ export default function ComposeWindow({ windowState, index }) {
   const [activeSignature, setActiveSignature] = useState('none')
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [isPlainText, setIsPlainText] = useState(false)
+  const [showScheduleDatePicker, setShowScheduleDatePicker] = useState(false)
+  const [scheduleCalMonth, setScheduleCalMonth] = useState(new Date().getMonth())
+  const [scheduleCalYear, setScheduleCalYear] = useState(new Date().getFullYear())
+  const [scheduleSelectedDate, setScheduleSelectedDate] = useState(null)
+  const [scheduleTime, setScheduleTime] = useState('08:00')
 
   // Close all popovers helper
   const closeAllPopovers = useCallback((except) => {
@@ -478,18 +483,48 @@ export default function ComposeWindow({ windowState, index }) {
             <button className="compose-btn-primary-dropdown" onClick={() => { closeAllPopovers('schedule'); setShowScheduleMenu(!showScheduleMenu) }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
             </button>
-            {showScheduleMenu && (
-              <div className="compose-schedule-menu compose-popover">
-                <button onClick={() => { handleSend(new Date(Date.now() + 3600000).toISOString()); setShowScheduleMenu(false) }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  Schedule send in 1 hour
-                </button>
-                <button onClick={() => { handleSend(new Date(Date.now() + 86400000).toISOString()); setShowScheduleMenu(false) }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  Schedule send for tomorrow
-                </button>
-              </div>
-            )}
+            {showScheduleMenu && (() => {
+              // Calculate preset schedule dates
+              const now = new Date()
+              const tomorrow = new Date(now)
+              tomorrow.setDate(tomorrow.getDate() + 1)
+              const tomorrowMorning = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 8, 0)
+              const tomorrowAfternoon = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 13, 0)
+              // Next Monday
+              const daysUntilMonday = ((1 - now.getDay()) + 7) % 7 || 7
+              const nextMonday = new Date(now)
+              nextMonday.setDate(now.getDate() + daysUntilMonday)
+              const mondayMorning = new Date(nextMonday.getFullYear(), nextMonday.getMonth(), nextMonday.getDate(), 8, 0)
+
+              const formatPresetDate = (d) => d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+              const tz = Intl.DateTimeFormat().resolvedOptions().timeZone?.replace(/_/g, ' ') || 'Local Time'
+
+              return (
+                <div className="compose-schedule-menu compose-popover">
+                  <div className="schedule-header">
+                    <span className="schedule-title">Schedule send</span>
+                    <span className="schedule-tz">{tz}</span>
+                  </div>
+                  <button onClick={() => { handleSend(tomorrowMorning.toISOString()); setShowScheduleMenu(false) }}>
+                    <span className="schedule-label">Tomorrow morning</span>
+                    <span className="schedule-date">{formatPresetDate(tomorrowMorning)}</span>
+                  </button>
+                  <button onClick={() => { handleSend(tomorrowAfternoon.toISOString()); setShowScheduleMenu(false) }}>
+                    <span className="schedule-label">Tomorrow afternoon</span>
+                    <span className="schedule-date">{formatPresetDate(tomorrowAfternoon)}</span>
+                  </button>
+                  <button onClick={() => { handleSend(mondayMorning.toISOString()); setShowScheduleMenu(false) }}>
+                    <span className="schedule-label">Monday morning</span>
+                    <span className="schedule-date">{formatPresetDate(mondayMorning)}</span>
+                  </button>
+                  <div className="schedule-divider" />
+                  <button onClick={() => { setShowScheduleMenu(false); setShowScheduleDatePicker(true); setScheduleCalMonth(now.getMonth()); setScheduleCalYear(now.getFullYear()); setScheduleSelectedDate(now); setScheduleTime(now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0')) }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8, flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span className="schedule-label">Select date and time</span>
+                  </button>
+                </div>
+              )
+            })()}
           </div>
           
           <div className="compose-toolbar-actions" style={{ marginLeft: 12 }}>
@@ -687,6 +722,116 @@ export default function ComposeWindow({ windowState, index }) {
           </div>
         </div>
       )}
+
+      {/* ═══════ SCHEDULE DATE PICKER MODAL ═══════ */}
+      {showScheduleDatePicker && (() => {
+        const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
+        const DAY_LABELS = ['M','T','W','T','F','S','S']
+        const today = new Date()
+        today.setHours(0,0,0,0)
+
+        // Build calendar grid
+        const firstDay = new Date(scheduleCalYear, scheduleCalMonth, 1)
+        const lastDay = new Date(scheduleCalYear, scheduleCalMonth + 1, 0)
+        // Monday = 0
+        let startDow = (firstDay.getDay() + 6) % 7
+        const prevMonthLast = new Date(scheduleCalYear, scheduleCalMonth, 0).getDate()
+
+        const calDays = []
+        // Previous month trailing days
+        for (let i = startDow - 1; i >= 0; i--) {
+          calDays.push({ day: prevMonthLast - i, current: false, date: new Date(scheduleCalYear, scheduleCalMonth - 1, prevMonthLast - i) })
+        }
+        // Current month
+        for (let d = 1; d <= lastDay.getDate(); d++) {
+          calDays.push({ day: d, current: true, date: new Date(scheduleCalYear, scheduleCalMonth, d) })
+        }
+        // Next month leading days
+        const remaining = 42 - calDays.length
+        for (let d = 1; d <= remaining; d++) {
+          calDays.push({ day: d, current: false, date: new Date(scheduleCalYear, scheduleCalMonth + 1, d) })
+        }
+
+        const isToday = (d) => d.getTime() === today.getTime()
+        const isSelected = (d) => scheduleSelectedDate && d.getFullYear() === scheduleSelectedDate.getFullYear() && d.getMonth() === scheduleSelectedDate.getMonth() && d.getDate() === scheduleSelectedDate.getDate()
+        const isPast = (d) => d < today
+
+        const handlePrevMonth = () => {
+          if (scheduleCalMonth === 0) { setScheduleCalMonth(11); setScheduleCalYear(scheduleCalYear - 1) }
+          else setScheduleCalMonth(scheduleCalMonth - 1)
+        }
+        const handleNextMonth = () => {
+          if (scheduleCalMonth === 11) { setScheduleCalMonth(0); setScheduleCalYear(scheduleCalYear + 1) }
+          else setScheduleCalMonth(scheduleCalMonth + 1)
+        }
+
+        const selectedDateStr = scheduleSelectedDate
+          ? scheduleSelectedDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+          : ''
+
+        const handleScheduleConfirm = () => {
+          if (!scheduleSelectedDate) return
+          const [h, m] = scheduleTime.split(':').map(Number)
+          const scheduleDt = new Date(scheduleSelectedDate.getFullYear(), scheduleSelectedDate.getMonth(), scheduleSelectedDate.getDate(), h, m)
+          handleSend(scheduleDt.toISOString())
+          setShowScheduleDatePicker(false)
+        }
+
+        return (
+          <div className="compose-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowScheduleDatePicker(false) }}>
+            <div className="compose-schedule-picker-modal">
+              <h2>Select date and time</h2>
+
+              <div className="schedule-picker-body">
+                {/* Calendar */}
+                <div className="schedule-cal">
+                  <div className="schedule-cal-nav">
+                    <span className="schedule-cal-month">{MONTH_NAMES[scheduleCalMonth]} {scheduleCalYear}</span>
+                    <div className="schedule-cal-arrows">
+                      <button onClick={handlePrevMonth}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+                      </button>
+                      <button onClick={handleNextMonth}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="schedule-cal-grid">
+                    {DAY_LABELS.map((d, i) => (
+                      <div key={`label-${i}`} className="schedule-cal-day-label">{d}</div>
+                    ))}
+                    {calDays.map((item, i) => (
+                      <button
+                        key={i}
+                        className={`schedule-cal-day ${!item.current ? 'other-month' : ''} ${isToday(item.date) ? 'today' : ''} ${isSelected(item.date) ? 'selected' : ''} ${isPast(item.date) ? 'past' : ''}`}
+                        disabled={isPast(item.date)}
+                        onClick={() => setScheduleSelectedDate(item.date)}
+                      >
+                        {item.day}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Date and time inputs */}
+                <div className="schedule-picker-inputs">
+                  <div className="schedule-picker-input-group">
+                    <input type="text" className="schedule-picker-input" value={selectedDateStr} readOnly />
+                  </div>
+                  <div className="schedule-picker-input-group">
+                    <input type="time" className="schedule-picker-input" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="schedule-picker-actions">
+                <button className="compose-conf-cancel" onClick={() => setShowScheduleDatePicker(false)}>Cancel</button>
+                <button className="compose-conf-save" onClick={handleScheduleConfirm} disabled={!scheduleSelectedDate}>Schedule send</button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ═══════ CLOSE DIALOG ═══════ */}
       {showCloseDialog && (

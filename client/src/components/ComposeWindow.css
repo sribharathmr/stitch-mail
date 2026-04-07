@@ -297,28 +297,209 @@
   left: 0;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: var(--shadow-lg);
-  padding: 4px;
-  min-width: 240px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-xl);
+  padding: 8px 0;
+  min-width: 300px;
   z-index: 1020;
+}
+
+.schedule-header {
+  padding: 12px 20px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.schedule-tz {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .compose-schedule-menu button {
   width: 100%;
-  padding: 10px 16px;
+  padding: 12px 20px;
   text-align: left;
   background: none;
   border: none;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-primary);
-  border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .compose-schedule-menu button:hover { background: var(--bg-hover); }
+
+.schedule-label {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.schedule-date {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-left: auto;
+  padding-left: 16px;
+}
+
+.schedule-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* ═══════ Schedule Date Picker Modal ═══════ */
+.compose-schedule-picker-modal {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 28px 32px;
+  width: 560px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border);
+}
+
+.compose-schedule-picker-modal h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.schedule-picker-body {
+  display: flex;
+  gap: 28px;
+  margin-bottom: 24px;
+}
+
+.schedule-cal {
+  flex: 1;
+}
+
+.schedule-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.schedule-cal-month {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.schedule-cal-arrows {
+  display: flex;
+  gap: 4px;
+}
+
+.schedule-cal-arrows button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.schedule-cal-arrows button:hover { background: var(--bg-hover); }
+
+.schedule-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.schedule-cal-day-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 6px 0;
+}
+
+.schedule-cal-day {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s;
+}
+
+.schedule-cal-day:hover:not(:disabled) { background: var(--bg-hover); }
+.schedule-cal-day.other-month { color: var(--text-muted); opacity: 0.5; }
+.schedule-cal-day.past { color: var(--text-muted); opacity: 0.35; cursor: default; }
+
+.schedule-cal-day.today {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.schedule-cal-day.selected {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.schedule-cal-day.today:not(.selected) {
+  background: transparent;
+  color: var(--accent);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.schedule-picker-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 180px;
+  justify-content: flex-start;
+  padding-top: 36px;
+}
+
+.schedule-picker-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  outline: none;
+}
+
+.schedule-picker-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.15);
+}
+
+.schedule-picker-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 
 .compose-toolbar-actions {
   display: flex;
