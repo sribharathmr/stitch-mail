@@ -134,17 +134,33 @@ export default function InboxPage({ folder = 'inbox' }) {
     return emails
   }, [emails, activeAccount])
 
-  // Filter emails based on active tab
+  // Filter emails based on active tab and group by threadId
   const filteredEmails = useMemo(() => {
-    if (folder !== 'inbox') return activeEmails
-    if (activeTab === 'primary') {
-      // Primary: show emails that don't match any special tab labels
-      const allSpecialLabels = TABS.flatMap(t => t.labelMatch || [])
-      return activeEmails.filter(e => !emailMatchesTab(e, allSpecialLabels))
+    let emailsToDisplay = activeEmails;
+
+    if (folder === 'inbox') {
+      if (activeTab === 'primary') {
+        const allSpecialLabels = TABS.flatMap(t => t.labelMatch || [])
+        emailsToDisplay = activeEmails.filter(e => !emailMatchesTab(e, allSpecialLabels))
+      } else {
+        const tab = TABS.find(t => t.id === activeTab)
+        if (tab?.labelMatch) emailsToDisplay = activeEmails.filter(e => emailMatchesTab(e, tab.labelMatch))
+      }
     }
-    const tab = TABS.find(t => t.id === activeTab)
-    if (!tab?.labelMatch) return activeEmails
-    return activeEmails.filter(e => emailMatchesTab(e, tab.labelMatch))
+
+    // Group by threadId, effectively showing only the newest email per thread
+    const seenThreads = new Set()
+    return emailsToDisplay.filter(e => {
+      // If it has no threadId, it's a standalone email, so include it
+      if (!e.threadId) return true;
+      
+      // If we've already seen this threadId, skip this email (since emails are sorted newest first)
+      if (seenThreads.has(e.threadId)) return false;
+      
+      // Mark this thread as seen, keep the email
+      seenThreads.add(e.threadId);
+      return true;
+    });
   }, [activeEmails, activeTab, folder])
 
   const handleOpen = async (email) => {

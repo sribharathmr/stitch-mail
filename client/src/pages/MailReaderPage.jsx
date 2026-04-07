@@ -105,12 +105,15 @@ export default function MailReaderPage() {
   const handleDelete  = () => { deleteEmail(email._id); navigate('/inbox') }
   const handleStar    = () => starEmail(email._id, !email.isStarred)
   const handleReply   = () => dispatch({ type: 'OPEN_COMPOSE', payload: {
-    to: [email.from], subject: `Re: ${email.subject}`, bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\nDate: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}\n\n${email.bodyText || ''}`
+    to: email.from?.address ? [email.from.address] : [], subject: `Re: ${email.subject}`, bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\nDate: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}\n\n${email.bodyText || ''}`
   }})
   const handleReplyAll = () => {
-    const allRecipients = [email.from, ...(email.to || []), ...(email.cc || [])].filter(r => r?.address)
+    const allRecipients = [email.from, ...(email.to || []), ...(email.cc || [])]
+      .filter(r => r?.address)
+      .map(r => r.address);
     dispatch({ type: 'OPEN_COMPOSE', payload: {
-      to: [email.from], cc: allRecipients.filter(r => r.address !== email.from?.address),
+      to: email.from?.address ? [email.from.address] : [], 
+      cc: allRecipients.filter(addr => addr !== email.from?.address),
       subject: `Re: ${email.subject}`, bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\n\n${email.bodyText || ''}`
     }})
   }

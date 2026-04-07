@@ -137,11 +137,23 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
         const date = getHeader('Date');
 
         let bodyHtml = '', bodyText = '';
+        const attachments = [];
         const extractBody = (payload) => {
+          if (payload.filename && payload.body?.attachmentId) {
+            attachments.push({
+              filename: payload.filename,
+              mimetype: payload.mimeType || 'application/octet-stream',
+              size: payload.body?.size || 0,
+              // Generating a standard Gmail link to proxy the attachment safely
+              path: `https://mail.google.com/mail/u/0/?ui=2&ik=&view=att&th=${msg.id}&attid=${payload.partId}&disp=safe&realattid=${payload.partId}`
+            });
+          }
+
           if (payload.mimeType === 'text/html' && payload.body?.data)
             bodyHtml = Buffer.from(payload.body.data, 'base64url').toString('utf8');
           else if (payload.mimeType === 'text/plain' && payload.body?.data)
             bodyText = Buffer.from(payload.body.data, 'base64url').toString('utf8');
+            
           if (payload.parts) payload.parts.forEach(extractBody);
         };
         extractBody(full.data.payload);
@@ -161,6 +173,7 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
           subject: subject || '(No Subject)',
           body_html: bodyHtml,
           body_text: bodyText,
+          attachments,
           is_read: isRead,
           is_starred: isStarred,
           thread_id: full.data.threadId || '',
@@ -190,6 +203,7 @@ const mapEmail = (e) => ({
   to: e.to_addresses,
   bodyHtml: e.body_html,
   bodyText: e.body_text,
+  attachments: e.attachments,
   isRead: e.is_read,
   isStarred: e.is_starred,
   isScheduled: e.is_scheduled,
