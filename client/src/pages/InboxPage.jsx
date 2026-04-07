@@ -3,14 +3,22 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useUI } from '../context/UIContext'
 import { format, isToday, isYesterday } from 'date-fns'
-import { aiAPI } from '../api'
+import { aiAPI, settingsAPI } from '../api'
 import './InboxPage.css'
 
 const TABS = [
-  { id: 'primary', label: 'Primary' },
-  { id: 'social', label: 'Social', labelMatch: ['DRIBBBLE', 'GITHUB', 'SOCIAL'] },
-  { id: 'promotions', label: 'Promotions', labelMatch: ['NEWSLETTER', 'DESIGN WEEKLY', 'PROMOTIONS'] }
+  { id: 'primary', label: 'Primary', icon: '📥' },
+  { id: 'social', label: 'Social', icon: '👥', labelMatch: ['DRIBBBLE', 'GITHUB', 'SOCIAL', 'LINKEDIN', 'TWITTER', 'FACEBOOK', 'INSTAGRAM'] },
+  { id: 'promotions', label: 'Promotions', icon: '🏷️', labelMatch: ['NEWSLETTER', 'DESIGN WEEKLY', 'PROMOTIONS', 'MARKETING', 'OFFERS', 'DEALS'] },
+  { id: 'updates', label: 'Updates', icon: '🔔', labelMatch: ['UPDATES', 'NOTIFICATIONS', 'ALERTS', 'SECURITY'] }
 ]
+
+// Case-insensitive label matching helper
+const labelMatchesTab = (emailLabels, tabLabels) => {
+  if (!emailLabels || !tabLabels) return false
+  const upperTabLabels = tabLabels.map(l => l.toUpperCase())
+  return emailLabels.some(l => upperTabLabels.includes((l || '').toUpperCase()))
+}
 
 const UPCOMING_TASKS = [
   { id: 1, title: 'Review Q3 Budget', time: 'Today 3:00 PM', color: '#3B82F6' },
@@ -41,12 +49,28 @@ export default function InboxPage({ folder = 'inbox' }) {
   const { settings } = useUI()
   const [activeTab, setActiveTab] = useState('primary')
   const [categorizing, setCategorizing] = useState(false)
-  
-  const [tasks, setTasks] = useState(UPCOMING_TASKS.map(t => ({ ...t, completed: false })))
+  const [tasks, setTasks] = useState([])
+  const [hasLoadedTasks, setHasLoadedTasks] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState(null)
-  
+
+  useEffect(() => {
+    if (settings?.preferences && !hasLoadedTasks) {
+      setTasks(settings.preferences.tasks || UPCOMING_TASKS.map(t => ({ ...t, completed: false })))
+      setHasLoadedTasks(true)
+    }
+  }, [settings, hasLoadedTasks])
+
+  const saveTasks = async (newTasks) => {
+    setTasks(newTasks)
+    try {
+      await settingsAPI.update({ preferences: { ...settings?.preferences, tasks: newTasks } })
+    } catch (err) {
+      console.error('Failed to save tasks:', err)
+    }
+  }
+
   const handleTaskChange = (id, newTitle) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, title: newTitle } : t))
+    saveTasks(tasks.map(t => t.id === id ? { ...t, title: newTitle } : t))
   }
 
   const handleAddTask = () => {
@@ -57,16 +81,18 @@ export default function InboxPage({ folder = 'inbox' }) {
       color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
       completed: false
     }
-    setTasks([newTask, ...tasks])
+    const newTasks = [newTask, ...tasks]
+    setTasks(newTasks)
     setEditingTaskId(newTask.id)
+    saveTasks(newTasks)
   }
 
   const handleDeleteTask = (id) => {
-    setTasks(tasks.filter(t => t.id !== id))
+    saveTasks(tasks.filter(t => t.id !== id))
   }
 
   const handleToggleTask = (id) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
+    saveTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
   }
 
   const navigate = useNavigate()
@@ -96,17 +122,15 @@ export default function InboxPage({ folder = 'inbox' }) {
 
   // Filter emails based on active tab
   const filteredEmails = useMemo(() => {
-    if (folder !== 'inbox' || activeTab === 'primary') {
-      // Primary: show emails that don't match social/promotions labels
+    if (folder !== 'inbox') return activeEmails
+    if (activeTab === 'primary') {
+      // Primary: show emails that don't match any special tab labels
       const allSpecialLabels = TABS.flatMap(t => t.labelMatch || [])
-      if (activeTab === 'primary') {
-        return activeEmails.filter(e => !e.labels?.some(l => allSpecialLabels.includes(l)))
-      }
-      return activeEmails
+      return activeEmails.filter(e => !labelMatchesTab(e.labels, allSpecialLabels))
     }
     const tab = TABS.find(t => t.id === activeTab)
     if (!tab?.labelMatch) return activeEmails
-    return activeEmails.filter(e => e.labels?.some(l => tab.labelMatch.includes(l)))
+    return activeEmails.filter(e => labelMatchesTab(e.labels, tab.labelMatch))
   }, [activeEmails, activeTab, folder])
 
   const handleOpen = async (email) => {
@@ -161,8 +185,8 @@ export default function InboxPage({ folder = 'inbox' }) {
           <div className="inbox-tabs">
             {TABS.map(tab => {
               const badgeCount = tab.labelMatch
-                ? activeEmails.filter(e => !e.isRead && e.labels?.some(l => tab.labelMatch.includes(l))).length
-                : 0
+                ? activeEmails.filter(e => !e.isRead && labelMatchesTab(e.labels, tab.labelMatch)).length
+                : activeEmails.filter(e => !e.isRead && !labelMatchesTab(e.labels, TABS.flatMap(t => t.labelMatch || []))).length
               return (
               <button
                 key={tab.id}
@@ -170,6 +194,7 @@ export default function InboxPage({ folder = 'inbox' }) {
                 className={`inbox-tab ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
               >
+                {tab.icon && <span style={{ marginRight: 4 }}>{tab.icon}</span>}
                 {tab.label}
                 {badgeCount > 0 && <span className="tab-badge">{badgeCount}</span>}
               </button>

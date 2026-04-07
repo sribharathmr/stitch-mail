@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useUI } from '../context/UIContext'
@@ -9,6 +9,21 @@ export default function Topbar() {
   const { searchQuery, setSearchQuery, setMobileMenuOpen } = useUI()
   const navigate = useNavigate()
   const [localQ, setLocalQ] = useState(searchQuery)
+  const debounceRef = useRef(null)
+
+  // Real-time debounced search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      if (localQ.trim()) {
+        setSearchQuery(localQ)
+        navigate(`/search?q=${encodeURIComponent(localQ)}`)
+      } else if (localQ === '' && searchQuery) {
+        setSearchQuery('')
+      }
+    }, 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [localQ])
 
   const handleSearch = (e) => {
     e.preventDefault()

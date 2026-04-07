@@ -99,7 +99,7 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
 
   try {
     const gmail = getGmailClient(refreshToken);
-    const labelMap = { inbox: 'INBOX', sent: 'SENT', drafts: 'DRAFT', spam: 'SPAM', trash: 'TRASH' };
+    const labelMap = { inbox: 'INBOX', sent: 'SENT', drafts: 'DRAFT', spam: 'SPAM', trash: 'TRASH', starred: 'STARRED', archive: 'INBOX' };
     const labelId = labelMap[folder] || 'INBOX';
 
     const listRes = await gmail.users.messages.list({
@@ -319,7 +319,8 @@ exports.send = async (req, res) => {
     const { to, cc, bcc, subject, bodyHtml, bodyText } = req.body;
     const files = req.files || [];
     const attachments = files.map(f => ({
-      filename: f.originalname, mimetype: f.mimetype, size: f.size, path: `/uploads/${f.filename}`
+      filename: f.originalname, mimetype: f.mimetype, size: f.size,
+      path: f.path ? `/uploads/${f.filename}` : null
     }));
 
     const toArr = Array.isArray(to) ? to : JSON.parse(to || '[]');
@@ -352,6 +353,15 @@ exports.send = async (req, res) => {
     try {
       const fullUser = await getFullUser(req.user.id);
       const transporter = await getTransporter(fullUser);
+
+      // Build nodemailer attachments — handle both disk storage (path) and memory storage (buffer)
+      const mailAttachments = files.map(f => {
+        if (f.buffer) {
+          return { filename: f.originalname, content: f.buffer, contentType: f.mimetype };
+        }
+        return { filename: f.originalname, path: f.path };
+      });
+
       await transporter.sendMail({
         from: `"${req.user.name}" <${req.user.email}>`,
         to: toArr.map(t => t.address || t).join(', '),
@@ -360,7 +370,7 @@ exports.send = async (req, res) => {
         subject: subject || '(No Subject)',
         html: bodyHtml,
         text: bodyText,
-        attachments: files.map(f => ({ filename: f.originalname, path: f.path }))
+        attachments: mailAttachments
       });
       console.log(`✅ Email dispatched to ${toArr.map(t => t.address || t).join(', ')}`);
 

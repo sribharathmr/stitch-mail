@@ -13,7 +13,23 @@ const LABEL_COLORS = {
   'DESIGN TEAM': '#3B82F6', 'DESIGN DISCUSSION': '#3B82F6',
   'ALEX RIVERA': '#8B5CF6', 'URGENT: SERVER': '#EF4444',
   'DRIBBBLE': '#EC4899', 'GITHUB': '#0F172A',
-  'NEWSLETTER': '#10B981', 'DEFAULT': '#6366F1',
+  'NEWSLETTER': '#10B981', 'SOCIAL': '#8B5CF6',
+  'PROMOTIONS': '#F59E0B', 'PRIMARY': '#3B82F6',
+  'DEFAULT': '#6366F1',
+}
+
+const AVATAR_COLORS = ['#3B82F6','#8B5CF6','#EC4899','#10B981','#F59E0B','#EF4444','#06B6D4','#84CC16']
+function avatarColor(name = '') {
+  let h = 0; for (let c of name) h = c.charCodeAt(0) + ((h<<5)-h)
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]
+}
+
+// Check if an attachment is a media file (image/video)
+function isMediaAttachment(a) {
+  const mime = (a.mimetype || '').toLowerCase()
+  const fname = (a.filename || '').toLowerCase()
+  return mime.startsWith('image/') || mime.startsWith('video/') ||
+    /\.(jpg|jpeg|png|gif|webp|svg|bmp|mp4|webm|mov)$/.test(fname)
 }
 
 export default function MailReaderPage() {
@@ -22,15 +38,45 @@ export default function MailReaderPage() {
   const { activeEmail, dispatch, emails, openEmail, starEmail, moveEmail, deleteEmail } = useEmail()
   const [insights, setInsights] = useState(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [threadEmails, setThreadEmails] = useState([])
+  const [showThread, setShowThread] = useState(true)
+  const [expandedThreadIds, setExpandedThreadIds] = useState(new Set())
 
   useEffect(() => {
     setInsights(null)
+    setThreadEmails([])
     if (id && (!activeEmail || activeEmail._id !== id)) {
       emailAPI.get(id)
-        .then(res => dispatch({ type: 'SET_ACTIVE', payload: res.data.email }))
+        .then(res => {
+          dispatch({ type: 'SET_ACTIVE', payload: res.data.email })
+          // Fetch thread if threadId exists
+          if (res.data.email?.threadId) {
+            fetchThread(res.data.email.threadId)
+          }
+        })
         .catch(() => navigate('/inbox'))
+    } else if (activeEmail?.threadId) {
+      fetchThread(activeEmail.threadId)
     }
   }, [id])
+
+  const fetchThread = async (threadId) => {
+    try {
+      // Search for all emails with same threadId from the emails list
+      const res = await emailAPI.list({ folder: 'inbox', limit: 50 })
+      const allEmails = res.data.emails || []
+      const thread = allEmails.filter(e => e.threadId === threadId || e._id === id)
+      // Sort chronologically
+      thread.sort((a, b) => new Date(a.receivedAt || a.createdAt) - new Date(b.receivedAt || b.createdAt))
+      if (thread.length > 1) {
+        setThreadEmails(thread)
+        // Expand the current email by default
+        setExpandedThreadIds(new Set([id]))
+      }
+    } catch (err) {
+      console.error('Failed to fetch thread:', err)
+    }
+  }
 
   if (!activeEmail) {
     return (
@@ -50,11 +96,26 @@ export default function MailReaderPage() {
   const email = activeEmail
   const labelColor = email.labels?.[0] ? LABEL_COLORS[email.labels[0]] || LABEL_COLORS.DEFAULT : null
 
+  // Collect media attachments from current email and thread
+  const allAttachments = email.attachments || []
+  const mediaAttachments = allAttachments.filter(isMediaAttachment)
+  const docAttachments = allAttachments.filter(a => !isMediaAttachment(a))
+
   const handleArchive = () => { moveEmail(email._id, 'archive'); navigate('/inbox') }
   const handleDelete  = () => { deleteEmail(email._id); navigate('/inbox') }
   const handleStar    = () => starEmail(email._id, !email.isStarred)
   const handleReply   = () => dispatch({ type: 'OPEN_COMPOSE', payload: {
-    to: [email.from], subject: `Re: ${email.subject}`
+    to: [email.from], subject: `Re: ${email.subject}`, bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\nDate: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}\n\n${email.bodyText || ''}`
+  }})
+  const handleReplyAll = () => {
+    const allRecipients = [email.from, ...(email.to || []), ...(email.cc || [])].filter(r => r?.address)
+    dispatch({ type: 'OPEN_COMPOSE', payload: {
+      to: [email.from], cc: allRecipients.filter(r => r.address !== email.from?.address),
+      subject: `Re: ${email.subject}`, bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\n\n${email.bodyText || ''}`
+    }})
+  }
+  const handleForward = () => dispatch({ type: 'OPEN_COMPOSE', payload: {
+    subject: `Fwd: ${email.subject}`, bodyText: `\n\n--- Forwarded Message ---\nFrom: ${email.from?.name || email.from?.address}\nTo: ${email.to?.map(t => t.address).join(', ')}\nDate: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}\n\n${email.bodyText || ''}`
   }})
 
   const handleAnalyze = async () => {
@@ -69,6 +130,15 @@ export default function MailReaderPage() {
     } finally {
       setIsAnalyzing(false)
     }
+  }
+
+  const toggleThreadExpand = (emailId) => {
+    setExpandedThreadIds(prev => {
+      const next = new Set(prev)
+      if (next.has(emailId)) next.delete(emailId)
+      else next.add(emailId)
+      return next
+    })
   }
 
   return (
@@ -163,18 +233,97 @@ export default function MailReaderPage() {
           </div>
         )}
 
+        {/* Thread indicator */}
+        {threadEmails.length > 1 && (
+          <div className="reader-thread-bar" style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
+            background: 'var(--bg-hover)', borderRadius: 8, marginBottom: 16,
+            border: '1px solid var(--border)', cursor: 'pointer'
+          }} onClick={() => setShowThread(!showThread)}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>
+              {threadEmails.length} messages in this conversation
+            </span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+              style={{ marginLeft: 'auto', transform: showThread ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+        )}
+
+        {/* Thread conversation view */}
+        {showThread && threadEmails.length > 1 && (
+          <div style={{ marginBottom: 20 }}>
+            {threadEmails.map((tEmail, idx) => {
+              const isExpanded = expandedThreadIds.has(tEmail._id)
+              const isCurrent = tEmail._id === email._id
+              return (
+                <div key={tEmail._id} style={{
+                  border: '1px solid var(--border)',
+                  borderRadius: 10, marginBottom: 8,
+                  background: isCurrent ? 'rgba(59,130,246,0.04)' : 'var(--bg-card)',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
+                    cursor: 'pointer', userSelect: 'none'
+                  }} onClick={() => toggleThreadExpand(tEmail._id)}>
+                    <div className="avatar avatar-sm" style={{
+                      background: avatarColor(tEmail.from?.name || tEmail.from?.address || ''),
+                      color: '#fff', fontSize: 10, flexShrink: 0
+                    }}>
+                      {getInitials(tEmail.from?.name || tEmail.from?.address || '')}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: tEmail.isRead === false ? 700 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {tEmail.from?.name || tEmail.from?.address}
+                        {isCurrent && <span style={{ fontSize: 10, color: '#3B82F6', fontWeight: 700, marginLeft: 6 }}>CURRENT</span>}
+                      </div>
+                      {!isExpanded && (
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {tEmail.bodyText?.slice(0, 80) || ''}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      {tEmail.receivedAt ? format(new Date(tEmail.receivedAt), 'MMM d, h:mm a') : ''}
+                    </div>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                      style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>
+                      <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                  </div>
+                  {isExpanded && (
+                    <div style={{ padding: '0 14px 14px', borderTop: '1px solid var(--border)' }}>
+                      <div style={{ padding: '12px 0', fontSize: 14, lineHeight: 1.7 }}>
+                        {tEmail.bodyHtml ? (
+                          <div dangerouslySetInnerHTML={{ __html: tEmail.bodyHtml }} />
+                        ) : (
+                          <pre style={{ fontFamily: 'inherit', whiteSpace: 'pre-wrap', fontSize: 14 }}>{tEmail.bodyText}</pre>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         {/* Subject */}
         <h1 className="reader-subject">{email.subject}</h1>
 
         {/* Sender info */}
         <div className="reader-sender-row">
-          <div className="avatar avatar-lg" style={{ background: '#3B82F6', color: '#fff' }}>
-            {getInitials(email.from.name || email.from.address)}
+          <div className="avatar avatar-lg" style={{ background: avatarColor(email.from?.name || email.from?.address || ''), color: '#fff' }}>
+            {getInitials(email.from?.name || email.from?.address || '')}
           </div>
           <div className="reader-sender-info">
-            <div className="reader-sender-name">{email.from.name || email.from.address}</div>
+            <div className="reader-sender-name">{email.from?.name || email.from?.address}</div>
             <div className="reader-sender-addr">
-              {email.from.address}
+              {email.from?.address}
               {email.to?.length > 0 && <span style={{ color: 'var(--text-muted)' }}> → {email.to.map(t => t.address).join(', ')}</span>}
             </div>
           </div>
@@ -185,23 +334,60 @@ export default function MailReaderPage() {
 
         <div className="divider" style={{ margin: '16px 0' }} />
 
-        {/* Body */}
-        <div className="reader-body">
-          {email.bodyHtml ? (
-            <div dangerouslySetInnerHTML={{ __html: email.bodyHtml }} />
-          ) : (
-            <pre style={{ fontFamily: 'inherit', whiteSpace: 'pre-wrap', fontSize: 14 }}>{email.bodyText}</pre>
-          )}
-        </div>
+        {/* Body — only show if not in thread mode or thread has <= 1 email */}
+        {(threadEmails.length <= 1) && (
+          <div className="reader-body">
+            {email.bodyHtml ? (
+              <div dangerouslySetInnerHTML={{ __html: email.bodyHtml }} />
+            ) : (
+              <pre style={{ fontFamily: 'inherit', whiteSpace: 'pre-wrap', fontSize: 14 }}>{email.bodyText}</pre>
+            )}
+          </div>
+        )}
 
-        {/* Attachments */}
-        {email.attachments?.length > 0 && (
+        {/* Media Gallery */}
+        {mediaAttachments.length > 0 && (
+          <div style={{ marginTop: 20, marginBottom: 20 }}>
+            <h4 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              </svg>
+              Media Received ({mediaAttachments.length})
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+              {mediaAttachments.map((a, i) => (
+                <a key={i} href={a.path || '#'} target="_blank" rel="noopener noreferrer" download
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                    padding: 10, background: 'var(--bg-hover)', borderRadius: 10,
+                    border: '1px solid var(--border)', textDecoration: 'none', color: 'inherit',
+                    transition: 'border-color 0.2s'
+                  }}>
+                  <div style={{
+                    width: '100%', paddingTop: '75%', borderRadius: 6, overflow: 'hidden',
+                    background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
+                  }}>
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
+                      {(a.mimetype || '').startsWith('video/') ? '🎬' : '🖼️'}
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, textAlign: 'center', wordBreak: 'break-all' }}>{a.filename}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{a.size ? `${(a.size/1024).toFixed(0)}KB` : ''}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Document Attachments */}
+        {docAttachments.length > 0 && (
           <div className="reader-attachments">
             <h4 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Attachments ({email.attachments.length})
+              Attachments ({docAttachments.length})
             </h4>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-              {email.attachments.map((a, i) => (
+              {docAttachments.map((a, i) => (
                 <a key={i} href={a.path} download className="attachment-pill">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
@@ -215,16 +401,21 @@ export default function MailReaderPage() {
           </div>
         )}
 
-        {/* Quick reply */}
-        <div className="reader-quick-reply">
-          <button className="btn btn-secondary" onClick={handleReply} id="reader-quick-reply">
+        {/* Quick reply actions */}
+        <div className="reader-quick-reply" style={{ display: 'flex', gap: 8, marginTop: 24 }}>
+          <button className="btn btn-primary" onClick={handleReply} id="reader-quick-reply" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/>
             </svg>
-            Reply
+            Reply to {email.from?.name || email.from?.address}
           </button>
-          <button className="btn btn-secondary" id="reader-forward"
-            onClick={() => dispatch({ type: 'OPEN_COMPOSE', payload: { subject: `Fwd: ${email.subject}`, bodyText: email.bodyText }})}>
+          <button className="btn btn-secondary" onClick={handleReplyAll} id="reader-reply-all">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/>
+            </svg>
+            Reply All
+          </button>
+          <button className="btn btn-secondary" id="reader-forward" onClick={handleForward}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 014-4h12"/>
             </svg>

@@ -109,10 +109,6 @@ export default function Sidebar() {
             <span className="nav-icon">🌳</span>
             <span className="nav-label">Structured Inbox</span>
           </NavLink>
-          <NavLink to="/search" id="nav-search" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`} onClick={handleNavClick}>
-            <span className="nav-icon">🔍</span>
-            <span className="nav-label">Search</span>
-          </NavLink>
           <NavLink to="/subscriptions" id="nav-subscriptions" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`} onClick={handleNavClick}>
             <span className="nav-icon" style={{ color: 'var(--accent)' }}>✨</span>
             <span className="nav-label">Smart Unsubscribe</span>
