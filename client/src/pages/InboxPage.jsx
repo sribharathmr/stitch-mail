@@ -8,17 +8,30 @@ import './InboxPage.css'
 
 const TABS = [
   { id: 'primary', label: 'Primary', icon: '📥' },
-  { id: 'social', label: 'Social', icon: '👥', labelMatch: ['DRIBBBLE', 'GITHUB', 'SOCIAL', 'LINKEDIN', 'TWITTER', 'X', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST'] },
-  { id: 'promotions', label: 'Promotions', icon: '🏷️', labelMatch: ['NEWSLETTER', 'DESIGN WEEKLY', 'PROMOTIONS', 'MARKETING', 'OFFERS', 'DEALS', 'DISCOUNT', 'SALE', 'NPTEL'] },
-  { id: 'updates', label: 'Updates', icon: '🔔', labelMatch: ['UPDATES', 'NOTIFICATIONS', 'ALERTS', 'SECURITY', 'PASSWORD', 'RESET', 'GOOGLE ONE'] }
+  { id: 'social', label: 'Social', icon: '👥', labelMatch: ['DRIBBBLE', 'GITHUB', 'SOCIAL', 'LINKEDIN', 'TWITTER', 'X.COM', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST'] },
+  { id: 'promotions', label: 'Promotions', icon: '🏷️', labelMatch: ['NEWSLETTER', 'PROMOTION', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION'] },
+  { id: 'updates', label: 'Updates', icon: '🔔', labelMatch: ['UPDATE', 'NOTIFICATION', 'ALERT', 'SECURITY', 'PASSWORD', 'RESET', 'RECEIPT', 'ORDER'] }
 ]
 
-// Only match emails that have been explicitly categorized with labels by the AI
 const emailMatchesTab = (email, tabLabels) => {
-  if (!tabLabels) return false
-  if (!email.labels || email.labels.length === 0) return false
-  const upperTabLabels = tabLabels.map(l => l.toUpperCase())
-  return email.labels.some(l => upperTabLabels.includes((l || '').toUpperCase()))
+  if (!tabLabels) return false;
+  const upperTabLabels = tabLabels.map(l => l.toUpperCase());
+  
+  // 1. Check strict labels array from AI categorization
+  if (email.labels && email.labels.some(l => upperTabLabels.includes((l || '').toUpperCase()))) {
+    return true;
+  }
+
+  // 2. Fallback: Check sender name/email and subject for whole-word keyword matches
+  const textToSearch = [
+    email.from?.name,
+    email.from?.address,
+    email.subject
+  ].filter(Boolean).join(' ').toUpperCase();
+
+  // Tokenize text into words to prevent partial matches like 'X' in 'TAX'
+  const words = textToSearch.split(/[\s@.,<>-]+/);
+  return upperTabLabels.some(keyword => words.includes(keyword));
 }
 
 const UPCOMING_TASKS = [
