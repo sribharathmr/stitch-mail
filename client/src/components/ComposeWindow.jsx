@@ -217,8 +217,13 @@ export default function ComposeWindow({ windowState, index }) {
           <div className="compose-attachments-list">
             {hook.attachments.map((f, i) => (
               <div key={i} className="compose-attachment-row">
-                <div className="compose-attachment-info"><span>{getFileIcon(f.type, f.name)}</span> {f.name}</div>
-                <button onClick={() => hook.setAttachments(hook.attachments.filter((_, idx) => idx !== i))}>✕</button>
+                <div className="compose-attachment-info">
+                  <span className="compose-attachment-icon">{getFileIcon(f.type, f.name)}</span> 
+                  <span className="compose-attachment-name">{f.name}</span>
+                </div>
+                <button className="compose-attachment-btn" onClick={() => hook.setAttachments(hook.attachments.filter((_, idx) => idx !== i))}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
               </div>
             ))}
           </div>
