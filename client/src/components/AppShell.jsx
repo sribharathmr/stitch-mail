@@ -24,7 +24,7 @@ export default function AppShell() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [composeOpen, dispatch])
+  }, [composeWindows, dispatch])
   return (
     <div className="app-shell">
       <Sidebar />
