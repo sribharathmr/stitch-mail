@@ -2,20 +2,20 @@ import { Outlet } from 'react-router-dom'
 import { useEffect } from 'react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
-import ComposeModal from './ComposeModal'
+import ComposeWindow from './ComposeWindow'
 import { useEmail } from '../context/EmailContext'
 import './AppShell.css'
 
 export default function AppShell() {
-  const { composeOpen, dispatch } = useEmail()
+  const { composeWindows, dispatch } = useEmail()
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Don't fire if typing in an input, textarea, or contenteditable
       const tag = e.target.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return
-      // Don't fire if compose is already open or modifier keys are pressed
-      if (composeOpen || e.ctrlKey || e.metaKey || e.altKey) return
+      // Don't fire if modifier keys are pressed
+      if (e.ctrlKey || e.metaKey || e.altKey) return
 
       if (e.key === 'c' || e.key === 'C') {
         e.preventDefault()
@@ -34,7 +34,9 @@ export default function AppShell() {
           <Outlet />
         </div>
       </div>
-      {composeOpen && <ComposeModal />}
+      {composeWindows.map((win, idx) => (
+        <ComposeWindow key={win.id} windowState={win} index={idx} />
+      ))}
     </div>
   )
 }

@@ -13,8 +13,7 @@ const initialState = {
   loading: false,
   unreadCount: 0,
   folder: 'inbox',
-  composeOpen: false,
-  composeDraft: { to: [], cc: [], bcc: [], subject: '', bodyHtml: '', bodyText: '', attachments: [] },
+  composeWindows: [], // Array of { id, to, cc, bcc, subject, bodyHtml, bodyText, attachments } 
 }
 
 function reducer(state, action) {
@@ -27,9 +26,25 @@ function reducer(state, action) {
     case 'SET_ACTIVE': return { ...state, activeEmail: action.payload }
     case 'UPDATE_EMAIL': return { ...state, emails: state.emails.map(e => e._id === action.payload._id ? action.payload : e), activeEmail: state.activeEmail?._id === action.payload._id ? action.payload : state.activeEmail }
     case 'REMOVE_EMAIL': return { ...state, emails: state.emails.filter(e => e._id !== action.payload), activeEmail: state.activeEmail?._id === action.payload ? null : state.activeEmail }
-    case 'OPEN_COMPOSE': return { ...state, composeOpen: true, composeDraft: action.payload ?? state.composeDraft }
-    case 'CLOSE_COMPOSE': return { ...state, composeOpen: false, composeDraft: initialState.composeDraft }
-    case 'SET_DRAFT': return { ...state, composeDraft: { ...state.composeDraft, ...action.payload } }
+    case 'OPEN_COMPOSE': {
+      if (state.composeWindows.length >= 3) {
+        alert('Max 3 compose windows allowed.');
+        return state;
+      }
+      const newWindow = {
+        id: Date.now().toString(),
+        to: [], cc: [], bcc: [], subject: '', bodyHtml: '', bodyText: '', attachments: [],
+        ...action.payload
+      };
+      return { ...state, composeWindows: [...state.composeWindows, newWindow] };
+    }
+    case 'CLOSE_COMPOSE': 
+      return { ...state, composeWindows: state.composeWindows.filter(w => w.id !== action.payload) };
+    case 'UPDATE_COMPOSE':
+      return { 
+        ...state, 
+        composeWindows: state.composeWindows.map(w => w.id === action.payload.id ? { ...w, ...action.payload.updates } : w) 
+      };
     case 'SET_UNREAD': return { ...state, unreadCount: action.payload }
     default: return state
   }
