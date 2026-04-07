@@ -102,29 +102,44 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
     const labelMap = { inbox: 'INBOX', sent: 'SENT', drafts: 'DRAFT', spam: 'SPAM', trash: 'TRASH', starred: 'STARRED', archive: 'INBOX' };
     const labelId = labelMap[folder] || 'INBOX';
 
-    const listRes = await gmail.users.messages.list({
-      userId: 'me', labelIds: [labelId], maxResults: 30,
-    });
+    // Paginate through Gmail to get more messages
+    let allMessages = [];
+    let pageToken = undefined;
+    const MAX_PAGES = 5; // Up to 5 pages × 100 = 500 messages max
+    for (let pg = 0; pg < MAX_PAGES; pg++) {
+      const listRes = await gmail.users.messages.list({
+        userId: 'me', labelIds: [labelId], maxResults: 100,
+        ...(pageToken ? { pageToken } : {}),
+      });
+      const msgs = listRes.data.messages || [];
+      allMessages = allMessages.concat(msgs);
+      pageToken = listRes.data.nextPageToken;
+      if (!pageToken || msgs.length === 0) break;
+    }
 
-    const messages = listRes.data.messages || [];
+    const messages = allMessages;
     if (messages.length === 0) return;
 
     // Find which messages we already have
-    const messageIds = messages.map(m => m.id);
-    const { data: existing } = await supabase
-      .from('emails')
-      .select('message_id')
-      .eq('user_id', userId)
-      .in('message_id', messageIds);
+    // Supabase IN filter has a limit, so batch check in chunks of 100
+    const existingSet = new Set();
+    for (let i = 0; i < messages.length; i += 100) {
+      const chunk = messages.slice(i, i + 100).map(m => m.id);
+      const { data: existing } = await supabase
+        .from('emails')
+        .select('message_id')
+        .eq('user_id', userId)
+        .in('message_id', chunk);
+      (existing || []).forEach(e => existingSet.add(e.message_id));
+    }
 
-    const existingSet = new Set((existing || []).map(e => e.message_id));
     const newMessages = messages.filter(m => !existingSet.has(m.id));
 
     if (newMessages.length === 0) return;
     console.log(`📬 Syncing ${newMessages.length} new emails from Gmail (${folder})`);
 
     const emailRows = [];
-    for (const msg of newMessages.slice(0, 20)) {
+    for (const msg of newMessages) {
       try {
         const full = await gmail.users.messages.get({ userId: 'me', id: msg.id, format: 'full' });
         const headers = full.data.payload?.headers || [];
@@ -186,9 +201,15 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
     }
 
     if (emailRows.length > 0) {
-      const { error } = await supabase.from('emails').insert(emailRows);
-      if (error) console.error('Insert error:', error.message);
-      else console.log(`✅ Synced ${emailRows.length} emails into Supabase`);
+      // Insert in batches of 50 to avoid payload limits
+      let inserted = 0;
+      for (let i = 0; i < emailRows.length; i += 50) {
+        const batch = emailRows.slice(i, i + 50);
+        const { error } = await supabase.from('emails').insert(batch);
+        if (error) console.error('Insert error (batch):', error.message);
+        else inserted += batch.length;
+      }
+      console.log(`✅ Synced ${inserted} emails into Supabase`);
     }
   } catch (err) {
     console.error('Gmail sync error:', err.message);
@@ -229,7 +250,7 @@ exports.sync = async (req, res) => {
 // GET /api/emails
 exports.list = async (req, res) => {
   try {
-    const { folder = 'inbox', page = 1, limit = 20 } = req.query;
+    const { folder = 'inbox', page = 1, limit = 100 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     const lim = parseInt(limit);
 

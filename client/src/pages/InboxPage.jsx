@@ -13,25 +13,12 @@ const TABS = [
   { id: 'updates', label: 'Updates', icon: '🔔', labelMatch: ['UPDATES', 'NOTIFICATIONS', 'ALERTS', 'SECURITY', 'PASSWORD', 'RESET', 'GOOGLE ONE'] }
 ]
 
-// Case-insensitive matcher that checks labels, sender, and subject
+// Only match emails that have been explicitly categorized with labels by the AI
 const emailMatchesTab = (email, tabLabels) => {
   if (!tabLabels) return false
+  if (!email.labels || email.labels.length === 0) return false
   const upperTabLabels = tabLabels.map(l => l.toUpperCase())
-  
-  // 1. Check labels array
-  if (email.labels && email.labels.some(l => upperTabLabels.includes((l || '').toUpperCase()))) {
-    return true
-  }
-
-  // 2. Check sender name/email and subject for keywords
-  const textToSearch = [
-    email.from?.name,
-    email.from?.address,
-    email.subject
-  ].filter(Boolean).map(s => s.toUpperCase()).join(' ')
-
-  // If any keyword appears inside the text
-  return upperTabLabels.some(keyword => textToSearch.includes(keyword))
+  return email.labels.some(l => upperTabLabels.includes((l || '').toUpperCase()))
 }
 
 const UPCOMING_TASKS = [
