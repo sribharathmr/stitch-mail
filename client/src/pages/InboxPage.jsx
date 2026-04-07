@@ -8,16 +8,30 @@ import './InboxPage.css'
 
 const TABS = [
   { id: 'primary', label: 'Primary', icon: '📥' },
-  { id: 'social', label: 'Social', icon: '👥', labelMatch: ['DRIBBBLE', 'GITHUB', 'SOCIAL', 'LINKEDIN', 'TWITTER', 'FACEBOOK', 'INSTAGRAM'] },
-  { id: 'promotions', label: 'Promotions', icon: '🏷️', labelMatch: ['NEWSLETTER', 'DESIGN WEEKLY', 'PROMOTIONS', 'MARKETING', 'OFFERS', 'DEALS'] },
-  { id: 'updates', label: 'Updates', icon: '🔔', labelMatch: ['UPDATES', 'NOTIFICATIONS', 'ALERTS', 'SECURITY'] }
+  { id: 'social', label: 'Social', icon: '👥', labelMatch: ['DRIBBBLE', 'GITHUB', 'SOCIAL', 'LINKEDIN', 'TWITTER', 'X', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST'] },
+  { id: 'promotions', label: 'Promotions', icon: '🏷️', labelMatch: ['NEWSLETTER', 'DESIGN WEEKLY', 'PROMOTIONS', 'MARKETING', 'OFFERS', 'DEALS', 'DISCOUNT', 'SALE', 'NPTEL'] },
+  { id: 'updates', label: 'Updates', icon: '🔔', labelMatch: ['UPDATES', 'NOTIFICATIONS', 'ALERTS', 'SECURITY', 'PASSWORD', 'RESET', 'GOOGLE ONE'] }
 ]
 
-// Case-insensitive label matching helper
-const labelMatchesTab = (emailLabels, tabLabels) => {
-  if (!emailLabels || !tabLabels) return false
+// Case-insensitive matcher that checks labels, sender, and subject
+const emailMatchesTab = (email, tabLabels) => {
+  if (!tabLabels) return false
   const upperTabLabels = tabLabels.map(l => l.toUpperCase())
-  return emailLabels.some(l => upperTabLabels.includes((l || '').toUpperCase()))
+  
+  // 1. Check labels array
+  if (email.labels && email.labels.some(l => upperTabLabels.includes((l || '').toUpperCase()))) {
+    return true
+  }
+
+  // 2. Check sender name/email and subject for keywords
+  const textToSearch = [
+    email.from?.name,
+    email.from?.address,
+    email.subject
+  ].filter(Boolean).map(s => s.toUpperCase()).join(' ')
+
+  // If any keyword appears inside the text
+  return upperTabLabels.some(keyword => textToSearch.includes(keyword))
 }
 
 const UPCOMING_TASKS = [
@@ -126,11 +140,11 @@ export default function InboxPage({ folder = 'inbox' }) {
     if (activeTab === 'primary') {
       // Primary: show emails that don't match any special tab labels
       const allSpecialLabels = TABS.flatMap(t => t.labelMatch || [])
-      return activeEmails.filter(e => !labelMatchesTab(e.labels, allSpecialLabels))
+      return activeEmails.filter(e => !emailMatchesTab(e, allSpecialLabels))
     }
     const tab = TABS.find(t => t.id === activeTab)
     if (!tab?.labelMatch) return activeEmails
-    return activeEmails.filter(e => labelMatchesTab(e.labels, tab.labelMatch))
+    return activeEmails.filter(e => emailMatchesTab(e, tab.labelMatch))
   }, [activeEmails, activeTab, folder])
 
   const handleOpen = async (email) => {
@@ -185,8 +199,8 @@ export default function InboxPage({ folder = 'inbox' }) {
           <div className="inbox-tabs">
             {TABS.map(tab => {
               const badgeCount = tab.labelMatch
-                ? activeEmails.filter(e => !e.isRead && labelMatchesTab(e.labels, tab.labelMatch)).length
-                : activeEmails.filter(e => !e.isRead && !labelMatchesTab(e.labels, TABS.flatMap(t => t.labelMatch || []))).length
+                ? activeEmails.filter(e => !e.isRead && emailMatchesTab(e, tab.labelMatch)).length
+                : activeEmails.filter(e => !e.isRead && !emailMatchesTab(e, TABS.flatMap(t => t.labelMatch || []))).length
               return (
               <button
                 key={tab.id}
