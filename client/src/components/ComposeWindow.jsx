@@ -230,13 +230,67 @@ export default function ComposeWindow({ windowState, index }) {
         )}
 
         <div className="compose-bottom-toolbar">
-          <button className="compose-btn-primary" onClick={() => handleSend()}>Send</button>
-          <div style={{ display: 'flex', gap: '8px', marginLeft: '12px' }}>
-             <button className="compose-tool-btn" onClick={() => fileRef.current?.click()}>📎</button>
-             <button className="compose-tool-btn">🔗</button>
-             <button className="compose-tool-btn">😊</button>
+          <div className="compose-send-group">
+            <button className="compose-btn-primary" onClick={() => handleSend()}>Send</button>
+            <button className="compose-btn-primary-dropdown" onClick={() => setShowScheduleMenu(!showScheduleMenu)}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            {showScheduleMenu && (
+              <div className="compose-schedule-menu">
+                <button onClick={() => { handleSend(new Date(Date.now() + 86400000).toISOString()); setShowScheduleMenu(false); }}>Schedule send for tomorrow</button>
+              </div>
+            )}
           </div>
-          <button className="compose-tool-btn" style={{ marginLeft: 'auto' }} onClick={() => handleCloseAction('discard')}>🗑️</button>
+          
+          <div className="compose-toolbar-actions" style={{ marginLeft: 12 }}>
+            <button className="compose-tool-btn" style={{ fontWeight: 700, fontFamily: 'serif', fontSize: 13 }} title="Formatting options">Aa</button>
+            
+            <button className="compose-tool-btn" title="Help me write" onClick={() => setIntent('Review carefully')} >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            </button>
+            
+            <button className="compose-tool-btn" onClick={() => fileRef.current?.click()} title="Attach files">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+
+            <button className="compose-tool-btn" onClick={() => {
+              const url = window.prompt('Enter link URL:')
+              if (url) applyFormat('createLink', url)
+            }} title="Insert link">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+            </button>
+            
+            <button className="compose-tool-btn" onClick={() => {
+              const emoji = window.prompt('Paste an emoji:', '😊')
+              if (emoji) applyFormat('insertText', emoji)
+            }} title="Insert emoji">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </button>
+
+            <button className="compose-tool-btn" onClick={() => fileRef.current?.click()} title="Insert files using Drive">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><polygon points="12 2 2 20 22 20"/></svg>
+            </button>
+
+            <button className="compose-tool-btn" onClick={() => fileRef.current?.click()} title="Insert photo">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </button>
+
+            <button className="compose-tool-btn" onClick={() => alert('Confidential Mode coming soon')} title="Toggle confidential mode">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="2"/></svg>
+            </button>
+
+            <button className="compose-tool-btn" onClick={() => alert('Insert Signature feature coming soon')} title="Insert signature">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </button>
+
+            <button className="compose-tool-btn" title="More options">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            </button>
+          </div>
+          
+          <button className="compose-tool-btn" style={{ marginLeft: 'auto' }} onClick={() => handleCloseAction('discard')} title="Discard draft">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
         </div>
       </div>
 

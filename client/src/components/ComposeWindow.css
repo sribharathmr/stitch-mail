@@ -207,13 +207,74 @@
   gap: 12px;
 }
 
+.compose-send-group {
+  display: flex;
+  align-items: center;
+  background: var(--accent);
+  border-radius: 18px;
+  position: relative;
+}
+
 .compose-btn-primary {
   height: 36px;
-  background: var(--accent);
+  background: transparent;
   color: #fff;
-  border-radius: 18px;
-  padding: 0 20px;
+  border: none;
+  padding: 0 16px 0 20px;
   font-weight: 600;
+  cursor: pointer;
+  border-radius: 18px 0 0 18px;
+}
+
+.compose-btn-primary:hover { background: rgba(0,0,0,0.1); }
+
+.compose-btn-primary-dropdown {
+  height: 36px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #fff;
+  border: none;
+  border-left: 1px solid rgba(255,255,255,0.3);
+  border-radius: 0 18px 18px 0;
+  cursor: pointer;
+}
+
+.compose-btn-primary-dropdown:hover { background: rgba(0,0,0,0.1); }
+
+.compose-schedule-menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  padding: 4px;
+  min-width: 160px;
+  z-index: 1020;
+}
+
+.compose-schedule-menu button {
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: var(--text-primary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.compose-schedule-menu button:hover { background: var(--bg-hover); }
+
+.compose-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .compose-tool-btn {
