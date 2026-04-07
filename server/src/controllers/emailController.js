@@ -219,12 +219,12 @@ exports.list = async (req, res) => {
     const offset = (parseInt(page) - 1) * parseInt(limit);
     const lim = parseInt(limit);
 
-    // Non-blocking background sync for Google users on first page
+    // Sync for Google users on first page
     if (parseInt(page) === 1) {
       const fullUser = await getFullUser(req.user.id);
       if (fullUser?.google_tokens?.refreshToken) {
-        // Fire and forget — don't block the response
-        syncGmailEmails(req.user.id, fullUser.google_tokens.refreshToken, folder)
+        // Await the sync so that if a folder is empty in DB, it fetches and returns them immediately
+        await syncGmailEmails(req.user.id, fullUser.google_tokens.refreshToken, folder)
           .catch(err => console.error('Background sync error:', err.message));
       }
     }
