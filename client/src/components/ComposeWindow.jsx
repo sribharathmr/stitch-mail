@@ -44,7 +44,7 @@ export default function ComposeWindow({ windowState, index }) {
   const [tone, setTone] = useState('Professional')
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const rightOffset = hook.isExpanded ? 0 : 24 + (index * 564)
+  const rightOffset = hook.isExpanded ? 0 : 24 + (index * 664)
   
   const handleCloseClick = () => {
     if (hook.hasChanges()) {
