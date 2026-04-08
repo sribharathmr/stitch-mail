@@ -23,11 +23,13 @@ export default function AccountsPage() {
 
   useEffect(() => { fetchEmails('inbox') }, [])
 
+  const [activeAccountIds, setActiveAccountIds] = useState(['work', 'personal', 'projects'])
+
   const accounts = [
     { id: 'work', type: 'WORK', name: user?.name || 'David Chen', email: user?.email || 'david.chen@atelier.com', unread: unreadCount, urgent: emails.filter(e => e.labels?.includes('URGENT: SERVER')).length, status: 'active', color: '#3B82F6' },
     { id: 'personal', type: 'PERSONAL', name: user?.name || 'David Chen', email: 'hello@dchen.me', unread: 12, urgent: 0, status: 'active', color: '#8B5CF6' },
     { id: 'projects', type: 'PROJECTS', name: 'Foundry Studio', email: 'foundry@studio.io', unread: 74, urgent: 0, status: 'syncing', color: '#10B981' },
-  ]
+  ].filter(a => activeAccountIds.includes(a.id))
 
   const totalUnread = accounts.reduce((s, a) => s + a.unread, 0)
 
@@ -170,8 +172,7 @@ export default function AccountsPage() {
                       onClick={(e) => {
                         e.stopPropagation()
                         if (window.confirm(`Are you sure you want to remove the account ${account.email}?`)) {
-                          alert(`Account ${account.email} has been removed.`)
-                          // In a real app we'd dispatch an api call here.
+                          setActiveAccountIds(prev => prev.filter(id => id !== account.id))
                         }
                       }}
                     >
