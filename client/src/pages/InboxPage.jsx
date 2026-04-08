@@ -37,7 +37,7 @@ const TabIcons = {
 const TABS = [
   { id: 'primary',    label: 'Primary',    Icon: TabIcons.primary },
   { id: 'social',     label: 'Social',     Icon: TabIcons.social,     labelMatch: ['SOCIAL', 'SOCIALS', 'DRIBBBLE', 'GITHUB', 'LINKEDIN', 'TWITTER', 'X.COM', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST'] },
-  { id: 'promotions', label: 'Promotions', Icon: TabIcons.promotions, labelMatch: ['PROMOTIONS', 'PROMOTION', 'NEWSLETTER', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION'] },
+  { id: 'promotions', label: 'Promotions', Icon: TabIcons.promotions, labelMatch: ['PROMOTIONS', 'PROMOTION', 'NEWSLETTER', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION', 'UDEMY'] },
   { id: 'updates',    label: 'Updates',    Icon: TabIcons.updates,    labelMatch: ['UPDATES', 'UPDATE', 'NOTIFICATION', 'ALERT', 'SECURITY', 'PASSWORD', 'RESET', 'RECEIPT', 'ORDER'] }
 ]
 
@@ -50,16 +50,17 @@ const emailMatchesTab = (email, tabLabels) => {
     return true;
   }
 
-  // 2. Fallback: Check sender name/email and subject for whole-word keyword matches
+  // 2. Fallback: Check sender name/email and subject for keywords using word boundaries
   const textToSearch = [
     email.from?.name,
     email.from?.address,
     email.subject
-  ].filter(Boolean).join(' ').toUpperCase();
-
-  // Tokenize text into words to prevent partial matches like 'X' in 'TAX'
-  const words = textToSearch.split(/[\s@.,<>-]+/);
-  return upperTabLabels.some(keyword => words.includes(keyword));
+  ].filter(Boolean).join(' ')
+  
+  return upperTabLabels.some(keyword => {
+    // Escape keywords safely (though they are alphanumeric) and match as whole words
+    return new RegExp(`\\b${keyword}\\b`, 'i').test(textToSearch)
+  })
 }
 
 const UPCOMING_TASKS = [
