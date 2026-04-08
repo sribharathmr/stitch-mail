@@ -274,6 +274,39 @@ export default function MailReaderPage() {
             ) : (() => {
               const decisions = Array.isArray(insights.decisions) ? insights.decisions : []
               const actionItems = Array.isArray(insights.actionItems) ? insights.actionItems : []
+              const handleExportTasks = async (items) => {
+                try {
+                  const { settingsAPI } = await import('../api')
+                  const res = await settingsAPI.get()
+                  const currentPrefs = res.data?.settings?.preferences || {}
+                  const currentTasks = currentPrefs.tasks || []
+                  
+                  const newTasks = [...currentTasks]
+                  let added = 0
+                  for (const item of items) {
+                    const title = String(item)
+                    if (!newTasks.some(t => t.title === title)) {
+                      newTasks.unshift({
+                        id: Date.now() + Math.random(),
+                        title: title,
+                        color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
+                        completed: false
+                      })
+                      added++
+                    }
+                  }
+                  
+                  if (added > 0) {
+                    await settingsAPI.update({ preferences: { ...currentPrefs, tasks: newTasks } })
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: `Added ${added} new task(s)` } }))
+                  } else {
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'info', message: 'Tasks already in list' } }))
+                  }
+                } catch (e) {
+                  window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Failed to save tasks' } }))
+                }
+              }
+
               return (
               <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
                 <div style={{ marginBottom: '12px' }}><strong>Summary:</strong> {String(insights.summary || '')}</div>
@@ -285,8 +318,16 @@ export default function MailReaderPage() {
                 )}
                 {actionItems.length > 0 && (
                   <div>
-                    <strong>Action Items:</strong>
-                    <ul style={{ margin: '4px 0 0 20px' }}>{actionItems.map((a, i) => <li key={i}>{String(a)}</li>)}</ul>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <strong>Action Items:</strong>
+                      <button 
+                         onClick={() => handleExportTasks(actionItems)} 
+                         style={{ background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+                      >
+                         + Add to Tasks
+                      </button>
+                    </div>
+                    <ul style={{ margin: '6px 0 0 20px' }}>{actionItems.map((a, i) => <li key={i}>{String(a)}</li>)}</ul>
                   </div>
                 )}
               </div>
