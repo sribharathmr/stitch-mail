@@ -241,9 +241,9 @@ export default function Sidebar() {
 
           <div 
             className="sidebar-user" 
-            onClick={handleLogout}
+            onClick={() => navigate('/accounts')}
             style={{ cursor: 'pointer' }}
-            title="Sign out"
+            title="Switch Accounts"
           >
             <div className="avatar avatar-sm" style={{ background: avatarColor, color: '#fff', fontSize: 11 }}>
               {getInitials(user?.name)}
@@ -258,7 +258,9 @@ export default function Sidebar() {
               <div
                 id="logout-btn"
                 className="btn-icon"
+                onClick={(e) => { e.stopPropagation(); handleLogout(); }}
                 style={{ marginLeft: 'auto', flexShrink: 0 }}
+                title="Sign out"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
