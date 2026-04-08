@@ -13,16 +13,22 @@ function getAI() {
   return genAI;
 }
 
-async function generateContent(prompt) {
+async function generateContent(prompt, modelOverride = null) {
   const client = getAI();
   if (!client) return null;
   
+  const mName = modelOverride || MODEL_NAME;
   try {
-    const model = client.getGenerativeModel({ model: MODEL_NAME });
+    const model = client.getGenerativeModel({ model: mName });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return response.text();
   } catch (error) {
+    // If 1.5 flash isn't available (e.g. region constraints leading to 404), fallback to gemini-pro
+    if (!modelOverride && error.message.includes('404')) {
+      console.warn(`[Gemini] ${mName} threw 404. Falling back to gemini-pro...`);
+      return generateContent(prompt, 'gemini-pro');
+    }
     console.error('Gemini generateContent error:', error.message);
     throw error;
   }
