@@ -258,9 +258,27 @@ exports.list = async (req, res) => {
     if (parseInt(page) === 1) {
       const fullUser = await getFullUser(req.user.id);
       if (fullUser?.google_tokens?.refreshToken) {
-        // Await the sync so that if a folder is empty in DB, it fetches and returns them immediately
-        await syncGmailEmails(req.user.id, fullUser.google_tokens.refreshToken, folder)
+        // Check if we already have emails cached
+        let checkQuery = supabase
+          .from('emails')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', req.user.id);
+          
+        if (folder === 'starred') {
+          checkQuery = checkQuery.eq('is_starred', true);
+        } else {
+          checkQuery = checkQuery.eq('folder', folder);
+        }
+        
+        const { count } = await checkQuery;
+
+        const syncPromise = syncGmailEmails(req.user.id, fullUser.google_tokens.refreshToken, folder)
           .catch(err => console.error('Background sync error:', err.message));
+        
+        // Await the sync only if a folder is empty in DB, so it fetches and returns them immediately
+        if (count === 0) {
+          await syncPromise;
+        }
       }
     }
 
