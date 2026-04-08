@@ -21,17 +21,30 @@ export default function AccountsPage() {
   const [addForm, setAddForm] = useState({ provider: '', email: '', password: '' })
   const [addingAccount, setAddingAccount] = useState(false)
 
-  useEffect(() => { fetchEmails('inbox') }, [])
+  const [activeAccountIds, setActiveAccountIds] = useState([])
+  const [accounts, setAccounts] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const [activeAccountIds, setActiveAccountIds] = useState(['work', 'personal', 'projects'])
+  useEffect(() => { 
+    fetchEmails('inbox')
+    accountsAPI.list().then(res => {
+      const AVATAR_COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B']
+      const fetchedAccounts = (res.data.accounts || []).map((a, i) => ({
+        ...a,
+        id: String(a.id),
+        color: AVATAR_COLORS[i % AVATAR_COLORS.length]
+      }))
+      setAccounts(fetchedAccounts)
+      setActiveAccountIds(fetchedAccounts.map(a => a.id))
+      setIsLoading(false)
+    }).catch(err => {
+      console.error(err)
+      setIsLoading(false)
+    })
+  }, [])
 
-  const accounts = [
-    { id: 'work', type: 'WORK', name: user?.name || 'David Chen', email: user?.email || 'david.chen@atelier.com', unread: unreadCount, urgent: emails.filter(e => e.labels?.includes('URGENT: SERVER')).length, status: 'active', color: '#3B82F6' },
-    { id: 'personal', type: 'PERSONAL', name: user?.name || 'David Chen', email: 'hello@dchen.me', unread: 12, urgent: 0, status: 'active', color: '#8B5CF6' },
-    { id: 'projects', type: 'PROJECTS', name: 'Foundry Studio', email: 'foundry@studio.io', unread: 74, urgent: 0, status: 'syncing', color: '#10B981' },
-  ].filter(a => activeAccountIds.includes(a.id))
-
-  const totalUnread = accounts.reduce((s, a) => s + a.unread, 0)
+  const displayAccounts = accounts.filter(a => activeAccountIds.includes(a.id))
+  const totalUnread = displayAccounts.reduce((s, a) => s + (a.unread || 0), 0)
 
   const handleOpenAccount = (accountId) => {
     dispatch({ type: 'SET_ACCOUNT', payload: accountId })
@@ -108,13 +121,13 @@ export default function AccountsPage() {
                 </div>
               </div>
               <div className="unified-avatars">
-                {accounts.map(a => (
+                {displayAccounts.map(a => (
                   <div
                     key={a.id}
                     className="avatar avatar-sm"
                     style={{ background: a.color, color: '#fff', marginLeft: -6, border: '2px solid var(--bg-card)', fontSize: 10 }}
                   >
-                    {a.name[0]}
+                    {(a.name || a.email || '?')[0].toUpperCase()}
                   </div>
                 ))}
               </div>
@@ -129,11 +142,11 @@ export default function AccountsPage() {
 
             {/* Account Cards */}
             <div className="account-cards">
-              {accounts.map(account => (
+              {displayAccounts.map(account => (
                 <div key={account.id} id={`account-${account.id}`} className="account-card card card-hover">
                   <div className="account-card-header">
                     <div className="avatar avatar-md" style={{ background: account.color, color: '#fff' }}>
-                      {account.name[0]}
+                      {(account.name || account.email || '?')[0].toUpperCase()}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
