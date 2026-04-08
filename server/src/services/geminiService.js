@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // ── Configuration ──────────────────────────────────────────────────────────────
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const MODEL_NAME = 'gemini-1.5-flash';
+const MODEL_NAME = 'gemini-2.5-flash';
 
 let genAI = null;
 
@@ -24,10 +24,9 @@ async function generateContent(prompt, modelOverride = null) {
     const response = await result.response;
     return response.text();
   } catch (error) {
-    // If 1.5 flash isn't available (e.g. region constraints leading to 404), fallback to gemini-pro
     if (!modelOverride && error.message.includes('404')) {
-      console.warn(`[Gemini] ${mName} threw 404. Falling back to gemini-pro...`);
-      return generateContent(prompt, 'gemini-pro');
+      console.warn(`[Gemini] ${mName} threw 404. Falling back to gemini-2.0-flash...`);
+      return generateContent(prompt, 'gemini-2.0-flash');
     }
     console.error('Gemini generateContent error:', error.message);
     throw error;
