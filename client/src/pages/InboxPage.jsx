@@ -80,6 +80,12 @@ function getInitials(name = '') {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
+function getWeekRange() {
+  const d = new Date()
+  d.setDate(d.getDate() - 7)
+  return `${format(d, 'MMM d')} – ${format(new Date(), 'MMM d')}`
+}
+
 const AVATAR_COLORS = ['#3B82F6','#8B5CF6','#EC4899','#10B981','#F59E0B','#EF4444','#06B6D4','#84CC16']
 function avatarColor(name = '') {
   let h = 0; for (let c of name) h = c.charCodeAt(0) + ((h<<5)-h)
@@ -413,7 +419,7 @@ export default function InboxPage({ folder = 'inbox' }) {
                 <span>📊</span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>Weekly Summary</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>March 24 – 31</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{getWeekRange()}</div>
                 </div>
               </div>
               <div className="weekly-stats">
