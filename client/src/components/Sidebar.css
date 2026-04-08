@@ -22,7 +22,76 @@
 }
 
 
-/* === Compose === */
+/* === Sidebar Header: hamburger + logo (Gmail style) === */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px 4px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.sidebar-icon-only .sidebar-header {
+  justify-content: center;
+}
+
+.sidebar-menu-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  position: relative;
+}
+.sidebar-menu-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+/* "Main menu" tooltip */
+.sidebar-menu-btn::after {
+  content: 'Main menu';
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #444;
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 999;
+}
+.sidebar-menu-btn:hover::after { opacity: 1; }
+
+.sidebar-logo-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+.sidebar-logo-btn:hover { background: var(--bg-hover); }
+.sidebar-logo-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+
 .sidebar-compose {
   padding: 18px 10px 8px;
   display: flex;

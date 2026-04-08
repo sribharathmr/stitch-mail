@@ -29,7 +29,7 @@ function colorFromName(name = '') {
 export default function Sidebar() {
   const { unreadCount, dispatch } = useEmail()
   const { user, logout } = useAuth()
-  const { mobileMenuOpen, setMobileMenuOpen, sidebarExpanded } = useUI()
+  const { mobileMenuOpen, setMobileMenuOpen, sidebarExpanded, setSidebarExpanded } = useUI()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -50,6 +50,42 @@ export default function Sidebar() {
         <div className="mobile-backdrop" onClick={() => setMobileMenuOpen(false)} />
       )}
       <aside className={`sidebar ${expanded ? 'sidebar-expanded' : 'sidebar-icon-only'} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+        {/* Gmail-style header: hamburger + logo */}
+        <div className="sidebar-header">
+          <button
+            id="sidebar-menu-btn"
+            className="sidebar-menu-btn btn-icon"
+            title="Main menu"
+            aria-label="Main menu"
+            onClick={() => {
+              if (window.innerWidth <= 768) {
+                setMobileMenuOpen(false)
+              } else {
+                setSidebarExpanded(v => !v)
+              }
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          {expanded && (
+            <button
+              id="sidebar-logo-btn"
+              className="sidebar-logo-btn"
+              onClick={() => navigate('/inbox')}
+              title="Stitch Mail"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M3 8l9-5 9 5v8l-9 5-9-5V8z" stroke="#3B82F6" strokeWidth="2" fill="none"/>
+                <path d="M3 8l9 5 9-5" stroke="#3B82F6" strokeWidth="2"/>
+                <path d="M12 13v8" stroke="#3B82F6" strokeWidth="2"/>
+              </svg>
+              <span className="sidebar-logo-text">Stitch Mail</span>
+            </button>
+          )}
+        </div>
+
         {/* Compose Button — starts immediately, no header, Gmail style */}
         <div className="sidebar-compose">
           <button
