@@ -6,11 +6,39 @@ import { format, isToday, isYesterday } from 'date-fns'
 import { aiAPI, settingsAPI } from '../api'
 import './InboxPage.css'
 
+const TabIcons = {
+  primary: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+      <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
+    </svg>
+  ),
+  social: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+  ),
+  promotions: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+      <line x1="7" y1="7" x2="7.01" y2="7"/>
+    </svg>
+  ),
+  updates: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 01-3.46 0"/>
+    </svg>
+  ),
+}
+
 const TABS = [
-  { id: 'primary', label: 'Primary', icon: '📥' },
-  { id: 'social', label: 'Social', icon: '👥', labelMatch: ['DRIBBBLE', 'GITHUB', 'SOCIAL', 'LINKEDIN', 'TWITTER', 'X.COM', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST'] },
-  { id: 'promotions', label: 'Promotions', icon: '🏷️', labelMatch: ['NEWSLETTER', 'PROMOTION', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION'] },
-  { id: 'updates', label: 'Updates', icon: '🔔', labelMatch: ['UPDATE', 'NOTIFICATION', 'ALERT', 'SECURITY', 'PASSWORD', 'RESET', 'RECEIPT', 'ORDER'] }
+  { id: 'primary',    label: 'Primary',    Icon: TabIcons.primary },
+  { id: 'social',     label: 'Social',     Icon: TabIcons.social,     labelMatch: ['DRIBBBLE', 'GITHUB', 'SOCIAL', 'LINKEDIN', 'TWITTER', 'X.COM', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST'] },
+  { id: 'promotions', label: 'Promotions', Icon: TabIcons.promotions, labelMatch: ['NEWSLETTER', 'PROMOTION', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION'] },
+  { id: 'updates',    label: 'Updates',    Icon: TabIcons.updates,    labelMatch: ['UPDATE', 'NOTIFICATION', 'ALERT', 'SECURITY', 'PASSWORD', 'RESET', 'RECEIPT', 'ORDER'] }
 ]
 
 const emailMatchesTab = (email, tabLabels) => {
@@ -224,7 +252,7 @@ export default function InboxPage({ folder = 'inbox' }) {
                 className={`inbox-tab ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
               >
-                {tab.icon && <span style={{ marginRight: 4 }}>{tab.icon}</span>}
+                {tab.Icon && <span className="tab-icon"><tab.Icon /></span>}
                 {tab.label}
                 {badgeCount > 0 && <span className="tab-badge">{badgeCount}</span>}
               </button>
