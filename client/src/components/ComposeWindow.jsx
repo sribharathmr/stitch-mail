@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useEmail } from '../context/EmailContext'
 import { useCompose } from '../hooks/useCompose'
+import { aiAPI } from '../api'
 import './ComposeWindow.css'
 
 // ── Emoji data ────────────────────────────────────────────────────────────────
@@ -197,13 +198,19 @@ export default function ComposeWindow({ windowState, index }) {
   const handleGenerate = async () => {
     if (!intent.trim()) return
     setIsGenerating(true)
-    setTimeout(() => {
-      const generated = `Dear team,\n\nI would like to ${intent.toLowerCase()} in a ${tone.toLowerCase()} manner.\n\nBest regards,\nUser`
-      hook.setBodyHtml(generated.replace(/\n/g, '<br>'))
+    try {
+      const res = await aiAPI.draftIntent({ intent, tone })
+      const generated = res.data?.draft || `AI Error. Please try again.`
+      const htmlVersion = generated.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')
+      hook.setBodyHtml(htmlVersion)
       hook.setBodyText(generated)
-      if (editorRef.current) editorRef.current.innerHTML = generated.replace(/\n/g, '<br>')
+      if (editorRef.current) editorRef.current.innerHTML = htmlVersion
+    } catch (e) {
+      console.error(e)
+      window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Failed to generate draft' } }))
+    } finally {
       setIsGenerating(false)
-    }, 1200)
+    }
   }
 
   const handleEditorInput = (e) => {
