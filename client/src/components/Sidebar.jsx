@@ -50,25 +50,7 @@ export default function Sidebar() {
         <div className="mobile-backdrop" onClick={() => setMobileMenuOpen(false)} />
       )}
       <aside className={`sidebar ${expanded ? 'sidebar-expanded' : 'sidebar-icon-only'} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-        {/* Logo */}
-        <div
-          className="sidebar-header"
-          onClick={() => navigate('/inbox')}
-          title="Go to Inbox"
-          style={{ cursor: 'pointer' }}
-        >
-          <div className="workspace-logo">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M3 8l9-5 9 5v8l-9 5-9-5V8z" stroke="#3B82F6" strokeWidth="2" fill="none"/>
-              <path d="M3 8l9 5 9-5" stroke="#3B82F6" strokeWidth="2"/>
-              <path d="M12 13v8" stroke="#3B82F6" strokeWidth="2"/>
-            </svg>
-            {expanded && <span className="workspace-name">Stitch Mail</span>}
-          </div>
-          {expanded && <span className="badge badge-accent" style={{ fontSize: '10px', padding: '2px 8px' }}>PRO</span>}
-        </div>
-
-        {/* Compose Button */}
+        {/* Compose Button — starts immediately, no header, Gmail style */}
         <div className="sidebar-compose">
           <button
             id="compose-btn"

@@ -21,44 +21,10 @@
   min-width: var(--sidebar-w, 220px);
 }
 
-/* === Header / Logo === */
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 0 12px;
-  border-bottom: 1px solid var(--border);
-  overflow: hidden;
-}
-
-.sidebar-icon-only .sidebar-header {
-  justify-content: center;
-  padding: 18px 0 12px;
-}
-
-.workspace-logo {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding-left: 18px;
-}
-
-.sidebar-icon-only .workspace-logo {
-  padding-left: 0;
-  justify-content: center;
-}
-
-.workspace-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
-  white-space: nowrap;
-}
 
 /* === Compose === */
 .sidebar-compose {
-  padding: 14px 10px 8px;
+  padding: 18px 10px 8px;
   display: flex;
   justify-content: center;
 }
