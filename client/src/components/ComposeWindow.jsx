@@ -403,19 +403,7 @@ export default function ComposeWindow({ windowState, index }) {
           <input className="compose-input" placeholder="Subject" value={hook.subject} onChange={e => hook.setSubject(e.target.value)} />
         </div>
 
-        {/* Intent-Based AI Writing */}
-        <div className="compose-ai-section">
-          <div className="compose-ai-header">
-            <span style={{ color: 'var(--purple)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>✨ Intent-Based Writing</span>
-          </div>
-          <div className="compose-ai-input-wrapper">
-             <input className="compose-ai-input" placeholder="What do you want to write?" value={intent} onChange={e => setIntent(e.target.value)} />
-             <select className="compose-ai-select" value={tone} onChange={e => setTone(e.target.value)}>
-                <option>Professional</option><option>Friendly</option><option>Urgent</option>
-             </select>
-             <button className="compose-ai-btn" onClick={handleGenerate} disabled={isGenerating}>Generate</button>
-          </div>
-        </div>
+
 
         {/* Formatting bar — toggled by Aa button */}
         {showFormatBar && (
@@ -538,10 +526,7 @@ export default function ComposeWindow({ windowState, index }) {
             {/* Aa — Formatting */}
             <button className={`compose-tool-btn ${showFormatBar ? 'active' : ''}`} style={{ fontWeight: 700, fontFamily: 'serif', fontSize: 13 }} title="Formatting options" onClick={() => { closeAllPopovers('format'); setShowFormatBar(!showFormatBar) }}>Aa</button>
             
-            {/* Help me write (AI wand) */}
-            <button className="compose-tool-btn" title="Help me write" onClick={() => { if (editorRef.current) editorRef.current.scrollIntoView(); setIntent('') }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-            </button>
+
             
             {/* Attach files */}
             <button className="compose-tool-btn" onClick={() => fileRef.current?.click()} title="Attach files">
@@ -605,10 +590,7 @@ export default function ComposeWindow({ windowState, index }) {
               )}
             </div>
 
-            {/* Drive insert */}
-            <button className="compose-tool-btn" onClick={() => fileRef.current?.click()} title="Insert files using Drive">
-               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><polygon points="12 2 2 20 22 20"/></svg>
-            </button>
+
 
             {/* Insert photo — inline in editor */}
             <button className="compose-tool-btn" onClick={() => imageRef.current?.click()} title="Insert photo">
@@ -666,12 +648,7 @@ export default function ComposeWindow({ windowState, index }) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
                     Spell check
                   </button>
-                  <div className="compose-more-divider" />
-                  <button onClick={() => { setShowMoreMenu(false); window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'info', message: 'Label feature coming soon' } })) }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                    Label
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 'auto' }}><polyline points="9 18 15 12 9 6"/></svg>
-                  </button>
+
                   <button onClick={() => { setShowMoreMenu(false); setShowScheduleMenu(true) }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     Help me schedule
