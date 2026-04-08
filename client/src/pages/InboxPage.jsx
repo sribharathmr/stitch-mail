@@ -36,9 +36,9 @@ const TabIcons = {
 
 const TABS = [
   { id: 'primary',    label: 'Primary',    Icon: TabIcons.primary },
-  { id: 'social',     label: 'Social',     Icon: TabIcons.social,     labelMatch: ['DRIBBBLE', 'GITHUB', 'SOCIAL', 'LINKEDIN', 'TWITTER', 'X.COM', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST'] },
-  { id: 'promotions', label: 'Promotions', Icon: TabIcons.promotions, labelMatch: ['NEWSLETTER', 'PROMOTION', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION'] },
-  { id: 'updates',    label: 'Updates',    Icon: TabIcons.updates,    labelMatch: ['UPDATE', 'NOTIFICATION', 'ALERT', 'SECURITY', 'PASSWORD', 'RESET', 'RECEIPT', 'ORDER'] }
+  { id: 'social',     label: 'Social',     Icon: TabIcons.social,     labelMatch: ['SOCIAL', 'SOCIALS', 'DRIBBBLE', 'GITHUB', 'LINKEDIN', 'TWITTER', 'X.COM', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST'] },
+  { id: 'promotions', label: 'Promotions', Icon: TabIcons.promotions, labelMatch: ['PROMOTIONS', 'PROMOTION', 'NEWSLETTER', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION'] },
+  { id: 'updates',    label: 'Updates',    Icon: TabIcons.updates,    labelMatch: ['UPDATES', 'UPDATE', 'NOTIFICATION', 'ALERT', 'SECURITY', 'PASSWORD', 'RESET', 'RECEIPT', 'ORDER'] }
 ]
 
 const emailMatchesTab = (email, tabLabels) => {
@@ -125,7 +125,6 @@ export default function InboxPage({ folder = 'inbox' }) {
     const newTask = {
       id: Date.now(),
       title: 'New Task',
-      time: 'Today',
       color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
       completed: false
     }
@@ -321,7 +320,10 @@ export default function InboxPage({ folder = 'inbox' }) {
                 <div className="email-preview">{email.bodyText?.slice(0, 90) || ''}</div>
                 {email.labels?.length > 0 && (
                   <div className="email-labels">
-                    {email.labels.slice(0, 2).map(l => (
+                    {email.labels
+                       .filter(l => !['PRIMARY', 'SOCIAL', 'PROMOTIONS', 'PROMOTION', 'UPDATES', 'CATEGORIZED'].includes((l || '').toUpperCase()))
+                       .slice(0, 2)
+                       .map(l => (
                       <span key={l} className="badge badge-muted" style={{ fontSize: 10 }}>{l}</span>
                     ))}
                   </div>
@@ -394,9 +396,7 @@ export default function InboxPage({ folder = 'inbox' }) {
                            {task.title}
                          </div>
                        )}
-                       {!editingTaskId && (
-                          <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{task.time}</div>
-                       )}
+
                      </div>
                      {!editingTaskId && (
                         <button 
