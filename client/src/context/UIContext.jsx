@@ -6,6 +6,8 @@ const UIContext = createContext(null)
 export function UIProvider({ children }) {
   const [theme, setThemeState] = useState(() => localStorage.getItem('theme') || 'light')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const toggleSidebar = () => setSidebarExpanded(v => !v)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilters, setActiveFilters] = useState({})
   const [settings, setSettings] = useState(null)
@@ -40,6 +42,7 @@ export function UIProvider({ children }) {
     <UIContext.Provider value={{
       theme, setTheme,
       sidebarCollapsed, setSidebarCollapsed,
+      sidebarExpanded, setSidebarExpanded, toggleSidebar,
       mobileMenuOpen, setMobileMenuOpen,
       searchQuery, setSearchQuery,
       activeFilters, setActiveFilters,

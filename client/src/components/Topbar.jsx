@@ -6,7 +6,7 @@ import './Topbar.css'
 
 export default function Topbar() {
   const { dispatch } = useEmail()
-  const { searchQuery, setSearchQuery, setMobileMenuOpen } = useUI()
+  const { searchQuery, setSearchQuery, setMobileMenuOpen, toggleSidebar, sidebarExpanded } = useUI()
   const navigate = useNavigate()
   const [localQ, setLocalQ] = useState(searchQuery)
   const debounceRef = useRef(null)
@@ -35,13 +35,39 @@ export default function Topbar() {
 
   return (
     <header className="topbar">
-      <button 
-        className="topbar-mobile-menu btn-icon" 
-        onClick={() => setMobileMenuOpen(true)}
+      {/* Hamburger — desktop: toggles sidebar expand/collapse; mobile: opens drawer */}
+      <button
+        id="main-menu-btn"
+        className="topbar-menu-btn btn-icon"
+        title="Main menu"
+        aria-label="Main menu"
+        onClick={() => {
+          // On mobile open the drawer; on desktop toggle expand
+          if (window.innerWidth <= 768) {
+            setMobileMenuOpen(true)
+          } else {
+            toggleSidebar()
+          }
+        }}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M3 12h18M3 6h18M3 18h18" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
+      </button>
+
+      {/* Logo — clickable, navigates to inbox */}
+      <button
+        id="topbar-logo-btn"
+        className="topbar-logo-btn"
+        title="Stitch Mail"
+        onClick={() => navigate('/inbox')}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M3 8l9-5 9 5v8l-9 5-9-5V8z" stroke="#3B82F6" strokeWidth="2" fill="none"/>
+          <path d="M3 8l9 5 9-5" stroke="#3B82F6" strokeWidth="2"/>
+          <path d="M12 13v8" stroke="#3B82F6" strokeWidth="2"/>
+        </svg>
+        <span className="topbar-logo-text">Stitch Mail</span>
       </button>
 
       <form className="topbar-search" onSubmit={handleSearch}>
