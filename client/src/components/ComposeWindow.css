@@ -274,6 +274,10 @@
 }
 
 .compose-btn-primary:hover { background: rgba(0,0,0,0.1); }
+.compose-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 
 .compose-btn-primary-dropdown {
   height: 36px;
@@ -290,6 +294,10 @@
 }
 
 .compose-btn-primary-dropdown:hover { background: rgba(0,0,0,0.1); }
+.compose-btn-primary-dropdown:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 
 .compose-schedule-menu {
   position: absolute;

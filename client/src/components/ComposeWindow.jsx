@@ -474,8 +474,10 @@ export default function ComposeWindow({ windowState, index }) {
         {/* ═══════ BOTTOM TOOLBAR ═══════ */}
         <div className="compose-bottom-toolbar">
           <div className="compose-send-group">
-            <button className="compose-btn-primary" onClick={() => handleSend()}>Send</button>
-            <button className="compose-btn-primary-dropdown" onClick={() => { closeAllPopovers('schedule'); setShowScheduleMenu(!showScheduleMenu) }}>
+            <button className="compose-btn-primary" onClick={() => handleSend()} disabled={hook.isSending}>
+              {hook.isSending ? 'Sending...' : 'Send'}
+            </button>
+            <button className="compose-btn-primary-dropdown" onClick={() => { closeAllPopovers('schedule'); setShowScheduleMenu(!showScheduleMenu) }} disabled={hook.isSending}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             {showScheduleMenu && (() => {
