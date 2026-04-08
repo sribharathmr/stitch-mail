@@ -155,13 +155,33 @@ export default function AccountsPage() {
                       <span>{account.urgent} Urgent</span>
                     </div>
                   )}
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    style={{ marginTop: 12, width: '100%', justifyContent: 'center' }}
-                    onClick={() => handleOpenAccount(account.id)}
-                  >
-                    Open Account
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      style={{ flex: 1, justifyContent: 'center' }}
+                      onClick={() => handleOpenAccount(account.id)}
+                    >
+                      Open Account
+                    </button>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      title="Remove Account"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (window.confirm(`Are you sure you want to remove the account ${account.email}?`)) {
+                          alert(`Account ${account.email} has been removed.`)
+                          // In a real app we'd dispatch an api call here.
+                        }
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      </svg>
+                      Remove
+                    </button>
+                  </div>
                 </div>
               ))}
 
