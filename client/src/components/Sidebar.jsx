@@ -38,13 +38,6 @@ const Icons = {
       <polyline points="10 9 9 9 8 9"/>
     </svg>
   ),
-  Purchases: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-      <line x1="3" y1="6" x2="21" y2="6"/>
-      <path d="M16 10a4 4 0 01-8 0"/>
-    </svg>
-  ),
   Spam: () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -103,7 +96,6 @@ const navItems = [
   { to: '/starred',   label: 'Starred',   Icon: Icons.Starred,   folder: 'starred' },
   { to: '/sent',      label: 'Sent',      Icon: Icons.Sent,      folder: 'sent' },
   { to: '/drafts',    label: 'Drafts',    Icon: Icons.Drafts,    folder: 'drafts' },
-  { to: '/purchases', label: 'Purchases', Icon: Icons.Purchases, folder: 'purchases' },
   { to: '/spam',      label: 'Spam',      Icon: Icons.Spam,      folder: 'spam' },
   { to: '/trash',     label: 'Trash',     Icon: Icons.Trash,     folder: 'trash' },
   { to: '/archive',   label: 'Archive',   Icon: Icons.Archive,   folder: 'archive' },

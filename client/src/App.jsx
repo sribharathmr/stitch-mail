@@ -42,7 +42,6 @@ function AppRoutes() {
         <Route path="starred" element={<InboxPage folder="starred" />} />
         <Route path="sent" element={<InboxPage folder="sent" />} />
         <Route path="drafts" element={<InboxPage folder="drafts" />} />
-        <Route path="purchases" element={<InboxPage folder="purchases" />} />
         <Route path="spam" element={<InboxPage folder="spam" />} />
         <Route path="trash" element={<InboxPage folder="trash" />} />
         <Route path="archive" element={<InboxPage folder="archive" />} />
