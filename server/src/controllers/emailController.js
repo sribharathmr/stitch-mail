@@ -159,8 +159,10 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
               filename: payload.filename,
               mimetype: payload.mimeType || 'application/octet-stream',
               size: payload.body?.size || 0,
-              // Generating a standard Gmail link to proxy the attachment safely
-              path: `https://mail.google.com/mail/u/0/?ui=2&ik=&view=att&th=${msg.id}&attid=${payload.partId}&disp=safe&realattid=${payload.partId}`
+              attachmentId: payload.body?.attachmentId,
+              partId: payload.partId,
+              // Fallback path (the new proxy route will be used by the frontend)
+              path: `/api/emails/${msg.id}/attachments/${payload.body?.attachmentId || payload.partId}`
             });
           }
 
@@ -656,6 +658,48 @@ exports.treeOverride = async (req, res) => {
 
     res.json({ email: mapEmail(email) });
   } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/emails/:id/attachments/:attachmentId
+exports.getAttachment = async (req, res) => {
+  try {
+    const { id, attachmentId } = req.params;
+    const { data: email } = await supabase
+      .from('emails')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!email) return res.status(404).json({ message: 'Email not found' });
+
+    const fullUser = await getFullUser(req.user.id);
+    if (!fullUser?.google_tokens?.refreshToken) {
+      return res.status(403).json({ message: 'Google account not linked' });
+    }
+
+    const gmail = getGmailClient(fullUser.google_tokens.refreshToken);
+    
+    // Fetch the attachment data from Gmail
+    const response = await gmail.users.messages.attachments.get({
+      userId: 'me',
+      messageId: email.message_id,
+      id: attachmentId,
+    });
+
+    const dataBuffer = Buffer.from(response.data.data, 'base64url');
+    
+    // Find the mimetype from the email record if possible
+    const attachmentInfo = email.attachments?.find(a => a.attachmentId === attachmentId || a.partId === attachmentId);
+    const contentType = attachmentInfo?.mimetype || 'application/octet-stream';
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${attachmentInfo?.filename || 'attachment'}"`);
+    res.send(dataBuffer);
+  } catch (err) {
+    console.error('getAttachment error:', err.message);
     res.status(500).json({ message: err.message });
   }
 };

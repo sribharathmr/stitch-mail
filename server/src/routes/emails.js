@@ -11,6 +11,7 @@ router.get('/sync', ctrl.sync);
 router.get('/tree', ctrl.getTree);
 router.get('/', ctrl.list);
 router.get('/:id', ctrl.getOne);
+router.get('/:id/attachments/:attachmentId', ctrl.getAttachment);
 router.post('/send', upload.array('attachments'), ctrl.send);
 router.post('/draft', upload.array('attachments'), ctrl.draft);
 router.patch('/:id', ctrl.update);

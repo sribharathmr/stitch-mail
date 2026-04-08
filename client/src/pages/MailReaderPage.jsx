@@ -458,27 +458,41 @@ export default function MailReaderPage() {
               Media Received ({mediaAttachments.length})
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
-              {mediaAttachments.map((a, i) => (
-                <a key={i} href={a.path || '#'} target="_blank" rel="noopener noreferrer" download
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                    padding: 10, background: 'var(--bg-hover)', borderRadius: 10,
-                    border: '1px solid var(--border)', textDecoration: 'none', color: 'inherit',
-                    transition: 'border-color 0.2s'
-                  }}>
-                  <div style={{
-                    width: '100%', paddingTop: '75%', borderRadius: 6, overflow: 'hidden',
-                    background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
-                  }}>
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
-                      {(a.mimetype || '').startsWith('video/') ? '🎬' : '🖼️'}
+              {mediaAttachments.map((a, i) => {
+                const attachmentId = a.attachmentId || a.partId;
+                const proxyUrl = attachmentId ? `${process.env.REACT_APP_API_URL || ''}/api/emails/${email._id}/attachments/${attachmentId}` : (a.path || '#');
+                return (
+                  <a key={i} href={proxyUrl} target="_blank" rel="noopener noreferrer" download
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                      padding: 12, background: 'var(--bg-hover)', borderRadius: 12,
+                      border: '1px solid var(--border)', textDecoration: 'none', color: 'inherit',
+                      transition: 'all 0.2s ease', position: 'relative', overflow: 'hidden'
+                    }} className="attachment-card">
+                    <div style={{
+                      width: '100%', paddingTop: '75%', borderRadius: 8, overflow: 'hidden',
+                      background: 'rgba(0,0,0,0.05)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
+                    }}>
+                      {(a.mimetype || '').startsWith('image/') ? (
+                        <img 
+                          src={proxyUrl} 
+                          alt={a.filename} 
+                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
+                      ) : (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
+                          {(a.mimetype || '').startsWith('video/') ? '🎬' : '🖼️'}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 600, textAlign: 'center', wordBreak: 'break-all' }}>{a.filename}</span>
-                  <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{a.size ? `${(a.size/1024).toFixed(0)}KB` : ''}</span>
-                </a>
-              ))}
+                    <div style={{ width: '100%', marginTop: 4 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', wordBreak: 'break-all', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.filename}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', marginTop: 2 }}>{a.size ? `${(a.size/1024).toFixed(0)}KB` : ''}</div>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           </div>
         )}
@@ -490,16 +504,20 @@ export default function MailReaderPage() {
               Attachments ({docAttachments.length})
             </h4>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-              {docAttachments.map((a, i) => (
-                <a key={i} href={a.path} download className="attachment-pill">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                  <span>{a.filename}</span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{a.size ? `${(a.size/1024).toFixed(0)}KB` : ''}</span>
-                </a>
-              ))}
+              {docAttachments.map((a, i) => {
+                const attachmentId = a.attachmentId || a.partId;
+                const proxyUrl = attachmentId ? `${process.env.REACT_APP_API_URL || ''}/api/emails/${email._id}/attachments/${attachmentId}` : a.path;
+                return (
+                  <a key={i} href={proxyUrl} download className="attachment-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span>{a.filename}</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{a.size ? `${(a.size/1024).toFixed(0)}KB` : ''}</span>
+                  </a>
+                );
+              })}
             </div>
           </div>
         )}
