@@ -71,6 +71,7 @@ export default function SettingsPage() {
         smtpConfig,
         imapConfig
       })
+      await loadSettings() // Force context to update with saved DB values site-wide
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
     } catch (_) {} finally { setSaving(false) }
