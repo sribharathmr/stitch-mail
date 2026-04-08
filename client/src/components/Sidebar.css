@@ -178,9 +178,13 @@
 }
 
 .nav-icon {
-  font-size: 17px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
 }
 
 .nav-label { flex: 1; }
