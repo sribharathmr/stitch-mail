@@ -79,6 +79,7 @@ export default function ComposeWindow({ windowState, index }) {
   const [intent, setIntent] = useState('')
   const [tone, setTone] = useState('Professional')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [showAI, setShowAI] = useState(false)
 
   // Popover / modal states
   const [showFormatBar, setShowFormatBar] = useState(false)
@@ -403,6 +404,30 @@ export default function ComposeWindow({ windowState, index }) {
           <input className="compose-input" placeholder="Subject" value={hook.subject} onChange={e => hook.setSubject(e.target.value)} />
         </div>
 
+        {/* ═══════ AI SECTION ═══════ */}
+        {showAI && (
+          <div className="compose-ai-section">
+            <div className="compose-ai-header">
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--purple)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                Intent-Based Writing
+              </span>
+            </div>
+            <div className="compose-ai-input-wrapper">
+              <input className="compose-ai-input" placeholder="What do you want to write? (e.g. 'Asking for a leave')" value={intent} onChange={e => setIntent(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleGenerate()} />
+              <select className="compose-ai-select" value={tone} onChange={e => setTone(e.target.value)}>
+                <option>Professional</option>
+                <option>Casual</option>
+                <option>Formal</option>
+                <option>Urgent</option>
+              </select>
+              <button className="compose-ai-btn" onClick={handleGenerate} disabled={isGenerating || !intent.trim()}>
+                {isGenerating ? 'Generating...' : 'Generate'}
+              </button>
+            </div>
+          </div>
+        )}
+
 
 
         {/* Formatting bar — toggled by Aa button */}
@@ -527,6 +552,11 @@ export default function ComposeWindow({ windowState, index }) {
           <div className="compose-toolbar-actions" style={{ marginLeft: 12 }}>
             {/* Aa — Formatting */}
             <button className={`compose-tool-btn ${showFormatBar ? 'active' : ''}`} style={{ fontWeight: 700, fontFamily: 'serif', fontSize: 13 }} title="Formatting options" onClick={() => { closeAllPopovers('format'); setShowFormatBar(!showFormatBar) }}>Aa</button>
+            
+            {/* AI Wand — Sparkles */}
+            <button className={`compose-tool-btn ${showAI ? 'active' : ''}`} onClick={() => { closeAllPopovers(); setShowAI(!showAI) }} title="Help me write">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            </button>
             
 
             
