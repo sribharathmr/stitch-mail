@@ -36,9 +36,9 @@ const TabIcons = {
 
 const TABS = [
   { id: 'primary',    label: 'Primary',    Icon: TabIcons.primary },
-  { id: 'social',     label: 'Social',     Icon: TabIcons.social,     labelMatch: ['SOCIAL', 'SOCIALS', 'DRIBBBLE', 'GITHUB', 'LINKEDIN', 'TWITTER', 'X.COM', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST'] },
-  { id: 'promotions', label: 'Promotions', Icon: TabIcons.promotions, labelMatch: ['PROMOTIONS', 'PROMOTION', 'NEWSLETTER', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION', 'UDEMY'] },
-  { id: 'updates',    label: 'Updates',    Icon: TabIcons.updates,    labelMatch: ['UPDATES', 'UPDATE', 'NOTIFICATION', 'ALERT', 'SECURITY', 'PASSWORD', 'RESET', 'RECEIPT', 'ORDER'] }
+  { id: 'social',     label: 'Social',     Icon: TabIcons.social,     labelMatch: ['SOCIAL', 'SOCIALS', 'DRIBBBLE', 'GITHUB', 'LINKEDIN', 'TWITTER', 'X.COM', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST', 'CONTACT'] },
+  { id: 'promotions', label: 'Promotions', Icon: TabIcons.promotions, labelMatch: ['PROMOTIONS', 'PROMOTION', 'NEWSLETTER', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION', 'UDEMY', 'WEBINAR', 'REGISTER', 'INVITES'] },
+  { id: 'updates',    label: 'Updates',    Icon: TabIcons.updates,    labelMatch: ['UPDATES', 'UPDATE', 'NOTIFICATION', 'ALERT', 'SECURITY', 'PASSWORD', 'RESET', 'RECEIPT', 'ORDER', 'BUILD', 'FAILED', 'JOBS', 'CONFIRMED'] }
 ]
 
 const emailMatchesTab = (email, tabLabels) => {
