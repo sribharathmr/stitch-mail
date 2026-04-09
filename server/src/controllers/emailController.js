@@ -224,10 +224,6 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
     console.error('[Sync] Global error:', err.message);
   }
 };
-  } catch (err) {
-    console.error('Gmail sync error:', err.message);
-  }
-};
 
 // ── Shared response mapper ─────────────────────────────────────────────────────
 const mapEmail = (e) => ({
