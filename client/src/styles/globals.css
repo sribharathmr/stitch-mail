@@ -344,47 +344,108 @@ img { display: block; max-width: 100%; }
 [data-tooltip]:hover::after { opacity: 1; }
 
 /* --- Mobile Responsiveness --- */
-.topbar-mobile-menu { display: none; }
-.mobile-backdrop { display: none; }
+
+/* Mobile-first: ensure viewport is properly handled */
+@viewport { width: device-width; }
 
 @media (max-width: 768px) {
-  .topbar-mobile-menu {
-    display: flex;
+  /* ── App Shell — stacks vertically, sidebar becomes drawer ── */
+  .app-shell {
+    flex-direction: column;
   }
-  
-  /* Make app full width and hide strict layout boundaries */
-  .app-shell { flex-direction: column; }
-  
+
+  .app-main {
+    width: 100%;
+    min-height: 0;
+    flex: 1;
+  }
+
+  /* ── Sidebar Drawer ── */
   .sidebar {
     position: fixed;
     top: 0; left: 0; bottom: 0;
-    z-index: 1001; /* Ensure above backdrop and other elements */
+    z-index: 1001;
     transform: translateX(-100%);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
+    transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    width: var(--sidebar-w, 240px) !important;
+    min-width: var(--sidebar-w, 240px) !important;
   }
-  
+
   .sidebar.mobile-open {
     transform: translateX(0);
+  }
+
+  /* Force sidebar to always show labels when mobile drawer is open */
+  .sidebar.mobile-open .nav-label,
+  .sidebar.mobile-open .sidebar-user-info,
+  .sidebar.mobile-open .sidebar-logo-btn,
+  .sidebar.mobile-open .sidebar-section-label {
+    display: flex;
+  }
+
+  .sidebar.mobile-open .compose-btn-icon {
+    width: 100%;
+    border-radius: 10px !important;
   }
 
   .mobile-backdrop {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(2px);
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     z-index: 1000;
     animation: fadeIn 0.2s ease-out;
   }
-  
-  /* Topbar adjustments */
-  .topbar { padding: 0 10px; gap: 8px; }
-  .topbar-search { max-width: none; flex: 1; padding: 6px 10px; }
-  .topbar-search-input { font-size: 13px; }
 
-  /* Inbox list taking full width if stacked */
-  .inbox-list-col { border-right: none; }
-  
-  /* Improve touch targets */
-  .email-item { padding: 14px 12px; gap: 10px; }
+  /* ── Touch targets: minimum 44px for tappable elements ── */
+  .btn-icon {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .email-item {
+    padding: 14px 12px;
+    gap: 10px;
+  }
+
+  .inbox-list-col {
+    border-right: none;
+  }
+
+  /* ── Tooltips — disable on touch devices ── */
+  [data-tooltip]::after {
+    display: none !important;
+  }
+
+  /* ── Modal — full-width on mobile ── */
+  .modal {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .modal-overlay {
+    align-items: flex-end;
+  }
+
+  /* ── Buttons: slightly bigger touch area ── */
+  .btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  .btn-sm {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  /* ── Safe area insets for notched devices ── */
+  .app-shell {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

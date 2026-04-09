@@ -346,18 +346,99 @@
   .inbox-layout {
     flex-direction: column;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   .inbox-list-col {
-    overflow-y: visible; /* Let it expand or scroll with the page */
+    overflow-y: visible;
     flex: none;
+    border-right: none;
+  }
+
+  /* Tabs become horizontally scrollable */
+  .inbox-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 10px;
+    gap: 0;
+    scrollbar-width: none;
+  }
+  .inbox-tabs::-webkit-scrollbar { display: none; }
+
+  .inbox-tab {
+    padding: 10px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .folder-header {
+    padding: 12px 14px 8px;
+  }
+
+  .folder-title {
+    font-size: 16px;
+  }
+
+  /* Email items: better touch targets */
+  .email-item {
+    padding: 14px 12px;
+    gap: 10px;
+  }
+
+  .email-sender {
+    font-size: 14px;
+  }
+
+  .email-subject {
+    font-size: 13px;
+  }
+
+  .email-preview {
+    font-size: 12px;
+  }
+
+  .email-time {
+    font-size: 10px;
+  }
+
+  .star-btn {
+    font-size: 20px;
+    padding: 4px;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .inbox-right-col {
     width: 100%;
     min-width: 0;
     border-top: 1px solid var(--border);
-    padding: 20px 16px;
+    padding: 16px 12px;
     overflow-y: visible;
+  }
+
+  .weekly-summary-card {
+    padding: 14px 16px;
+  }
+
+  .weekly-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+
+  .stat-num {
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  /* Compact view adjustments */
+  .inbox-layout.compact .email-item {
+    padding: 10px 12px;
   }
 }

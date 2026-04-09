@@ -259,27 +259,57 @@
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 200;
+    bottom: 0;
+    z-index: 1001;
     transform: translateX(-100%);
-    width: var(--sidebar-w, 220px) !important;
-    min-width: var(--sidebar-w, 220px) !important;
+    width: var(--sidebar-w, 240px) !important;
+    min-width: var(--sidebar-w, 240px) !important;
+    transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    box-shadow: var(--shadow-xl);
   }
 
   .sidebar.mobile-open {
     transform: translateX(0);
   }
 
-  .sidebar.mobile-open .workspace-name,
+  /* Always show labels in mobile drawer */
   .sidebar.mobile-open .nav-label,
   .sidebar.mobile-open .sidebar-user-info {
     display: flex;
   }
 
+  .sidebar.mobile-open .compose-btn-icon {
+    width: 100%;
+    border-radius: 10px !important;
+  }
+
+  .sidebar.mobile-open .sidebar-nav-item {
+    justify-content: flex-start;
+    padding: 10px 12px;
+  }
+
+  .sidebar.mobile-open .sidebar-user {
+    justify-content: flex-start;
+    padding: 10px 12px;
+  }
+
+  .sidebar.mobile-open .sidebar-header {
+    justify-content: flex-start;
+  }
+
   .mobile-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 199;
-    backdrop-filter: blur(2px);
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* Compose button: full width */
+  .sidebar.mobile-open .sidebar-compose {
+    padding: 14px 10px 8px;
   }
 }
+

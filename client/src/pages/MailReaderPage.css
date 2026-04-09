@@ -150,26 +150,122 @@
 
 @media (max-width: 768px) {
   .reader-content {
-    padding: 18px 16px 28px;
+    padding: 16px 14px 24px;
   }
   
   .reader-subject {
     font-size: 18px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
+    line-height: 1.35;
   }
   
   .reader-toolbar {
-    padding: 8px 12px;
+    padding: 6px 10px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 2px;
+  }
+  .reader-toolbar::-webkit-scrollbar { display: none; }
+
+  .reader-toolbar .btn-icon {
+    min-width: 36px;
+    min-height: 36px;
+    flex-shrink: 0;
   }
   
   .reader-body {
     font-size: 14px;
     line-height: 1.7;
   }
+
+  .reader-body img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Sender row: stack on very small screens */
+  .reader-sender-row {
+    gap: 10px;
+  }
+
+  .reader-sender-name {
+    font-size: 14px;
+  }
+
+  .reader-sender-addr {
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .reader-date {
+    font-size: 11px;
+  }
+
+  /* Labels */
+  .reader-labels {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .reader-label {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  /* Thread messages */
+  .reader-thread-bar {
+    padding: 8px 12px !important;
+  }
   
+  /* Quick reply — stack vertically */
   .reader-quick-reply {
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 8px;
     margin-top: 20px;
   }
+
+  .reader-quick-reply .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  /* Attachments */
+  .reader-attachments {
+    margin-top: 20px;
+    padding: 14px;
+  }
+
+  .attachment-pill {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  /* Dropdown menus */
+  .reader-dropdown {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    margin-top: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
 }
+
+@media (max-width: 480px) {
+  .reader-sender-row {
+    flex-wrap: wrap;
+  }
+
+  .reader-date {
+    width: 100%;
+    margin-top: 4px;
+  }
+}
+

@@ -151,24 +151,73 @@
 
 @media (max-width: 768px) {
   .search-header {
-    padding: 14px 14px 0;
+    padding: 12px 12px 0;
   }
 
   .search-bar-large {
     padding: 8px 12px;
+    margin-bottom: 10px;
   }
 
   .search-main-input {
     font-size: 14px;
   }
 
+  .search-meta {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
   .filter-chips {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap;
     padding-bottom: 10px;
+    gap: 6px;
+    scrollbar-width: none;
+  }
+  .filter-chips::-webkit-scrollbar { display: none; }
+
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .active-filters-row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding-bottom: 8px;
   }
 
   .search-result-item {
     padding: 12px 14px;
   }
+
+  .result-sender {
+    font-size: 13px;
+  }
+
+  .result-subject {
+    font-size: 13px;
+  }
+
+  .result-preview {
+    font-size: 12px;
+  }
+
+  .result-date {
+    font-size: 11px;
+  }
+
+  .search-suggestions {
+    padding: 16px 14px;
+  }
+
+  .suggestion-item {
+    font-size: 13px;
+    padding: 10px;
+  }
 }
+

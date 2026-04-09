@@ -1033,3 +1033,205 @@
 }
 
 .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+
+/* ═══════ Mobile Responsive ═══════ */
+@media (max-width: 768px) {
+  .compose-window-wrapper {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+    z-index: 1100;
+    border: none !important;
+  }
+
+  .compose-window-wrapper.minimized {
+    top: auto !important;
+    height: 48px !important;
+    border-radius: 8px 8px 0 0 !important;
+  }
+
+  .compose-window-wrapper.expanded {
+    width: 100% !important;
+    height: 100% !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .compose-header {
+    border-radius: 0;
+    padding: 0 12px;
+    height: 50px;
+  }
+
+  .compose-header-title {
+    font-size: 15px;
+  }
+
+  .compose-field-row {
+    padding: 0 12px;
+    min-height: 42px;
+  }
+
+  .compose-field-label {
+    font-size: 12px;
+    width: 36px;
+  }
+
+  .compose-input {
+    font-size: 15px;
+  }
+
+  .compose-editor-area {
+    padding: 12px;
+    font-size: 15px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .compose-format-bar {
+    padding: 4px 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  .compose-bottom-toolbar {
+    padding: 10px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .compose-toolbar-actions {
+    gap: 0;
+  }
+
+  .compose-tool-btn {
+    padding: 10px;
+  }
+
+  .compose-send-group {
+    border-radius: 22px;
+  }
+
+  .compose-btn-primary {
+    height: 40px;
+    padding: 0 20px;
+    font-size: 15px;
+  }
+
+  .compose-btn-primary-dropdown {
+    height: 40px;
+    width: 36px;
+  }
+
+  /* AI section */
+  .compose-ai-section {
+    padding: 10px 12px;
+  }
+
+  .compose-ai-input-wrapper {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .compose-ai-input {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .compose-ai-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 16px;
+  }
+
+  /* Schedule menu */
+  .compose-schedule-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    border-radius: 16px 16px 0 0;
+    min-width: unset;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .compose-schedule-picker-modal {
+    width: 100%;
+    max-width: 100vw;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 16px;
+  }
+
+  .schedule-picker-body {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .schedule-picker-inputs {
+    padding-top: 0;
+  }
+
+  /* Emoji picker */
+  .compose-emoji-picker {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    transform: none;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    height: 50vh;
+  }
+
+  /* Link popover */
+  .compose-link-popover {
+    position: fixed;
+    bottom: 60px;
+    left: 12px;
+    right: 12px;
+    transform: none;
+    min-width: unset;
+  }
+
+  /* Modals */
+  .compose-modal-overlay {
+    align-items: flex-end;
+  }
+
+  .compose-confidential-modal {
+    width: 100%;
+    max-width: 100vw;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 16px;
+  }
+
+  /* Attachments */
+  .compose-attachment-name {
+    max-width: 200px;
+  }
+
+  .compose-attachment-row {
+    padding: 10px 12px;
+  }
+
+  /* Signature & more menus */
+  .compose-signature-menu,
+  .compose-more-menu {
+    position: fixed;
+    bottom: 60px;
+    right: 12px;
+    left: 12px;
+    min-width: unset;
+  }
+}

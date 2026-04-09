@@ -256,7 +256,7 @@
 
 @media (max-width: 768px) {
   .accounts-content {
-    padding: 20px 14px;
+    padding: 16px 12px;
   }
 
   .accounts-grid {
@@ -267,8 +267,87 @@
     font-size: 20px;
   }
 
+  .accounts-subtitle {
+    font-size: 13px;
+  }
+
   .accounts-header {
     flex-direction: column;
     gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .accounts-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Unified card */
+  .unified-card {
+    padding: 16px;
+  }
+
+  .unified-card-header {
+    gap: 10px;
+  }
+
+  .unified-card-icon { font-size: 22px; }
+  .unified-card-title { font-size: 14px; }
+
+  .unified-badge {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  /* Account cards */
+  .account-card {
+    padding: 14px;
+  }
+
+  .account-card-header {
+    gap: 10px;
+  }
+
+  .account-unread {
+    font-size: 18px;
+  }
+
+  .add-account-card {
+    padding: 18px;
+  }
+
+  /* Stats */
+  .weekly-stats-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .stat-big-num { font-size: 22px; }
+  .stat-big-label { font-size: 11px; }
+
+  /* Workload chart */
+  .workload-chart {
+    height: 60px;
+  }
+
+  /* Quote card */
+  .quote-card {
+    padding: 16px;
+  }
+
+  .quote-text {
+    font-size: 12px;
   }
 }
+
+@media (max-width: 480px) {
+  .accounts-content {
+    padding: 12px 10px;
+  }
+
+  .accounts-title {
+    font-size: 18px;
+  }
+}
+

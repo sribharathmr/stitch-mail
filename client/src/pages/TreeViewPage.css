@@ -847,10 +847,46 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .tree-page-layout {
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tree-main-col {
+    overflow: visible;
+  }
+
+  .tree-right-col {
+    display: none;
+  }
+
   .tree-header {
     flex-wrap: wrap;
-    padding: 12px 14px;
+    padding: 12px 12px;
+    gap: 10px;
+  }
+
+  .tree-header-left {
+    gap: 8px;
+  }
+
+  .tree-header-icon {
+    font-size: 22px;
+  }
+
+  .tree-header-title {
+    font-size: 16px;
+  }
+
+  .tree-header-actions {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .tree-search-wrapper {
+    flex: 1;
   }
 
   .tree-search-input {
@@ -861,20 +897,86 @@
     width: 100%;
   }
 
-  .tree-header-actions {
-    width: 100%;
-  }
-
-  .tree-search-wrapper {
-    flex: 1;
+  .tree-container {
+    padding: 8px 10px;
+    gap: 6px;
   }
 
   .tree-org-header {
     padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .tree-org-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .tree-org-name {
+    font-size: 13px;
   }
 
   .tree-org-domain {
     display: none;
+  }
+
+  .tree-org-stats {
+    font-size: 11px;
+  }
+
+  /* Contact nodes */
+  .tree-contact-node {
+    margin-left: 12px;
+  }
+
+  .tree-contact-header {
+    padding: 8px 10px 8px 6px;
+    gap: 8px;
+    margin: 2px 6px;
+  }
+
+  .tree-contact-avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
+  }
+
+  /* Email leaves */
+  .tree-email-leaf {
+    margin-left: 28px;
+    padding: 8px 10px 8px 4px;
+  }
+
+  .tree-leaf-subject {
+    font-size: 12px;
+  }
+
+  /* Toast */
+  .tree-toast {
+    left: 12px;
+    right: 12px;
+    transform: none;
+    bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tree-header-subtitle {
+    display: none;
+  }
+
+  .tree-expand-btn,
+  .tree-refresh-btn {
+    padding: 6px !important;
+  }
+
+  .tree-email-leaf {
+    margin-left: 20px;
+  }
+
+  .tree-contact-node {
+    margin-left: 6px;
   }
 }
 

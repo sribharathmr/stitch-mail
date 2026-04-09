@@ -6,7 +6,7 @@ import './Topbar.css'
 
 export default function Topbar() {
   const { dispatch } = useEmail()
-  const { searchQuery, setSearchQuery } = useUI()
+  const { searchQuery, setSearchQuery, setMobileMenuOpen } = useUI()
   const navigate = useNavigate()
   const [localQ, setLocalQ] = useState(searchQuery)
   const debounceRef = useRef(null)
@@ -34,6 +34,17 @@ export default function Topbar() {
 
   return (
     <header className="topbar">
+      {/* Mobile hamburger menu */}
+      <button
+        className="topbar-mobile-menu btn-icon"
+        onClick={() => setMobileMenuOpen(true)}
+        aria-label="Open menu"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
       <form className="topbar-search" onSubmit={handleSearch}>
         <svg className="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
@@ -64,7 +75,7 @@ export default function Topbar() {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M12 5v14M5 12h14"/>
           </svg>
-          Compose
+          <span className="topbar-compose-text">Compose</span>
         </button>
 
         <button className="btn-icon" id="topbar-notif-btn" data-tooltip="Notifications">

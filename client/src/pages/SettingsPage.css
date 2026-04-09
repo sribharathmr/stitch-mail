@@ -239,6 +239,7 @@
   .settings-layout {
     flex-direction: column;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .settings-nav {
@@ -248,8 +249,11 @@
     border-bottom: 1px solid var(--border);
     flex-direction: row;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 0;
+    scrollbar-width: none;
   }
+  .settings-nav::-webkit-scrollbar { display: none; }
 
   .settings-nav-header {
     display: none;
@@ -259,14 +263,72 @@
     white-space: nowrap;
     padding: 10px 14px;
     font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .settings-main {
+    overflow-y: visible;
   }
 
   .settings-section {
-    padding: 20px 16px;
+    padding: 20px 14px;
+    max-width: 100%;
+  }
+
+  .settings-section-title {
+    font-size: 18px;
+  }
+
+  .settings-section-desc {
+    font-size: 13px;
   }
 
   .theme-cards {
     grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .theme-card-preview {
+    height: 56px;
+  }
+
+  .theme-card-footer {
+    padding: 8px 10px;
+  }
+
+  .theme-card-label {
+    font-size: 12px;
+  }
+
+  /* Toggle rows */
+  .toggle-row {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .toggle-label {
+    font-size: 13px;
+  }
+
+  .toggle-desc {
+    font-size: 11px;
+  }
+
+  /* Footer */
+  .settings-footer {
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .settings-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Signature preview */
+  .signature-preview {
+    padding: 14px;
   }
 
   .settings-right {
@@ -274,6 +336,17 @@
     min-width: 0;
     border-left: none;
     border-top: 1px solid var(--border);
-    padding: 20px 16px;
+    padding: 20px 14px;
   }
 }
+
+@media (max-width: 480px) {
+  .theme-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-block {
+    margin-bottom: 24px;
+  }
+}
+
