@@ -112,6 +112,54 @@ function colorFromName(name = '') {
   return colors[Math.abs(hash) % colors.length]
 }
 
+function AccountList({ expanded, handleNavClick }) {
+  const { dispatch, activeAccount } = useEmail()
+  const [accounts, setAccounts] = useState([])
+
+  useEffect(() => {
+    import('../api').then(({ accountsAPI }) => {
+      accountsAPI.list().then(res => setAccounts(res.data.accounts || []))
+    })
+  }, [])
+
+  const handleSwitch = (id) => {
+    dispatch({ type: 'SET_ACCOUNT', payload: id })
+    handleNavClick()
+  }
+
+  return (
+    <div className="sidebar-accounts">
+      {expanded && <span className="sidebar-section-label" style={{ marginTop: 16 }}>ACCOUNTS</span>}
+      {!expanded && <div style={{ height: 16 }} />}
+      
+      <button 
+        className={`sidebar-nav-item ${activeAccount === 'all' ? 'active' : ''}`}
+        onClick={() => handleSwitch('all')}
+        title={!expanded ? 'All Accounts' : undefined}
+      >
+        <span className="nav-icon" style={{ fontSize: 14 }}>🖇️</span>
+        {expanded && <span className="nav-label">All Accounts</span>}
+      </button>
+
+      {accounts.map(acc => (
+        <button 
+          key={acc.id}
+          className={`sidebar-nav-item ${activeAccount === acc.id ? 'active' : ''}`}
+          onClick={() => handleSwitch(acc.id)}
+          title={!expanded ? acc.email : undefined}
+        >
+          <div className="nav-icon">
+            <div className="avatar avatar-xs" style={{ background: colorFromName(acc.email), color: '#fff', fontSize: 9 }}>
+              {acc.email[0].toUpperCase()}
+            </div>
+          </div>
+          {expanded && <span className="nav-label" style={{ fontSize: 13, opacity: 0.9 }}>{acc.email}</span>}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export default function Sidebar() {
   const { unreadCount, dispatch } = useEmail()
   const { user, logout } = useAuth()
@@ -230,6 +278,8 @@ export default function Sidebar() {
             <span className="nav-icon"><Icons.Subscriptions /></span>
             {expanded && <span className="nav-label">Smart Unsubscribe</span>}
           </NavLink>
+
+          <AccountList expanded={expanded} handleNavClick={handleNavClick} />
         </nav>
 
         {/* Bottom Controls */}
