@@ -16,19 +16,22 @@ const RULES = {
       'facebook.com','facebookmail.com','twitter.com','x.com',
       'instagram.com','linkedin.com','pinterest.com','tiktok.com',
       'snapchat.com','reddit.com','discord.com','youtube.com',
-      'meetup.com','quora.com','tumblr.com','github.com','gitlab.com'
+      'meetup.com','quora.com','tumblr.com','github.com','gitlab.com',
+      'mastodon.social','threads.net','linktr.ee'
     ],
     subjects: [
       'friend request','followed you','mentioned you','tagged you',
       'connection request','wants to connect','new follower',
       'accepted your','invited you','liked your','commented on',
-      'issue assigned', 'pull request', 'repo', 'merged'
+      'issue assigned', 'pull request', 'repo', 'merged',
+      'profile views', 'job alert', 'new connection'
     ],
     body: [
       'view profile','sent you a message','join my network',
       'new message from','added you', 'profile views', 'post',
-      'invite', 'invitation'
+      'invite', 'invitation', 'connection request'
     ],
+    senders: ['linkedin', 'facebook', 'instagram', 'twitter', 'github', 'youtube']
   },
   promotions: {
     domains: [
@@ -55,13 +58,16 @@ const RULES = {
       'irctc.co.in','makemytrip.com','google.com','apple.com',
       'zoom.us','calendly.com','jira.atlassian.com','linear.app',
       'notion.so','trello.com','asana.com','monday.com',
+      'naukri.com','naukrigulf.com','internshala.com',
+      'monster.com','glassdoor.com','indeed.com'
     ],
     subjects: [
       'order','invoice','receipt','payment','booking','confirmed',
       'shipped','delivered','otp','verify','reset','security alert',
       'new sign-in','statement','renewal','expires','subscription',
       'ticket','itinerary','check-in','action required','reminder',
-      'deployment','alert','notification'
+      'deployment','alert','notification', 'application update',
+      'interview', 'assessment', 'test invite'
     ],
     body: [
       'your order','out for delivery','transaction id','payment received',
@@ -108,6 +114,7 @@ export function ruleScore(email) {
 
   // — Social —
   if (domainIn(domain, RULES.social.domains))         score.social += 10;
+  if (RULES.social.senders.some(s => from.includes(s))) score.social += 8;
   score.social += hits(subject, RULES.social.subjects) * 4;
   score.social += hits(blob,    RULES.social.body)     * 2;
 
