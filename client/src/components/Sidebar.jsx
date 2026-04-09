@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useAuth } from '../context/AuthContext'
@@ -150,7 +151,7 @@ function AccountList({ expanded, handleNavClick }) {
         >
           <div className="nav-icon">
             <div className="avatar avatar-xs" style={{ background: colorFromName(acc.email), color: '#fff', fontSize: 9 }}>
-              {acc.email[0].toUpperCase()}
+              {acc.email ? acc.email[0].toUpperCase() : '?'}
             </div>
           </div>
           {expanded && <span className="nav-label" style={{ fontSize: 13, opacity: 0.9 }}>{acc.email}</span>}
