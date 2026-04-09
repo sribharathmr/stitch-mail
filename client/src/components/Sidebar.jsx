@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useAuth } from '../context/AuthContext'
 import { useUI } from '../context/UIContext'
+import { accountsAPI } from '../api'
 import './Sidebar.css'
 
 // ── SVG icon components (Gmail-style outlined) ──────────────────────────────
@@ -118,9 +119,9 @@ function AccountList({ expanded, handleNavClick }) {
   const [accounts, setAccounts] = useState([])
 
   useEffect(() => {
-    import('../api').then(({ accountsAPI }) => {
-      accountsAPI.list().then(res => setAccounts(res.data.accounts || []))
-    })
+    accountsAPI.list()
+      .then(res => setAccounts(res.data?.accounts || []))
+      .catch(err => console.error('[Sidebar] Failed to load accounts:', err))
   }, [])
 
   const handleSwitch = (id) => {

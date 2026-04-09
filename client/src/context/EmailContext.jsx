@@ -19,7 +19,17 @@ const initialState = {
 function reducer(state, action) {
   switch (action.type) {
     case 'SET_LOADING': return { ...state, loading: action.payload }
-    case 'SET_EMAILS': return { ...state, emails: action.payload.emails, total: action.payload.total, pages: action.payload.pages, unreadCount: action.payload.unreadCount ?? state.unreadCount, loading: false }
+    case 'SET_EMAILS': {
+      const { emails = [], total = 0, pages = 1, unreadCount } = action.payload || {};
+      return { 
+        ...state, 
+        emails: emails || [], 
+        total: total || 0, 
+        pages: pages || 1, 
+        unreadCount: unreadCount ?? state.unreadCount, 
+        loading: false 
+      }
+    }
     case 'SET_FOLDER': return { ...state, folder: action.payload, activeEmail: null, page: 1 }
     case 'SET_ACCOUNT': return { ...state, activeAccount: action.payload, activeEmail: null }
     case 'SET_PAGE': return { ...state, page: action.payload }

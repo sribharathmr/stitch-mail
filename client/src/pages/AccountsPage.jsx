@@ -48,7 +48,7 @@ export default function AccountsPage() {
     }
   }, [])
 
-  const totalUnread = accounts.reduce((s, a) => s + (a.unread || 0), 0)
+  const totalUnread = (accounts || []).reduce((s, a) => s + (a.unread || 0), 0)
 
   const handleOpenAccount = (accountId) => {
     dispatch({ type: 'SET_ACCOUNT', payload: accountId })
@@ -110,7 +110,7 @@ export default function AccountsPage() {
   }
 
   // Real-ish stats
-  const emailsManaged = emails.length || 0;
+  const emailsManaged = (emails || []).length;
   const timeSavedHours = (emailsManaged * 2.5 / 60).toFixed(1);
 
   return (
