@@ -101,8 +101,8 @@ exports.findSubscriptions = async (req, res) => {
       .from('emails')
       .select('from_address, subject, body_text')
       .eq('user_id', req.user.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
+      .order('received_at', { ascending: false })
+      .limit(100);
 
     const senders = {};
     for (const em of (emails || [])) {
@@ -184,8 +184,8 @@ exports.categorizeInbox = async (req, res) => {
              !currentLabels.includes('CATEGORIZED');
     });
 
-    // Only process up to 10 at a time to prevent timeout
-    const toProcess = uncategorized.slice(0, 10);
+    // Only process up to 20 at a time to prevent timeout
+    const toProcess = uncategorized.slice(0, 20);
 
     if (toProcess.length === 0) {
       return res.json({ message: 'All recent emails are already categorized.', categorizedCount: 0 });

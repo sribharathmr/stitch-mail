@@ -258,6 +258,91 @@ exports.googleAuthCallback = async (req, res) => {
   }
 };
 
+// ─── Google Account Linking — Step 1: Redirect ───────────────────────────────
+exports.googleLink = (req, res) => {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers.host;
+  // Use a distinct callback for linking
+  const dynamicRedirectUri = `${protocol}://${host}/api/auth/google/link/callback`;
+
+  const oAuth2Client = getOAuthClient(dynamicRedirectUri);
+  const url = oAuth2Client.generateAuthUrl({
+    access_type: 'offline',
+    prompt: 'consent',
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://mail.google.com/',
+    ],
+  });
+  res.redirect(url);
+};
+
+// ─── Google Account Linking — Step 2: Handle Callback ──────────────────────────
+exports.googleLinkCallback = async (req, res) => {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers.host;
+  const dynamicRedirectUri = `${protocol}://${host}/api/auth/google/link/callback`;
+  const clientUrl = host.includes('localhost') ? 'http://localhost:5173' : `${protocol}://${host}`;
+
+  try {
+    const { code } = req.query;
+    if (!code) return res.redirect(`${clientUrl}/accounts?error=no_code`);
+
+    const oAuth2Client = getOAuthClient(dynamicRedirectUri);
+    const { tokens } = await oAuth2Client.getToken(code);
+    oAuth2Client.setCredentials(tokens);
+
+    const oauth2 = google.oauth2({ version: 'v2', auth: oAuth2Client });
+    const { data: profile } = await oauth2.userinfo.get();
+
+    const googleTokens = {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiryDate: tokens.expiry_date,
+    };
+
+    // Save to linked_accounts table
+    const { data: existing } = await supabase
+      .from('linked_accounts')
+      .select('id, google_tokens')
+      .eq('user_id', req.user.id)
+      .eq('email', profile.email.toLowerCase())
+      .single();
+
+    if (existing) {
+      // Update tokens
+      const mergedTokens = {
+        ...existing.google_tokens,
+        accessToken: googleTokens.accessToken,
+        expiryDate: googleTokens.expiryDate,
+        refreshToken: googleTokens.refreshToken || existing.google_tokens.refreshToken
+      };
+      await supabase
+        .from('linked_accounts')
+        .update({ google_tokens: mergedTokens, status: 'active' })
+        .eq('id', existing.id);
+    } else {
+      // Create new linked account
+      await supabase
+        .from('linked_accounts')
+        .insert({
+          user_id: req.user.id,
+          email: profile.email.toLowerCase(),
+          provider: 'google',
+          google_tokens: googleTokens,
+          status: 'active'
+        });
+    }
+
+    // Redirect back to accounts page
+    res.redirect(`${clientUrl}/accounts?success=linked`);
+  } catch (err) {
+    console.error('Google Link error:', err.message);
+    res.redirect(`${clientUrl}/accounts?error=link_failed`);
+  }
+};
+
 // ─── Logout ────────────────────────────────────────────────────────────────────
 exports.logout = (req, res) => {
   res.clearCookie('token', {

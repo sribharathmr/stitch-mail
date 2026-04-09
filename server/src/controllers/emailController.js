@@ -94,7 +94,7 @@ const parseAddressList = (raw) => {
   return raw.split(',').map(s => parseEmailAddress(s.trim())).filter(a => a.address);
 };
 
-const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
+const syncGmailEmails = async (userId, accountId, refreshToken, folder = 'inbox') => {
   if (!refreshToken) return;
 
   try {
@@ -103,12 +103,12 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
     const labelId = labelMap[folder] || 'INBOX';
 
     let pageToken = undefined;
-    const MAX_PAGES = 10; // Limit per single sync request for responsiveness
+    const MAX_PAGES = 10;
     const MAX_NEW_PER_SYNC = 50;
     let totalSynced = 0;
     let stopSync = false;
 
-    console.log(`[Sync] Starting sliding window sync for ${folder}...`);
+    console.log(`[Sync] Starting sliding window sync for account ${accountId} (folder: ${folder})...`);
 
     for (let pg = 0; pg < MAX_PAGES && !stopSync && totalSynced < MAX_NEW_PER_SYNC; pg++) {
       const listRes = await gmail.users.messages.list({
@@ -120,20 +120,19 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
       if (msgs.length === 0) break;
       pageToken = listRes.data.nextPageToken;
 
-      // 1. Quick check against Supabase for which IDs exist in this page
       const pageIds = msgs.map(m => m.id);
       const { data: existing } = await supabase
         .from('emails')
         .select('message_id')
         .eq('user_id', userId)
+        .eq('account_id', accountId)
         .in('message_id', pageIds);
       
       const existingSet = new Set((existing || []).map(e => e.message_id));
       const newInPage = msgs.filter(m => !existingSet.has(m.id));
 
-      // Sliding Window Rule: If > 80% of this page already exists, we've likely reached the "synced" part of the history.
       if (existingSet.size > (msgs.length * 0.8) && pg > 0) {
-        console.log(`[Sync] High redundancy detected (${existingSet.size}/${msgs.length}). Stopping sync.`);
+        console.log(`[Sync] High redundancy detected for account ${accountId}. Stopping sync.`);
         stopSync = true;
       }
 
@@ -142,7 +141,6 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
         continue;
       }
 
-      // 2. Fetch full message details in parallel for new emails in this page
       const fetchDetailedBatch = async (batch) => {
         return Promise.all(batch.map(async (msg) => {
           try {
@@ -181,6 +179,7 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
 
             return {
               user_id: userId,
+              account_id: accountId,
               message_id: msg.id,
               folder,
               from_address: from,
@@ -203,7 +202,6 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
         }));
       };
 
-      // Process this page's new emails in parallel
       const emailRows = (await fetchDetailedBatch(newInPage)).filter(Boolean);
 
       if (emailRows.length > 0) {
@@ -212,16 +210,15 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
           console.error('[Sync] DB Insert error:', error.message);
         } else {
           totalSynced += emailRows.length;
-          console.log(`[Sync] Added ${emailRows.length} emails. Total this pass: ${totalSynced}`);
         }
       }
 
       if (!pageToken) break;
     }
 
-    console.log(`[Sync] Finished. Total emails synced: ${totalSynced}`);
+    console.log(`[Sync] Finished account ${accountId}. Total emails synced: ${totalSynced}`);
   } catch (err) {
-    console.error('[Sync] Global error:', err.message);
+    console.error(`[Sync] Global error for account ${accountId}:`, err.message);
   }
 };
 
@@ -248,8 +245,21 @@ const mapEmail = (e) => ({
 exports.sync = async (req, res) => {
   try {
     const folder = req.query.folder || 'inbox';
-    const fullUser = await getFullUser(req.user.id);
-    await syncGmailEmails(req.user.id, fullUser?.google_tokens?.refreshToken, folder);
+    
+    // Find all linked google accounts for this user
+    const { data: accounts } = await supabase
+      .from('linked_accounts')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .eq('provider', 'google');
+
+    if (accounts && accounts.length > 0) {
+       // Run sync for all accounts in parallel
+       await Promise.all(accounts.map(acc => 
+         syncGmailEmails(req.user.id, acc.id, acc.google_tokens?.refreshToken, folder)
+       ));
+    }
+
     res.json({ message: 'Sync complete' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -259,35 +269,27 @@ exports.sync = async (req, res) => {
 // GET /api/emails
 exports.list = async (req, res) => {
   try {
-    const { folder = 'inbox', page = 1, limit = 100 } = req.query;
+    const { folder = 'inbox', page = 1, limit = 100, accountId } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     const lim = parseInt(limit);
 
-    // Sync for Google users on first page
+    // Sync for all linked Google accounts on first page
     if (parseInt(page) === 1) {
-      const fullUser = await getFullUser(req.user.id);
-      if (fullUser?.google_tokens?.refreshToken) {
-        // Check if we already have emails cached
-        let checkQuery = supabase
-          .from('emails')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', req.user.id);
-          
-        if (folder === 'starred') {
-          checkQuery = checkQuery.eq('is_starred', true);
-        } else {
-          checkQuery = checkQuery.eq('folder', folder);
-        }
-        
-        const { count } = await checkQuery;
+      const { data: accounts } = await supabase
+        .from('linked_accounts')
+        .select('*')
+        .eq('user_id', req.user.id)
+        .eq('provider', 'google');
 
-        const syncPromise = syncGmailEmails(req.user.id, fullUser.google_tokens.refreshToken, folder)
-          .catch(err => console.error('Background sync error:', err.message));
-        
-        // Await the sync only if a folder is empty in DB, so it fetches and returns them immediately
-        if (count === 0) {
-          await syncPromise;
-        }
+      if (accounts && accounts.length > 0) {
+        const targetAccounts = accountId && accountId !== 'all' 
+          ? accounts.filter(a => a.id === accountId)
+          : accounts;
+
+        await Promise.all(targetAccounts.map(acc => 
+          syncGmailEmails(req.user.id, acc.id, acc.google_tokens?.refreshToken, folder)
+            .catch(err => console.error(`Background sync error for ${acc.id}:`, err.message))
+        ));
       }
     }
 
@@ -300,6 +302,10 @@ exports.list = async (req, res) => {
       query = query.eq('is_starred', true);
     } else {
       query = query.eq('folder', folder);
+    }
+
+    if (accountId && accountId !== 'all') {
+      query = query.eq('account_id', accountId);
     }
 
     const { data: emails, count, error } = await query

@@ -5,68 +5,81 @@ import { useAuth } from '../context/AuthContext'
 import { accountsAPI } from '../api'
 import './AccountsPage.css'
 
-const WORKLOAD_DATA = [
-  { label: 'Mon', work: 80, personal: 20 },
-  { label: 'Tue', work: 65, personal: 35 },
-  { label: 'Wed', work: 90, personal: 10 },
-  { label: 'Thu', work: 70, personal: 30 },
-  { label: 'Fri', work: 50, personal: 50 },
-]
-
 export default function AccountsPage() {
   const navigate = useNavigate()
-  const { dispatch, emails, unreadCount, fetchEmails } = useEmail()
-  const { user } = useAuth()
+  const { dispatch, emails, fetchEmails } = useEmail()
   const [showAddModal, setShowAddModal] = useState(false)
   const [addForm, setAddForm] = useState({ provider: '', email: '', password: '' })
   const [addingAccount, setAddingAccount] = useState(false)
 
-  const [activeAccountIds, setActiveAccountIds] = useState([])
   const [accounts, setAccounts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => { 
-    fetchEmails('inbox')
+  const loadAccounts = () => {
+    setIsLoading(true)
     accountsAPI.list().then(res => {
-      const AVATAR_COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B']
+      const AVATAR_COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899', '#EF4444']
       const fetchedAccounts = (res.data.accounts || []).map((a, i) => ({
         ...a,
         id: String(a.id),
         color: AVATAR_COLORS[i % AVATAR_COLORS.length]
       }))
       setAccounts(fetchedAccounts)
-      setActiveAccountIds(fetchedAccounts.map(a => a.id))
       setIsLoading(false)
     }).catch(err => {
       console.error(err)
       setIsLoading(false)
     })
+  }
+
+  useEffect(() => { 
+    fetchEmails('inbox')
+    loadAccounts()
+    
+    // Check for success/error query params from OAuth redirect
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('success') === 'linked') {
+      window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Account linked successfully' } }))
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+    if (params.get('error')) {
+      window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Failed to link account' } }))
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
   }, [])
 
-  const displayAccounts = accounts.filter(a => activeAccountIds.includes(a.id))
-  const totalUnread = displayAccounts.reduce((s, a) => s + (a.unread || 0), 0)
+  const totalUnread = accounts.reduce((s, a) => s + (a.unread || 0), 0)
 
   const handleOpenAccount = (accountId) => {
     dispatch({ type: 'SET_ACCOUNT', payload: accountId })
     navigate('/inbox')
   }
 
+  const handleLinkGoogle = () => {
+    // Redirect to backend OAuth route
+    window.location.href = '/api/auth/google/link'
+  }
+
   const handleAddAccount = async () => {
+    if (addForm.provider === 'Gmail') {
+      handleLinkGoogle()
+      return
+    }
+
     setAddingAccount(true)
     try {
-      // Map form to API expected structure
       const data = {
         email: addForm.email,
         provider: addForm.provider,
-        smtpConfig: {
-          host: addForm.provider === 'Gmail' ? 'smtp.gmail.com' : '',
-          port: 587,
+        imapConfig: {
+          host: addForm.provider === 'Outlook' ? 'outlook.office365.com' : (addForm.provider === 'Yahoo' ? 'imap.mail.yahoo.com' : ''),
+          port: 993,
           user: addForm.email,
           pass: addForm.password
         },
-        imapConfig: {
-          host: addForm.provider === 'Gmail' ? 'imap.gmail.com' : '',
-          port: 993,
+        smtpConfig: {
+          host: addForm.provider === 'Outlook' ? 'smtp.office365.com' : (addForm.provider === 'Yahoo' ? 'smtp.mail.yahoo.com' : ''),
+          port: 587,
           user: addForm.email,
           pass: addForm.password
         }
@@ -75,8 +88,8 @@ export default function AccountsPage() {
       await accountsAPI.add(data)
       setShowAddModal(false)
       setAddForm({ provider: '', email: '', password: '' })
-      // Navigate to inbox or refresh
-      fetchEmails('inbox')
+      loadAccounts()
+      window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Account added' } }))
     } catch (err) {
       alert('Failed to connect: ' + (err.response?.data?.message || err.message))
     } finally {
@@ -84,10 +97,25 @@ export default function AccountsPage() {
     }
   }
 
+  const handleRemoveAccount = async (id, email) => {
+    if (!window.confirm(`Are you sure you want to remove ${email}? This will also delete synced emails.`)) return
+    
+    try {
+      await accountsAPI.delete(id)
+      setAccounts(prev => prev.filter(a => a.id !== id))
+      window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Account removed' } }))
+    } catch (err) {
+      alert('Failed to remove account')
+    }
+  }
+
+  // Real-ish stats
+  const emailsManaged = emails.length || 0;
+  const timeSavedHours = (emailsManaged * 2.5 / 60).toFixed(1);
+
   return (
     <div className="accounts-layout">
       <div className="accounts-content">
-        {/* Header */}
         <div className="accounts-header">
           <div>
             <h1 className="accounts-title">Unified Switcher</h1>
@@ -106,9 +134,7 @@ export default function AccountsPage() {
         </div>
 
         <div className="accounts-grid">
-          {/* Left: Accounts */}
           <div className="accounts-left">
-            {/* Unified Inbox Master Card */}
             <div className="unified-card card">
               <div className="unified-card-header">
                 <div className="unified-card-icon">📬</div>
@@ -121,13 +147,14 @@ export default function AccountsPage() {
                 </div>
               </div>
               <div className="unified-avatars">
-                {displayAccounts.map(a => (
+                {accounts.map(a => (
                   <div
                     key={a.id}
                     className="avatar avatar-sm"
                     style={{ background: a.color, color: '#fff', marginLeft: -6, border: '2px solid var(--bg-card)', fontSize: 10 }}
+                    title={a.email}
                   >
-                    {(a.name || a.email || '?')[0].toUpperCase()}
+                    {(a.email || '?')[0].toUpperCase()}
                   </div>
                 ))}
               </div>
@@ -140,13 +167,14 @@ export default function AccountsPage() {
               </button>
             </div>
 
-            {/* Account Cards */}
             <div className="account-cards">
-              {displayAccounts.map(account => (
+              {isLoading ? (
+                <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Loading accounts...</div>
+              ) : accounts.map(account => (
                 <div key={account.id} id={`account-${account.id}`} className="account-card card card-hover">
                   <div className="account-card-header">
                     <div className="avatar avatar-md" style={{ background: account.color, color: '#fff' }}>
-                      {(account.name || account.email || '?')[0].toUpperCase()}
+                      {(account.email || '?')[0].toUpperCase()}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -184,9 +212,7 @@ export default function AccountsPage() {
                       title="Remove Account"
                       onClick={(e) => {
                         e.stopPropagation()
-                        if (window.confirm(`Are you sure you want to remove the account ${account.email}?`)) {
-                          setActiveAccountIds(prev => prev.filter(id => id !== account.id))
-                        }
+                        handleRemoveAccount(account.id, account.email)
                       }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
@@ -199,7 +225,6 @@ export default function AccountsPage() {
                 </div>
               ))}
 
-              {/* Add Account Card */}
               <div className="add-account-card card" id="add-account-btn" tabIndex={0} onClick={() => setShowAddModal(true)} style={{ cursor: 'pointer' }}>
                 <div className="add-account-icon">+</div>
                 <div className="add-account-label">Add New Account</div>
@@ -208,103 +233,116 @@ export default function AccountsPage() {
             </div>
           </div>
 
-          {/* Right: Stats */}
           <div className="accounts-right">
             <div className="card" style={{ padding: '20px', marginBottom: 16 }}>
               <h3 style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 16 }}>
-                Weekly Stats
+                Real-time Status
               </h3>
               <div className="weekly-stats-row">
                 <div className="stat-block">
-                  <div className="stat-big-num">{emails.length > 0 ? (emails.length * 12) : 0}</div>
-                  <div className="stat-big-label">Emails Managed</div>
+                  <div className="stat-big-num">{emailsManaged}</div>
+                  <div className="stat-big-label">Active Emails</div>
                 </div>
                 <div className="stat-block">
-                  <div className="stat-big-num" style={{ color: '#10B981' }}>4.2h</div>
-                  <div className="stat-big-label">Time Saved</div>
+                  <div className="stat-big-num" style={{ color: '#10B981' }}>{timeSavedHours}h</div>
+                  <div className="stat-big-label">AI Efficiency</div>
                 </div>
               </div>
             </div>
 
             <div className="card" style={{ padding: '20px', marginBottom: 16 }}>
               <h3 style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>
-                Workload
+                Account Health
               </h3>
-              <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: 2, background: '#3B82F6' }}/>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Work 78%</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: 2, background: '#E2E8F0' }}/>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Personal 22%</span>
-                </div>
-              </div>
-              <div className="workload-chart">
-                {WORKLOAD_DATA.map(d => (
-                  <div key={d.label} className="workload-bar-group">
-                    <div className="workload-bar-track">
-                      <div className="workload-bar-fill" style={{ height: `${d.work}%` }} />
-                    </div>
-                    <span className="workload-day">{d.label}</span>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
+                 {accounts.map(a => (
+                   <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                     <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{a.email}</div>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: a.status === 'active' ? '#10B981' : '#EF4444' }} />
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{a.status}</span>
+                     </div>
+                   </div>
+                 ))}
+                 {accounts.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No accounts connected</div>}
               </div>
             </div>
 
             <div className="quote-card card">
               <div className="quote-icon">✨</div>
               <blockquote className="quote-text">
-                "The key is not to prioritize what's on your schedule, but to schedule your priorities."
+                "Simple is better than complex."
               </blockquote>
-              <div className="quote-author">— Stephen Covey</div>
+              <div className="quote-author">— The Zen of Python</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Add Account Modal */}
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="modal" style={{ maxWidth: 420, padding: 0 }} onClick={e => e.stopPropagation()}>
             <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700 }}>Connect Email Account</h2>
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Add a new email account to your unified inbox.</p>
+              <h2 style={{ fontSize: 16, fontWeight: 700 }}>Connect Account</h2>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Add a secondary email account to your unified inbox.</p>
             </div>
             <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Provider</label>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  {['Gmail', 'Outlook', 'Yahoo', 'IMAP'].map(p => (
+                  {['Gmail', 'Outlook', 'IMAP'].map(p => (
                     <button
                       key={p}
                       className={`btn btn-sm ${addForm.provider === p ? 'btn-primary' : 'btn-secondary'}`}
                       onClick={() => setAddForm(f => ({ ...f, provider: p }))}
                       style={{ flex: 1, justifyContent: 'center' }}
                     >
-                      {p === 'Gmail' && '📧 '}{p === 'Outlook' && '📬 '}{p === 'Yahoo' && '📮 '}{p === 'IMAP' && '⚙️ '}{p}
+                      {p === 'Gmail' && '📧 '}{p === 'Outlook' && '📬 '}{p === 'IMAP' && '⚙️ '}{p}
                     </button>
                   ))}
                 </div>
               </div>
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Email Address</label>
-                <input className="input" placeholder="you@example.com" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} />
-              </div>
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Password / App Key</label>
-                <input className="input" type="password" placeholder="••••••••" value={addForm.password} onChange={e => setAddForm(f => ({ ...f, password: e.target.value }))} />
-              </div>
+
+              {addForm.provider === 'Gmail' ? (
+                <div style={{ padding: '24px 0', textAlign: 'center' }}>
+                  <button className="btn btn-primary" onClick={handleLinkGoogle} style={{ width: '100%', justifyContent: 'center', height: 48, background: '#fff', color: '#1f2937', border: '1px solid #d1d5db', gap: 12, fontWeight: 600 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Continue with Google
+                  </button>
+                </div>
+              ) : addForm.provider ? (
+                <>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Email Address</label>
+                    <input className="input" placeholder="you@example.com" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Password / App Key</label>
+                    <input className="input" type="password" placeholder="••••••••" value={addForm.password} onChange={e => setAddForm(f => ({ ...f, password: e.target.value }))} />
+                  </div>
+                </>
+              ) : (
+                <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+                  Please select a provider above
+                </div>
+              )}
             </div>
             <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
-              <button
-                className="btn btn-primary"
-                onClick={handleAddAccount}
-                disabled={!addForm.provider || !addForm.email || addingAccount}
-              >
-                {addingAccount ? 'Connecting...' : 'Connect Account'}
-              </button>
+              {addForm.provider !== 'Gmail' && (
+                <button
+                  className="btn btn-primary"
+                  onClick={handleAddAccount}
+                  disabled={!addForm.provider || !addForm.email || addingAccount}
+                >
+                  {addingAccount ? 'Connecting...' : 'Connect Account'}
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -63,6 +63,7 @@ export const settingsAPI = {
 export const accountsAPI = {
   list: () => api.get('/accounts'),
   add: (data) => api.post('/accounts', data),
+  delete: (id) => api.delete(`/accounts/${id}`),
   unifiedInbox: () => api.get('/accounts/unified-inbox'),
 }
 

@@ -56,12 +56,17 @@ export function EmailProvider({ children }) {
   const fetchEmails = useCallback(async (folder, page = 1) => {
     dispatch({ type: 'SET_LOADING', payload: true })
     try {
-      const res = await emailAPI.list({ folder, page, limit: 100 })
+      const res = await emailAPI.list({ 
+        folder, 
+        page, 
+        limit: 100,
+        accountId: state.activeAccount !== 'all' ? state.activeAccount : undefined
+      })
       dispatch({ type: 'SET_EMAILS', payload: res.data })
     } catch (err) {
       dispatch({ type: 'SET_LOADING', payload: false })
     }
-  }, [])
+  }, [state.activeAccount])
 
   const openEmail = useCallback(async (email) => {
     dispatch({ type: 'SET_ACTIVE', payload: email })

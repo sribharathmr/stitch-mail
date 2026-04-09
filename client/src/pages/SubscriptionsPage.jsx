@@ -43,7 +43,7 @@ export default function SubscriptionsPage() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
           <div className="spinner" style={{ margin: '0 auto 16px', borderColor: 'var(--accent)', borderRightColor: 'transparent' }} />
-          Analyzing recent emails with Ollama AI...
+          Analyzing recent emails with Gemini AI...
         </div>
       ) : subs.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px', background: 'var(--bg-hover)', borderRadius: '12px' }}>

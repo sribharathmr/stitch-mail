@@ -3,9 +3,9 @@ import { useEmail } from '../context/EmailContext'
 import './InboxZeroPage.css'
 
 const QUICK_ACTIONS = [
-  { icon: '📅', label: 'CALENDAR', sublabel: 'Review Schedule', to: '#' },
+  { icon: '📅', label: 'CALENDAR', sublabel: 'Review Schedule', to: '/inbox' },
   { icon: '📦', label: 'ARCHIVES', sublabel: 'View Last Week', to: '/archive' },
-  { icon: '📁', label: 'FILES', sublabel: 'Manage Assets', to: '#' },
+  { icon: '📁', label: 'FILES', sublabel: 'Manage Assets', to: '/inbox' },
 ]
 
 export default function InboxZeroPage() {

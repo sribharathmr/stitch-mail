@@ -8,8 +8,12 @@ router.post('/logout', logout);
 router.get('/me', auth, me);
 
 // Google OAuth routes
-const { googleAuth, googleAuthCallback } = require('../controllers/authController');
+const { googleAuth, googleAuthCallback, googleLink, googleLinkCallback } = require('../controllers/authController');
 router.get('/google', googleAuth);
 router.get('/google/callback', googleAuthCallback);
+
+// Linking secondary accounts
+router.get('/google/link', auth, googleLink);
+router.get('/google/link/callback', auth, googleLinkCallback);
 
 module.exports = router;
