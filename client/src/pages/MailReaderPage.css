@@ -169,8 +169,8 @@
   .reader-toolbar::-webkit-scrollbar { display: none; }
 
   .reader-toolbar .btn-icon {
-    min-width: 36px;
-    min-height: 36px;
+    min-width: 40px;
+    min-height: 40px;
     flex-shrink: 0;
   }
   

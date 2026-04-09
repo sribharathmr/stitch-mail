@@ -23,7 +23,7 @@ const THEME_OPTIONS = [
 export default function SettingsPage() {
   const { theme, setTheme, settings, loadSettings } = useUI()
   const { user, setUser } = useAuth()
-  const [activeSection, setActiveSection] = useState('themes')
+  const [activeSection, setActiveSection] = useState('general')
   const [prefs, setPrefs] = useState({
     smartNotifications: true,
     threadGrouping: false,

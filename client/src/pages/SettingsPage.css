@@ -250,8 +250,13 @@
     flex-direction: row;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0;
+    padding: 4px 8px;
     scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-sidebar);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
   .settings-nav::-webkit-scrollbar { display: none; }
 
@@ -261,9 +266,10 @@
 
   .settings-nav-item {
     white-space: nowrap;
-    padding: 10px 14px;
-    font-size: 12px;
+    padding: 12px 18px;
+    font-size: 13px;
     flex-shrink: 0;
+    border-radius: var(--radius-md);
   }
 
   .settings-main {
