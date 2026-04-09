@@ -121,99 +121,102 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
     const messages = allMessages;
     if (messages.length === 0) return;
 
-    // Find which messages we already have
-    // Supabase IN filter has a limit, so batch check in chunks of 100
-    const existingSet = new Set();
-    for (let i = 0; i < messages.length; i += 100) {
-      const chunk = messages.slice(i, i + 100).map(m => m.id);
-      const { data: existing } = await supabase
-        .from('emails')
-        .select('message_id')
-        .eq('user_id', userId)
-        .in('message_id', chunk);
-      (existing || []).forEach(e => existingSet.add(e.message_id));
-    }
-
-    const newMessages = messages.filter(m => !existingSet.has(m.id));
-
-    if (newMessages.length === 0) return;
-    console.log(`📬 Syncing ${newMessages.length} new emails from Gmail (${folder})`);
-
-    const emailRows = [];
-    for (const msg of newMessages) {
-      try {
-        const full = await gmail.users.messages.get({ userId: 'me', id: msg.id, format: 'full' });
-        const headers = full.data.payload?.headers || [];
-        const getHeader = (name) => headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || '';
-
-        const subject = getHeader('Subject');
-        const from = parseEmailAddress(getHeader('From'));
-        const to = parseAddressList(getHeader('To'));
-        const cc = parseAddressList(getHeader('Cc'));
-        const date = getHeader('Date');
-
-        let bodyHtml = '', bodyText = '';
-        const attachments = [];
-        const extractBody = (payload) => {
-          if (payload.filename && payload.body?.attachmentId) {
-            attachments.push({
-              filename: payload.filename,
-              mimetype: payload.mimeType || 'application/octet-stream',
-              size: payload.body?.size || 0,
-              attachmentId: payload.body?.attachmentId,
-              partId: payload.partId,
-              // Fallback path (the new proxy route will be used by the frontend)
-              path: `/api/emails/${msg.id}/attachments/${payload.body?.attachmentId || payload.partId}`
-            });
-          }
-
-          if (payload.mimeType === 'text/html' && payload.body?.data)
-            bodyHtml = Buffer.from(payload.body.data, 'base64url').toString('utf8');
-          else if (payload.mimeType === 'text/plain' && payload.body?.data)
-            bodyText = Buffer.from(payload.body.data, 'base64url').toString('utf8');
-            
-          if (payload.parts) payload.parts.forEach(extractBody);
-        };
-        extractBody(full.data.payload);
-        if (!bodyHtml && bodyText)
-          bodyHtml = `<pre style="white-space:pre-wrap;font-family:inherit">${bodyText}</pre>`;
-
-        const isRead = !(full.data.labelIds || []).includes('UNREAD');
-        const isStarred = (full.data.labelIds || []).includes('STARRED');
-
-        emailRows.push({
-          user_id: userId,
-          message_id: msg.id,
-          folder,
-          from_address: from,
-          to_addresses: to,
-          cc,
-          subject: subject || '(No Subject)',
-          body_html: bodyHtml,
-          body_text: bodyText,
-          attachments,
-          is_read: isRead,
-          is_starred: isStarred,
-          thread_id: full.data.threadId || '',
-          received_at: date ? new Date(date).toISOString() : new Date().toISOString(),
-          created_at: date ? new Date(date).toISOString() : new Date().toISOString(),
-        });
-      } catch (msgErr) {
-        console.error(`Failed to fetch message ${msg.id}:`, msgErr.message);
+    const syncPromise = async () => {
+      // Find which messages we already have
+      const existingSet = new Set();
+      for (let i = 0; i < messages.length; i += 100) {
+        const chunk = messages.slice(i, i + 100).map(m => m.id);
+        const { data: existing } = await supabase
+          .from('emails')
+          .select('message_id')
+          .eq('user_id', userId)
+          .in('message_id', chunk);
+        (existing || []).forEach(e => existingSet.add(e.message_id));
       }
-    }
 
-    if (emailRows.length > 0) {
-      // Insert in batches of 50 to avoid payload limits
-      let inserted = 0;
-      for (let i = 0; i < emailRows.length; i += 50) {
-        const batch = emailRows.slice(i, i + 50);
-        const { error } = await supabase.from('emails').insert(batch);
-        if (error) console.error('Insert error (batch):', error.message);
-        else inserted += batch.length;
+      const newMessages = messages.filter(m => !existingSet.has(m.id));
+      if (newMessages.length === 0) return;
+
+      // Cap new messages per sync to avoid timeouts (Vercel limit 60s)
+      const MAX_NEW_PER_SYNC = 50;
+      const batchToProcess = newMessages.slice(0, MAX_NEW_PER_SYNC);
+      
+      console.log(`📬 Syncing ${batchToProcess.length} new emails (out of ${newMessages.length} total new) from Gmail (${folder})`);
+
+      const fetchMessage = async (msgId) => {
+        try {
+          const full = await gmail.users.messages.get({ userId: 'me', id: msgId, format: 'full' });
+          const headers = full.data.payload?.headers || [];
+          const getHeader = (name) => headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || '';
+
+          const subject = getHeader('Subject');
+          const from = parseEmailAddress(getHeader('From'));
+          const to = parseAddressList(getHeader('To'));
+          const cc = parseAddressList(getHeader('Cc'));
+          const date = getHeader('Date');
+
+          let bodyHtml = '', bodyText = '';
+          const attachments = [];
+          const extractBody = (payload) => {
+            if (payload.filename && payload.body?.attachmentId) {
+              attachments.push({
+                filename: payload.filename,
+                mimetype: payload.mimeType || 'application/octet-stream',
+                size: payload.body?.size || 0,
+                attachmentId: payload.body?.attachmentId,
+                partId: payload.partId,
+                path: `/api/emails/${msgId}/attachments/${payload.body?.attachmentId || payload.partId}`
+              });
+            }
+            if (payload.mimeType === 'text/html' && payload.body?.data)
+              bodyHtml = Buffer.from(payload.body.data, 'base64url').toString('utf8');
+            else if (payload.mimeType === 'text/plain' && payload.body?.data)
+              bodyText = Buffer.from(payload.body.data, 'base64url').toString('utf8');
+            if (payload.parts) payload.parts.forEach(extractBody);
+          };
+          extractBody(full.data.payload);
+          if (!bodyHtml && bodyText)
+            bodyHtml = `<pre style="white-space:pre-wrap;font-family:inherit">${bodyText}</pre>`;
+
+          return {
+            user_id: userId,
+            message_id: msgId,
+            folder,
+            from_address: from,
+            to_addresses: to,
+            cc,
+            subject: subject || '(No Subject)',
+            body_html: bodyHtml,
+            body_text: bodyText,
+            attachments,
+            is_read: !(full.data.labelIds || []).includes('UNREAD'),
+            is_starred: (full.data.labelIds || []).includes('STARRED'),
+            thread_id: full.data.threadId || '',
+            received_at: date ? new Date(date).toISOString() : new Date().toISOString(),
+            created_at: date ? new Date(date).toISOString() : new Date().toISOString(),
+          };
+        } catch (err) {
+          console.error(`Failed to fetch ${msgId}:`, err.message);
+          return null;
+        }
+      };
+
+      // Process in batches of 5 to achieve parallelism but avoid hitting Gmail rate limits too hard
+      const emailRows = [];
+      for (let i = 0; i < batchToProcess.length; i += 5) {
+        const chunk = batchToProcess.slice(i, i + 5);
+        const results = await Promise.all(chunk.map(m => fetchMessage(m.id)));
+        emailRows.push(...results.filter(Boolean));
       }
-      console.log(`✅ Synced ${inserted} emails into Supabase`);
-    }
+
+      if (emailRows.length > 0) {
+        const { error } = await supabase.from('emails').insert(emailRows);
+        if (error) console.error('Insert error:', error.message);
+        else console.log(`✅ Synced ${emailRows.length} emails into Supabase`);
+      }
+    };
+
+    await syncPromise();
   } catch (err) {
     console.error('Gmail sync error:', err.message);
   }

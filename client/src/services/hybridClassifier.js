@@ -26,7 +26,8 @@ const RULES = {
     ],
     body: [
       'view profile','sent you a message','join my network',
-      'new message from','added you',
+      'new message from','added you', 'profile views', 'post',
+      'invite', 'invitation'
     ],
   },
   promotions: {
@@ -76,7 +77,8 @@ const RULES = {
 };
 
 function extractDomain(from = '') {
-  const m = from.match(/@([\w.-]+)/);
+  const str = typeof from === 'string' ? from : (from?.address || '');
+  const m = str.match(/@([\w.-]+)/);
   return m ? m[1].toLowerCase() : '';
 }
 
@@ -94,11 +96,12 @@ function domainIn(domain, list) {
 }
 
 export function ruleScore(email) {
-  const from    = norm(email.from?.address || email.from || '');
+  const fromInput = email.from?.address || email.from || '';
+  const from    = norm(typeof fromInput === 'string' ? fromInput : fromInput.address || '');
   const subject = norm(email.subject || '');
   const body    = norm(email.bodyText || email.body || '');
   const headers = email.headers || {};
-  const domain  = extractDomain(from);
+  const domain  = extractDomain(fromInput);
   const blob    = subject + ' ' + body;
 
   const score = { primary: 0, social: 0, updates: 0, promotions: 0 };
