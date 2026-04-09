@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useCallback } from 'react'
+import { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
 import { emailAPI } from '../api'
 
 const EmailContext = createContext(null)
@@ -94,6 +94,23 @@ export function EmailProvider({ children }) {
       dispatch({ type: 'REMOVE_EMAIL', payload: id })
     } catch (_) {}
   }, [])
+
+  // Background polling for dynamic updates
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      // Only poll if the browser tab is focused to save resources
+      if (document.visibilityState === 'visible' && !state.loading && state.folder) {
+        // Sync the current folder's first page to catch new arrivals
+        emailAPI.list({ folder: state.folder, page: 1, limit: 100 })
+          .then(res => {
+            dispatch({ type: 'SET_EMAILS', payload: res.data })
+          })
+          .catch(err => console.debug('[Poll] Background sync failed:', err.message))
+      }
+    }, 60000) // Every 60 seconds
+
+    return () => clearInterval(pollInterval)
+  }, [state.folder, state.loading])
 
   return (
     <EmailContext.Provider value={{ ...state, dispatch, fetchEmails, openEmail, starEmail, moveEmail, deleteEmail }}>
