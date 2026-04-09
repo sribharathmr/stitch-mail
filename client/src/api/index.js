@@ -73,6 +73,9 @@ export const aiAPI = {
   subscriptions: () => api.get('/ai/subscriptions', { timeout: 60000 }),
   unsubscribe: (address) => api.post('/ai/unsubscribe', { address }),
   categorize: () => api.post('/ai/categorize', {}, { timeout: 120000 }),
+  categorizeSingle: (data) => api.post('/ai/categorize-single', data, { timeout: 30000 }),
+  getCorrections: () => api.get('/ai/corrections'),
+  saveCorrection: (data) => api.post('/ai/corrections', data),
 }
 
 export default api

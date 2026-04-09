@@ -221,3 +221,52 @@ exports.categorizeInbox = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// 5. Categorize Single (Layer 3 fallback)
+exports.categorizeSingle = async (req, res) => {
+  try {
+    const { subject, sender, body } = req.body;
+    if (!subject && !sender) return res.status(400).json({ message: 'subject and sender are required.' });
+    
+    const category = await geminiService.categorizeEmail(subject, sender, body || '');
+    res.json({ category });
+  } catch (error) {
+    console.error('categorizeSingle Error:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 6. Learn Corrections (Layer 2 Sync)
+exports.saveCorrection = async (req, res) => {
+  try {
+    const { text, label } = req.body;
+    if (!text || !label) return res.status(400).json({ message: 'text and label are required.' });
+
+    const { error } = await supabase
+      .from('classifier_corrections')
+      .insert({ user_id: req.user.id, text, label });
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    console.error('saveCorrection Error:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.listCorrections = async (req, res) => {
+  try {
+    const { data: corrections, error } = await supabase
+      .from('classifier_corrections')
+      .select('text, label')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false })
+      .limit(500);
+
+    if (error) throw error;
+    res.json({ corrections: corrections || [] });
+  } catch (error) {
+    console.error('listCorrections Error:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};

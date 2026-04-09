@@ -415,26 +415,28 @@ async function categorizeEmail(subject, sender, bodyText) {
   const preview = (bodyText || '').substring(0, 500);
   
   const prompt = `
-Analyze the following email metadata and content to categorize it into exactly one of three categories: "PRIMARY", "SOCIAL", or "PROMOTIONS".
+Analyze the following email metadata and content to categorize it into exactly one of four categories: "PRIMARY", "SOCIAL", "UPDATES", or "PROMOTIONS".
 
 Categories Description:
-- PRIMARY: Important personal emails, direct messages from people, work-related emails, urgently required actions.
-- SOCIAL: Notifications from social networks, GitHub, Dribbble, Twitter, project management tools, etc.
-- PROMOTIONS: Newsletters, marketing emails, discount offers, automated lists.
+- PRIMARY: Important personal emails, direct messages from people, work-related emails from actual contacts.
+- SOCIAL: Notifications from social networks (Facebook, LinkedIn, Twitter), community platforms (Discord, Reddit), or GitHub/Dribbble.
+- UPDATES: Transactional emails, receipts, order confirmations, OTPs, verification codes, automated security alerts, or Jira/Notion notifications.
+- PROMOTIONS: Newsletters, marketing emails, discount offers, mass automated lists, or unsubscribable commercial content.
 
 Sender: ${sender}
 Subject: ${subject}
 Content snippet:
 ${preview}
 
-Answer with exactly one word: PRIMARY, SOCIAL, or PROMOTIONS.
+Answer with exactly one word: PRIMARY, SOCIAL, UPDATES, or PROMOTIONS.
 `;
 
   try {
     const text = await generateContent(prompt);
-    const upper = (text || '').trim().toUpperCase();
-    if (upper.includes('SOCIAL')) return 'SOCIAL';
-    if (upper.includes('PROMOTION')) return 'PROMOTIONS';
+    const category = (text || '').trim().toUpperCase();
+    if (category.includes('SOCIAL')) return 'SOCIAL';
+    if (category.includes('PROMOTION')) return 'PROMOTIONS';
+    if (category.includes('UPDATE')) return 'UPDATES';
     return 'PRIMARY';
   } catch(e) {
     console.error('Categorize error:', e.message);

@@ -4,6 +4,7 @@ import { useEmail } from '../context/EmailContext'
 import { useUI } from '../context/UIContext'
 import { format, isToday, isYesterday } from 'date-fns'
 import { aiAPI, settingsAPI } from '../api'
+import { segregateInbox, learnCorrection, ruleScore } from '../services/hybridClassifier'
 import './InboxPage.css'
 
 const TabIcons = {
@@ -36,32 +37,10 @@ const TabIcons = {
 
 const TABS = [
   { id: 'primary',    label: 'Primary',    Icon: TabIcons.primary },
-  { id: 'social',     label: 'Social',     Icon: TabIcons.social,     labelMatch: ['SOCIAL', 'SOCIALS', 'DRIBBBLE', 'GITHUB', 'LINKEDIN', 'TWITTER', 'X.COM', 'FACEBOOK', 'INSTAGRAM', 'PINTEREST', 'CONTACT'] },
-  { id: 'promotions', label: 'Promotions', Icon: TabIcons.promotions, labelMatch: ['PROMOTIONS', 'PROMOTION', 'NEWSLETTER', 'MARKETING', 'OFFER', 'DEAL', 'DISCOUNT', 'SALE', 'SUBSCRIPTION', 'UDEMY', 'WEBINAR', 'REGISTER', 'INVITES'] },
-  { id: 'updates',    label: 'Updates',    Icon: TabIcons.updates,    labelMatch: ['UPDATES', 'UPDATE', 'NOTIFICATION', 'ALERT', 'SECURITY', 'PASSWORD', 'RESET', 'RECEIPT', 'ORDER', 'BUILD', 'FAILED', 'JOBS', 'CONFIRMED'] }
+  { id: 'social',     label: 'Social',     Icon: TabIcons.social },
+  { id: 'promotions', label: 'Promotions', Icon: TabIcons.promotions },
+  { id: 'updates',    label: 'Updates',    Icon: TabIcons.updates }
 ]
-
-const emailMatchesTab = (email, tabLabels) => {
-  if (!tabLabels) return false;
-  const upperTabLabels = tabLabels.map(l => l.toUpperCase());
-  
-  // 1. Check strict labels array from AI categorization
-  if (email.labels && email.labels.some(l => upperTabLabels.includes((l || '').toUpperCase()))) {
-    return true;
-  }
-
-  // 2. Fallback: Check sender name/email and subject for keywords using word boundaries
-  const textToSearch = [
-    email.from?.name,
-    email.from?.address,
-    email.subject
-  ].filter(Boolean).join(' ')
-  
-  return upperTabLabels.some(keyword => {
-    // Escape keywords safely (though they are alphanumeric) and match as whole words
-    return new RegExp(`\\b${keyword}\\b`, 'i').test(textToSearch)
-  })
-}
 
 const UPCOMING_TASKS = [
   { id: 1, title: 'Review Q3 Budget', time: 'Today 3:00 PM', color: '#3B82F6' },
@@ -101,6 +80,9 @@ export default function InboxPage({ folder = 'inbox' }) {
   const [tasks, setTasks] = useState([])
   const [hasLoadedTasks, setHasLoadedTasks] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState(null)
+  
+  // Hybrid classification refinements
+  const [classifications, setClassifications] = useState({})
 
   useEffect(() => {
     if (settings?.preferences && !hasLoadedTasks) {
@@ -150,7 +132,24 @@ export default function InboxPage({ folder = 'inbox' }) {
 
   useEffect(() => {
     fetchEmails(folder)
-  }, [folder, location.pathname])
+  }, [folder, location.pathname, fetchEmails])
+
+  // Trigger Hybrid Classifier Pass 2 (Refinement)
+  useEffect(() => {
+    if (folder !== 'inbox') return;
+    
+    // Pass 1: Local Rule Check (Sync)
+    const initialMap = {};
+    emails.forEach(e => {
+      initialMap[e._id] = ruleScore(e).tab;
+    });
+    setClassifications(prev => ({ ...prev, ...initialMap }));
+
+    // Pass 2: Background Refinement (ML/AI)
+    segregateInbox(emails, (id, tab) => {
+      setClassifications(prev => ({ ...prev, [id]: tab }));
+    });
+  }, [emails, folder])
 
   const activeEmails = useMemo(() => {
     if (!activeAccount || activeAccount === 'all') return emails;
@@ -173,13 +172,10 @@ export default function InboxPage({ folder = 'inbox' }) {
     let emailsToDisplay = activeEmails;
 
     if (folder === 'inbox') {
-      if (activeTab === 'primary') {
-        const allSpecialLabels = TABS.flatMap(t => t.labelMatch || [])
-        emailsToDisplay = activeEmails.filter(e => !emailMatchesTab(e, allSpecialLabels))
-      } else {
-        const tab = TABS.find(t => t.id === activeTab)
-        if (tab?.labelMatch) emailsToDisplay = activeEmails.filter(e => emailMatchesTab(e, tab.labelMatch))
-      }
+      emailsToDisplay = activeEmails.filter(e => {
+        const tab = classifications[e._id] || ruleScore(e).tab;
+        return tab === activeTab;
+      });
     }
 
     // Group by threadId, effectively showing only the newest email per thread
@@ -248,9 +244,11 @@ export default function InboxPage({ folder = 'inbox' }) {
         {folder === 'inbox' && (
           <div className="inbox-tabs">
             {TABS.map(tab => {
-              const badgeCount = tab.labelMatch
-                ? activeEmails.filter(e => !e.isRead && emailMatchesTab(e, tab.labelMatch)).length
-                : activeEmails.filter(e => !e.isRead && !emailMatchesTab(e, TABS.flatMap(t => t.labelMatch || []))).length
+              const badgeCount = activeEmails.filter(e => {
+                const eTab = classifications[e._id] || ruleScore(e).tab;
+                return !e.isRead && eTab === tab.id;
+              }).length;
+              
               return (
               <button
                 key={tab.id}
@@ -319,16 +317,16 @@ export default function InboxPage({ folder = 'inbox' }) {
                   )}
                 </div>
                 <div className="email-preview">{email.bodyText?.slice(0, 90) || ''}</div>
-                {email.labels?.length > 0 && (
-                  <div className="email-labels">
+                <div className="email-labels">
                     {email.labels
-                       .filter(l => !['PRIMARY', 'SOCIAL', 'PROMOTIONS', 'PROMOTION', 'UPDATES', 'CATEGORIZED'].includes((l || '').toUpperCase()))
+                       ?.filter(l => !['PRIMARY', 'SOCIAL', 'PROMOTIONS', 'PROMOTION', 'UPDATES', 'CATEGORIZED'].includes((l || '').toUpperCase()))
                        .slice(0, 2)
                        .map(l => (
                       <span key={l} className="badge badge-muted" style={{ fontSize: 10 }}>{l}</span>
                     ))}
+                    {/* Layer indicator for debugging (optional) */}
+                    {/* <span style={{fontSize: 8, opacity: 0.5}}>L{classifications[email._id]?.layer}</span> */}
                   </div>
-                )}
               </div>
 
               <button

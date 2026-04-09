@@ -105,7 +105,7 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
     // Paginate through Gmail to get more messages
     let allMessages = [];
     let pageToken = undefined;
-    const MAX_PAGES = 5; // Up to 5 pages × 100 = 500 messages max
+    const MAX_PAGES = 100; // Deep sync: 100 pages × 100 = 10,000 messages
     for (let pg = 0; pg < MAX_PAGES; pg++) {
       const listRes = await gmail.users.messages.list({
         userId: 'me', labelIds: [labelId], maxResults: 100,
@@ -115,6 +115,7 @@ const syncGmailEmails = async (userId, refreshToken, folder = 'inbox') => {
       allMessages = allMessages.concat(msgs);
       pageToken = listRes.data.nextPageToken;
       if (!pageToken || msgs.length === 0) break;
+      if (pg % 10 === 0 && pg > 0) console.log(`[Sync] Fetched ${allMessages.length} message IDs so far...`);
     }
 
     const messages = allMessages;

@@ -15,6 +15,9 @@
     "react-dom": "^18.3.1",
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.23.1",
+    "wink-eng-lite-web-model": "^1.8.1",
+    "wink-naive-bayes-text-classifier": "^2.2.1",
+    "wink-nlp": "^2.4.0",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

@@ -25,5 +25,8 @@ router.post('/draft/intent', aiCtrl.generateIntentDraft);
 router.get('/subscriptions', aiCtrl.findSubscriptions);
 router.post('/unsubscribe', aiCtrl.unsubscribe);
 router.post('/categorize', aiCtrl.categorizeInbox);
+router.post('/categorize-single', aiCtrl.categorizeSingle);
+router.get('/corrections', aiCtrl.listCorrections);
+router.post('/corrections', aiCtrl.saveCorrection);
 
 module.exports = router;
