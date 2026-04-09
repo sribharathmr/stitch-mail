@@ -250,7 +250,9 @@
     flex-direction: row;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 6px 14px;
+    padding: 8px 12px;
+    height: 52px;
+    min-height: 52px;
     scrollbar-width: thin;
     position: sticky;
     top: 0;
@@ -259,16 +261,15 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     touch-action: pan-x;
     scroll-snap-type: x proximity;
-    mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
+    align-items: center;
   }
   .settings-nav::-webkit-scrollbar { 
     display: block; 
-    height: 3px;
+    height: 2px;
   }
   .settings-nav::-webkit-scrollbar-thumb {
     background: var(--border-strong);
-    border-radius: 3px;
+    border-radius: 2px;
   }
 
   .settings-nav-header {
