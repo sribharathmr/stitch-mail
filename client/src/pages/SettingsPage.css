@@ -250,15 +250,26 @@
     flex-direction: row;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 4px 8px;
-    scrollbar-width: none;
+    padding: 6px 14px;
+    scrollbar-width: thin;
     position: sticky;
     top: 0;
     z-index: 100;
     background: var(--bg-sidebar);
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    touch-action: pan-x;
+    scroll-snap-type: x proximity;
+    mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
   }
-  .settings-nav::-webkit-scrollbar { display: none; }
+  .settings-nav::-webkit-scrollbar { 
+    display: block; 
+    height: 3px;
+  }
+  .settings-nav::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+  }
 
   .settings-nav-header {
     display: none;
@@ -266,10 +277,11 @@
 
   .settings-nav-item {
     white-space: nowrap;
-    padding: 12px 18px;
+    padding: 10px 18px;
     font-size: 13px;
     flex-shrink: 0;
     border-radius: var(--radius-md);
+    scroll-snap-align: center;
   }
 
   .settings-main {

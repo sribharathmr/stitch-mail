@@ -91,7 +91,10 @@ export default function SettingsPage() {
             key={item.id}
             id={`settings-nav-${item.id}`}
             className={`settings-nav-item ${activeSection === item.id ? 'active' : ''}`}
-            onClick={() => setActiveSection(item.id)}
+            onClick={(e) => {
+              setActiveSection(item.id)
+              e.currentTarget.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+            }}
           >
             <span>{item.icon}</span>
             <span>{item.label}</span>
