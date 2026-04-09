@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // ── Configuration ──────────────────────────────────────────────────────────────
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const MODEL_NAME = 'gemini-2.0-flash';
+const MODEL_NAME = 'gemini-1.5-flash';
 
 let genAI = null;
 
@@ -25,8 +25,8 @@ async function generateContent(prompt, modelOverride = null) {
     return response.text();
   } catch (error) {
     if (!modelOverride && error.message.includes('404')) {
-      console.warn(`[Gemini] ${mName} threw 404. Falling back to gemini-2.0-flash-exp...`);
-      return generateContent(prompt, 'gemini-2.0-flash-exp');
+      console.warn(`[Gemini] ${mName} threw 404. Falling back to gemini-1.5-flash...`);
+      return generateContent(prompt, 'gemini-1.5-flash');
     }
     console.error('Gemini generateContent error:', error.message);
     throw error;
