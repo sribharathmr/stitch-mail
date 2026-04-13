@@ -106,8 +106,9 @@ const navItems = [
   { to: '/archive',   label: 'Archive',   Icon: Icons.Archive,   folder: 'archive' },
 ]
 
-function getInitials(name = '') {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+function getInitials(name = '', email = '') {
+  const str = (name || '').trim() || (email || '').split('@')[0] || 'U'
+  return str.split(/[\s._]+/).map(n => n[0]).filter(Boolean).join('').toUpperCase().slice(0, 2)
 }
 
 function colorFromName(name = '') {
@@ -320,12 +321,16 @@ export default function Sidebar() {
             title="Switch Accounts"
           >
             <div className="avatar avatar-sm" style={{ background: avatarColor, color: '#fff', fontSize: 11 }}>
-              {getInitials(user?.name)}
+              {getInitials(user?.name, user?.email)}
             </div>
             {expanded && (
-              <div className="sidebar-user-info">
-                <span className="sidebar-user-name">{user?.name}</span>
-                <span className="sidebar-user-email">{user?.email}</span>
+              <div className="sidebar-user-info" style={{ justifyContent: 'center' }}>
+                {user?.name && user.name.trim() !== '' && (
+                  <span className="sidebar-user-name">{user.name}</span>
+                )}
+                <span className="sidebar-user-email" style={(!user?.name || user.name.trim() === '') ? { fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 } : {}}>
+                  {user?.email}
+                </span>
               </div>
             )}
             {expanded && (
