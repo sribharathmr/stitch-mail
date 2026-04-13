@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useAuth } from '../context/AuthContext'
@@ -166,7 +166,20 @@ export default function Sidebar() {
   const { user, logout } = useAuth()
   const { mobileMenuOpen, setMobileMenuOpen, sidebarExpanded, setSidebarExpanded } = useUI()
   const [hoverExpanded, setHoverExpanded] = useState(false)
+  const hoverTimeoutRef = useRef(null)
   const navigate = useNavigate()
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoverExpanded(true)
+    }, 400) // 400ms intent delay
+  }
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+    setHoverExpanded(false)
+  }
 
   const handleLogout = async () => {
     await logout()
@@ -192,8 +205,8 @@ export default function Sidebar() {
       )}
       <aside 
         className={`sidebar ${expanded ? 'sidebar-expanded' : 'sidebar-icon-only'} ${mobileMenuOpen ? 'mobile-open' : ''} ${hoverExpanded && !sidebarExpanded ? 'sidebar-hovered' : ''}`}
-        onMouseEnter={() => setHoverExpanded(true)}
-        onMouseLeave={() => setHoverExpanded(false)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
 
         {/* Gmail-style header: hamburger + logo */}
