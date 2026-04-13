@@ -464,7 +464,7 @@ export default function MailReaderPage() {
                 const encodedAttachmentId = encodeURIComponent(attachmentId);
                 const proxyUrl = attachmentId ? `${process.env.REACT_APP_API_URL || ''}/api/emails/${encodedEmailId}/attachments/${encodedAttachmentId}` : (a.path || '#');
                 return (
-                  <a key={i} href={proxyUrl} target="_blank" rel="noopener noreferrer" download
+                  <a key={i} href={proxyUrl} target="_blank" rel="noopener noreferrer"
                     style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                       padding: 12, background: 'var(--bg-hover)', borderRadius: 12,

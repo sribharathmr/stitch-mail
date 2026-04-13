@@ -679,22 +679,52 @@ exports.treeOverride = async (req, res) => {
 exports.getAttachment = async (req, res) => {
   try {
     const { id, attachmentId } = req.params;
-    const { data: email } = await supabase
+    console.log(`[Attachment] Fetching attachment for email ${id}, attachmentId: ${attachmentId?.substring(0, 30)}...`);
+
+    const { data: email, error: emailErr } = await supabase
       .from('emails')
       .select('*')
       .eq('id', id)
       .eq('user_id', req.user.id)
       .single();
 
-    if (!email) return res.status(404).json({ message: 'Email not found' });
-
-    const fullUser = await getFullUser(req.user.id);
-    if (!fullUser?.google_tokens?.refreshToken) {
-      return res.status(403).json({ message: 'Google account not linked' });
+    if (emailErr || !email) {
+      console.error('[Attachment] Email not found:', emailErr?.message);
+      return res.status(404).json({ message: 'Email not found' });
     }
 
-    const gmail = getGmailClient(fullUser.google_tokens.refreshToken);
-    
+    // Try to get refresh token from the linked account first (multi-account support)
+    let refreshToken = null;
+
+    if (email.account_id) {
+      const { data: account } = await supabase
+        .from('linked_accounts')
+        .select('google_tokens')
+        .eq('id', email.account_id)
+        .eq('user_id', req.user.id)
+        .single();
+
+      if (account?.google_tokens?.refreshToken) {
+        refreshToken = account.google_tokens.refreshToken;
+        console.log('[Attachment] Using linked account refresh token');
+      }
+    }
+
+    // Fallback to user-level google_tokens
+    if (!refreshToken) {
+      const fullUser = await getFullUser(req.user.id);
+      if (fullUser?.google_tokens?.refreshToken) {
+        refreshToken = fullUser.google_tokens.refreshToken;
+        console.log('[Attachment] Using user-level refresh token');
+      }
+    }
+
+    if (!refreshToken) {
+      return res.status(403).json({ message: 'Google account not linked. Please re-link your account.' });
+    }
+
+    const gmail = getGmailClient(refreshToken);
+
     // Fetch the attachment data from Gmail
     const response = await gmail.users.messages.attachments.get({
       userId: 'me',
@@ -702,18 +732,26 @@ exports.getAttachment = async (req, res) => {
       id: attachmentId,
     });
 
+    if (!response.data?.data) {
+      return res.status(404).json({ message: 'Attachment data not found in Gmail' });
+    }
+
     const dataBuffer = Buffer.from(response.data.data, 'base64url');
-    
+
     // Find the mimetype from the email record if possible
     const attachmentInfo = email.attachments?.find(a => a.attachmentId === attachmentId || a.partId === attachmentId);
     const contentType = attachmentInfo?.mimetype || 'application/octet-stream';
+    const filename = attachmentInfo?.filename || 'attachment';
 
+    // Set headers for proper display/download
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Content-Disposition', `inline; filename="${attachmentInfo?.filename || 'attachment'}"`);
+    res.setHeader('Content-Length', dataBuffer.length);
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(filename)}"`);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
     res.send(dataBuffer);
   } catch (err) {
-    console.error('getAttachment error:', err.message);
-    res.status(500).json({ message: err.message });
+    console.error('[Attachment] Error:', err.message);
+    res.status(500).json({ message: 'Failed to load attachment: ' + err.message });
   }
 };
 
