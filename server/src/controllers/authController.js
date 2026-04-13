@@ -248,6 +248,44 @@ exports.googleAuthCallback = async (req, res) => {
       user = newUser;
     }
 
+    // ── Auto-create/update linked_accounts so sync & send work ──────────────
+    try {
+      const { data: existingLinked } = await supabase
+        .from('linked_accounts')
+        .select('id, google_tokens')
+        .eq('user_id', user.id)
+        .eq('email', (profile.email || user.email).toLowerCase())
+        .single();
+
+      if (existingLinked) {
+        // Update tokens on existing linked account
+        const mergedTokens = {
+          ...existingLinked.google_tokens,
+          accessToken: googleTokens.accessToken,
+          expiryDate: googleTokens.expiryDate,
+          refreshToken: googleTokens.refreshToken || existingLinked.google_tokens?.refreshToken,
+        };
+        await supabase
+          .from('linked_accounts')
+          .update({ google_tokens: mergedTokens, status: 'active' })
+          .eq('id', existingLinked.id);
+      } else {
+        // Create new linked account entry
+        await supabase
+          .from('linked_accounts')
+          .insert({
+            user_id: user.id,
+            email: (profile.email || user.email).toLowerCase(),
+            provider: 'google',
+            google_tokens: googleTokens,
+            status: 'active',
+          });
+      }
+      console.log(`✅ Linked account ensured for ${profile.email}`);
+    } catch (linkErr) {
+      console.error('Auto-link account error (non-fatal):', linkErr.message);
+    }
+
     // Issue our own JWT and redirect to frontend
     const jwtToken = signToken(user.id);
     setCookie(res, jwtToken);

@@ -434,11 +434,23 @@ exports.send = async (req, res) => {
     const ccArr = Array.isArray(cc) ? cc : JSON.parse(cc || '[]');
     const bccArr = Array.isArray(bcc) ? bcc : JSON.parse(bcc || '[]');
 
+    // Look up the user's primary linked account for account_id
+    const { data: primaryAccount } = await supabase
+      .from('linked_accounts')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .eq('provider', 'google')
+      .eq('status', 'active')
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .single();
+
     // Save to sent folder
     const { data: email, error } = await supabase
       .from('emails')
       .insert({
         user_id: req.user.id,
+        account_id: primaryAccount?.id || null,
         folder: 'sent',
         from_address: { name: req.user.name, address: req.user.email },
         to_addresses: toArr,
