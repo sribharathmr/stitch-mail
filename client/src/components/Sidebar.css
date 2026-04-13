@@ -177,6 +177,11 @@
   font-weight: 600;
 }
 
+.sidebar-icon-only .sidebar-nav-item.active {
+  background: var(--accent);
+  border-radius: 12px;
+}
+
 .sidebar-nav-item.active .nav-icon {
   color: #fff;
 }
@@ -209,14 +214,27 @@
 
 /* Inbox unread dot when collapsed */
 .nav-badge-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background: #3b82f6;
-  border: 2px solid var(--bg-sidebar);
+  border: 1.5px solid var(--bg-sidebar);
   border-radius: 50%;
   position: absolute;
-  top: 8px;
-  right: 12px;
+  top: 6px;
+  right: 14px;
+  z-index: 2;
+}
+
+.sidebar-icon-only .sidebar-nav-item {
+  justify-content: center;
+  padding: 8px 0;
+  width: 44px;
+  height: 44px;
+  margin: 4px auto;
+}
+
+.sidebar-icon-only .nav-icon {
+  margin: 0;
 }
 
 /* === Bottom === */
@@ -242,12 +260,21 @@
 
 .sidebar-icon-only .sidebar-user {
   justify-content: center;
-  padding: 10px 0;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  margin: 8px auto;
 }
 
 .sidebar-user:hover { 
   background: var(--bg-hover);
   border-color: var(--border);
+}
+
+.sidebar-icon-only .avatar-sm {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 10px !important;
 }
 
 .sidebar-user-info {
