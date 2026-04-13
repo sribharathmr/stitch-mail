@@ -8,6 +8,7 @@ router.use(auth);
 // Order matters - specific routes before parameterized
 router.get('/search', ctrl.search);
 router.get('/sync', ctrl.sync);
+router.get('/sync/manual', ctrl.manualSync);
 router.get('/tree', ctrl.getTree);
 router.get('/', ctrl.list);
 router.get('/:id', ctrl.getOne);

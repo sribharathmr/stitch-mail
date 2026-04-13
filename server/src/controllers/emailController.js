@@ -857,3 +857,91 @@ exports.getAttachment = async (req, res) => {
 // Export getTransporter and getFullUser for scheduledSend job
 exports._getTransporter = getTransporter;
 exports._getFullUser = getFullUser;
+
+// ─── Manual Sync — Direct feedback ──────────────────────────────────────────
+exports.manualSync = async (req, res) => {
+  try {
+    let { data: accounts, error: accErr } = await supabase
+      .from('linked_accounts')
+      .select('*')
+      .eq('user_id', req.user.id);
+
+    if (accErr) throw accErr;
+
+    // Fallback: auto-create linked account from user-level tokens
+    if ((!accounts || accounts.length === 0) && req.user.isGoogleUser) {
+      try {
+        const fullUser = await getFullUser(req.user.id);
+        const refreshToken = fullUser?.google_tokens?.refreshToken || fullUser?.google_tokens?.refresh_token;
+        if (refreshToken) {
+          const { data: newAcc } = await supabase
+            .from('linked_accounts')
+            .insert({
+              user_id: req.user.id,
+              email: req.user.email,
+              provider: 'google',
+              google_tokens: fullUser.google_tokens,
+              status: 'active',
+            })
+            .select()
+            .single();
+          if (newAcc) accounts = [newAcc];
+        }
+      } catch (autoLinkErr) {
+        console.error('[ManualSync] Auto-link error:', autoLinkErr.message);
+      }
+    }
+
+    if (!accounts || accounts.length === 0) {
+      return res.json({ 
+        success: false, 
+        message: 'No email accounts found. Please link your Gmail account in Settings.',
+        code: 'NO_ACCOUNTS'
+      });
+    }
+
+    const results = [];
+    for (const acc of accounts) {
+      if (acc.provider === 'google') {
+        const refreshToken = acc.google_tokens?.refreshToken || acc.google_tokens?.refresh_token;
+        if (!refreshToken) {
+          results.push({ email: acc.email, status: 'error', message: 'Missing permissions (Refresh token missing). Please reconnect.', code: 'MISSING_TOKENS' });
+          continue;
+        }
+
+        try {
+          // Perform a small sync (just 1 page) to verify it works
+          const gmail = getGmailClient(refreshToken);
+          await gmail.users.messages.list({ userId: 'me', maxResults: 1 });
+          
+          // If valid, start full background sync and report success
+          syncGmailEmails(req.user.id, acc.id, refreshToken, 'inbox');
+          results.push({ email: acc.email, status: 'success', message: 'Sync started successfully.' });
+        } catch (err) {
+          const msg = err.message.toLowerCase();
+          let userMsg = 'Connection error.';
+          let code = 'AUTH_ERROR';
+
+          if (msg.includes('invalid_grant') || msg.includes('token')) {
+            userMsg = 'Google permissions have expired. Please Reconnect.';
+            code = 'EXPIRED_TOKEN';
+          }
+
+          results.push({ email: acc.email, status: 'error', message: userMsg, code });
+        }
+      } else {
+        results.push({ email: acc.email, status: 'success', message: 'Account detected.' });
+      }
+    }
+
+    const hasAnyError = results.some(r => r.status === 'error');
+    res.json({
+      success: !hasAnyError,
+      results
+    });
+  } catch (err) {
+    console.error('[ManualSync] Global error:', err.message);
+    res.status(500).json({ success: false, message: 'Server error during sync check.' });
+  }
+};
+

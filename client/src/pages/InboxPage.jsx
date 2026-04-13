@@ -210,6 +210,28 @@ export default function InboxPage({ folder = 'inbox' }) {
     }
   }
 
+  const [syncing, setSyncing] = useState(false)
+  const [syncResult, setSyncResult] = useState(null)
+
+  const handleManualSync = async () => {
+    setSyncing(true)
+    setSyncResult(null)
+    try {
+      const res = await emailAPI.manualSync()
+      if (res.data.success) {
+        setSyncResult({ status: 'success', message: 'Sync started! Your inbox should update in a few seconds.' })
+        setTimeout(() => fetchEmails(folder), 3000)
+      } else {
+        const err = res.data.results?.find(r => r.status === 'error') || res.data;
+        setSyncResult({ status: 'error', message: err.message, code: err.code })
+      }
+    } catch (err) {
+      setSyncResult({ status: 'error', message: 'Failed to contact sync service.' })
+    } finally {
+      setSyncing(false)
+    }
+  }
+
 
   if (loading && !emails.length) {
     return (
@@ -300,12 +322,50 @@ export default function InboxPage({ folder = 'inbox' }) {
           <div className="empty-state" style={{ marginTop: 60 }}>
             <div style={{ fontSize: 48 }}>📭</div>
             <p style={{ fontWeight: 600, fontSize: 16 }}>No emails here</p>
-            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Your {folder} is empty.</p>
-            {folder === 'inbox' && (
-              <button className="btn btn-primary btn-sm" onClick={() => dispatch({ type: 'OPEN_COMPOSE' })}>
-                Compose an email
+            <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 10 }}>Your {folder} is empty.</p>
+            
+            <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+              <button 
+                className="btn btn-primary btn-sm" 
+                onClick={handleManualSync} 
+                disabled={syncing}
+                style={{ minWidth: 160 }}
+              >
+                {syncing ? 'Checking Sync...' : 'Sync My Emails'}
               </button>
-            )}
+              
+              {syncResult && (
+                <div style={{ 
+                  padding: '12px 16px', 
+                  borderRadius: '10px', 
+                  fontSize: '13px',
+                  maxWidth: '320px',
+                  textAlign: 'center',
+                  background: syncResult.status === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.08)',
+                  color: syncResult.status === 'success' ? '#10B981' : '#EF4444',
+                  border: `1px solid ${syncResult.status === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.15)'}`,
+                  animation: 'fadeIn 0.3s ease-out'
+                }}>
+                  {syncResult.message}
+                  {(syncResult.code === 'EXPIRED_TOKEN' || syncResult.code === 'MISSING_TOKENS') && (
+                    <button 
+                      className="btn btn-sm" 
+                      id="fix-connection-btn"
+                      style={{ marginTop: 10, width: '100%', background: '#EF4444', color: '#fff', border: 'none', fontWeight: 700 }}
+                      onClick={() => window.location.href = '/api/auth/google'}
+                    >
+                      Reconnect Google
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {folder === 'inbox' && !syncing && (!syncResult || syncResult.status === 'success') && (
+                <button className="btn btn-link btn-sm" style={{ opacity: 0.6, fontSize: 12 }} onClick={() => dispatch({ type: 'OPEN_COMPOSE' })}>
+                  Or compose an email
+                </button>
+              )}
+            </div>
           </div>
         )}
 

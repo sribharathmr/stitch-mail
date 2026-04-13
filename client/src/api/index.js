@@ -48,6 +48,7 @@ export const authAPI = {
 // Emails
 export const emailAPI = {
   list: (params) => api.get('/emails', { params }),
+  manualSync: () => api.get('/emails/sync/manual'),
   get: (id) => api.get(`/emails/${id}`),
   send: (formData) => api.post('/emails/send', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
