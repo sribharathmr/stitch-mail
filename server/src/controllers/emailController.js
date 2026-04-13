@@ -273,11 +273,35 @@ exports.sync = async (req, res) => {
     const folder = req.query.folder || 'inbox';
     
     // Find all linked google accounts for this user
-    const { data: accounts } = await supabase
+    let { data: accounts } = await supabase
       .from('linked_accounts')
       .select('*')
       .eq('user_id', req.user.id)
       .eq('provider', 'google');
+
+    // Fallback: auto-create linked account from user-level tokens
+    if ((!accounts || accounts.length === 0) && req.user.isGoogleUser) {
+      try {
+        const fullUser = await getFullUser(req.user.id);
+        const refreshToken = fullUser?.google_tokens?.refreshToken || fullUser?.google_tokens?.refresh_token;
+        if (refreshToken) {
+          const { data: newAcc } = await supabase
+            .from('linked_accounts')
+            .insert({
+              user_id: req.user.id,
+              email: req.user.email,
+              provider: 'google',
+              google_tokens: fullUser.google_tokens,
+              status: 'active',
+            })
+            .select()
+            .single();
+          if (newAcc) accounts = [newAcc];
+        }
+      } catch (autoLinkErr) {
+        console.error('[AutoLink] Sync fallback error:', autoLinkErr.message);
+      }
+    }
 
     if (accounts && accounts.length > 0) {
        // Run sync for all accounts in parallel
@@ -301,11 +325,36 @@ exports.list = async (req, res) => {
 
     // Sync for all linked Google accounts on first page
     if (parseInt(page) === 1) {
-      const { data: accounts } = await supabase
+      let { data: accounts } = await supabase
         .from('linked_accounts')
         .select('*')
         .eq('user_id', req.user.id)
         .eq('provider', 'google');
+
+      // Fallback: if no linked accounts exist but user has Google tokens, auto-create one
+      if ((!accounts || accounts.length === 0) && req.user.isGoogleUser) {
+        try {
+          const fullUser = await getFullUser(req.user.id);
+          const refreshToken = fullUser?.google_tokens?.refreshToken || fullUser?.google_tokens?.refresh_token;
+          if (refreshToken) {
+            console.log(`[AutoLink] Creating missing linked_account for user ${req.user.id} (${req.user.email})`);
+            const { data: newAcc } = await supabase
+              .from('linked_accounts')
+              .insert({
+                user_id: req.user.id,
+                email: req.user.email,
+                provider: 'google',
+                google_tokens: fullUser.google_tokens,
+                status: 'active',
+              })
+              .select()
+              .single();
+            if (newAcc) accounts = [newAcc];
+          }
+        } catch (autoLinkErr) {
+          console.error('[AutoLink] Error:', autoLinkErr.message);
+        }
+      }
 
       if (accounts && accounts.length > 0) {
         const targetAccounts = accountId && accountId !== 'all' 
