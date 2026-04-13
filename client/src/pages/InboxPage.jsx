@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useUI } from '../context/UIContext'
 import { format, isToday, isYesterday } from 'date-fns'
-import { aiAPI, settingsAPI, emailAPI } from '../api'
+import { aiAPI, settingsAPI, emailAPI, clearToken } from '../api'
 import { segregateInbox, learnCorrection, ruleScore } from '../services/hybridClassifier'
 import './InboxPage.css'
 
@@ -348,14 +348,17 @@ export default function InboxPage({ folder = 'inbox' }) {
                   animation: 'fadeIn 0.3s ease-out'
                 }}>
                   {syncResult.message}
-                  {(syncResult.code === 'EXPIRED_TOKEN' || syncResult.code === 'MISSING_TOKENS') && (
+                  {(syncResult.code === 'EXPIRED_TOKEN' || syncResult.code === 'MISSING_TOKENS' || syncResult.code === 'SCOPE_ERROR') && (
                     <button 
                       className="btn btn-sm" 
                       id="fix-connection-btn"
                       style={{ marginTop: 10, width: '100%', background: '#EF4444', color: '#fff', border: 'none', fontWeight: 700 }}
-                      onClick={() => window.location.href = '/api/auth/google'}
+                      onClick={() => {
+                        clearToken();
+                        window.location.href = '/api/auth/google';
+                      }}
                     >
-                      Reconnect Google
+                      Sign Out & Reconnect Google
                     </button>
                   )}
                 </div>

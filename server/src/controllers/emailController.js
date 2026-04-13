@@ -927,6 +927,9 @@ exports.manualSync = async (req, res) => {
           if (msg.includes('invalid_grant') || msg.includes('token') || msg.includes('unauthorized')) {
             userMsg = 'Google permissions have expired. Please sign out and sign in again with Google.';
             code = 'EXPIRED_TOKEN';
+          } else if (msg.includes('insufficient') || msg.includes('scope')) {
+            userMsg = 'Gmail access was not granted. Please sign out, then sign in again with Google to grant full email permissions.';
+            code = 'SCOPE_ERROR';
           }
 
           results.push({ email: acc.email, status: 'error', message: userMsg, code });
