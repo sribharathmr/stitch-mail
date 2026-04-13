@@ -165,6 +165,7 @@ export default function Sidebar() {
   const { unreadCount, dispatch } = useEmail()
   const { user, logout } = useAuth()
   const { mobileMenuOpen, setMobileMenuOpen, sidebarExpanded, setSidebarExpanded } = useUI()
+  const [hoverExpanded, setHoverExpanded] = useState(false)
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -177,14 +178,23 @@ export default function Sidebar() {
   }
 
   const avatarColor = colorFromName(user?.name || '')
-  const expanded = sidebarExpanded || mobileMenuOpen
+  
+  // Expand if pinned, mobile menu open, or currently hovered
+  const expanded = sidebarExpanded || mobileMenuOpen || hoverExpanded
 
   return (
     <>
       {mobileMenuOpen && (
         <div className="mobile-backdrop" onClick={() => setMobileMenuOpen(false)} />
       )}
-      <aside className={`sidebar ${expanded ? 'sidebar-expanded' : 'sidebar-icon-only'} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+      {!mobileMenuOpen && (
+        <div className={`sidebar-spacer ${sidebarExpanded ? 'expanded' : 'collapsed'}`} />
+      )}
+      <aside 
+        className={`sidebar ${expanded ? 'sidebar-expanded' : 'sidebar-icon-only'} ${mobileMenuOpen ? 'mobile-open' : ''} ${hoverExpanded && !sidebarExpanded ? 'sidebar-hovered' : ''}`}
+        onMouseEnter={() => setHoverExpanded(true)}
+        onMouseLeave={() => setHoverExpanded(false)}
+      >
 
         {/* Gmail-style header: hamburger + logo */}
         <div className="sidebar-header">

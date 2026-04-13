@@ -115,7 +115,7 @@ const syncGmailEmails = async (userId, accountId, refreshToken, folder = 'inbox'
         userId: 'me', labelIds: [labelId], maxResults: 50,
         ...(pageToken ? { pageToken } : {}),
       });
-      
+
       const msgs = listRes.data.messages || [];
       if (msgs.length === 0) break;
       pageToken = listRes.data.nextPageToken;
@@ -127,7 +127,7 @@ const syncGmailEmails = async (userId, accountId, refreshToken, folder = 'inbox'
         .eq('user_id', userId)
         .eq('account_id', accountId)
         .in('message_id', pageIds);
-      
+
       const existingSet = new Set((existing || []).map(e => e.message_id));
       // For the first page, we sync EVERYTHING to allow the new upsert logic to fix broken images.
       // For subsequent pages, we still skip existing to save resources.
@@ -271,7 +271,7 @@ const mapEmail = (e) => ({
 exports.sync = async (req, res) => {
   try {
     const folder = req.query.folder || 'inbox';
-    
+
     // Find all linked google accounts for this user
     let { data: accounts } = await supabase
       .from('linked_accounts')
@@ -307,10 +307,10 @@ exports.sync = async (req, res) => {
     }
 
     if (accounts && accounts.length > 0) {
-       // Run sync for all accounts in parallel
-       await Promise.all(accounts.map(acc => 
-         syncGmailEmails(req.user.id, acc.id, acc.google_tokens?.refreshToken, folder)
-       ));
+      // Run sync for all accounts in parallel
+      await Promise.all(accounts.map(acc =>
+        syncGmailEmails(req.user.id, acc.id, acc.google_tokens?.refreshToken, folder)
+      ));
     }
 
     res.json({ message: 'Sync complete' });
@@ -339,7 +339,7 @@ exports.list = async (req, res) => {
         try {
           const fullUser = await getFullUser(req.user.id);
           const refreshToken = fullUser?.google_tokens?.refreshToken || fullUser?.google_tokens?.refresh_token;
-          
+
           if (refreshToken) {
             console.log(`[AutoLink] Correcting missing linked_account for ${req.user.email}`);
             const { data: newAcc, error: linkErr } = await supabase
@@ -353,7 +353,7 @@ exports.list = async (req, res) => {
               })
               .select()
               .single();
-            
+
             if (newAcc) {
               accounts = [newAcc];
               console.log(`[AutoLink] Success! Created account ID: ${newAcc.id}`);
@@ -369,11 +369,11 @@ exports.list = async (req, res) => {
       }
 
       if (accounts && accounts.length > 0) {
-        const targetAccounts = accountId && accountId !== 'all' 
+        const targetAccounts = accountId && accountId !== 'all'
           ? accounts.filter(a => a.id === accountId)
           : accounts;
 
-        await Promise.all(targetAccounts.map(acc => 
+        await Promise.all(targetAccounts.map(acc =>
           syncGmailEmails(req.user.id, acc.id, acc.google_tokens?.refreshToken, folder)
             .catch(err => console.error(`Background sync error for ${acc.id}:`, err.message))
         ));
@@ -894,8 +894,8 @@ exports.manualSync = async (req, res) => {
     }
 
     if (!accounts || accounts.length === 0) {
-      return res.json({ 
-        success: false, 
+      return res.json({
+        success: false,
         message: 'No email accounts found. Please link your Gmail account in Settings.',
         code: 'NO_ACCOUNTS'
       });
@@ -914,7 +914,7 @@ exports.manualSync = async (req, res) => {
           // Perform a small sync (just 1 page) to verify it works
           const gmail = getGmailClient(refreshToken);
           await gmail.users.messages.list({ userId: 'me', maxResults: 1 });
-          
+
           // If valid, start full background sync and report success
           syncGmailEmails(req.user.id, acc.id, refreshToken, 'inbox');
           results.push({ email: acc.email, status: 'success', message: 'Sync started successfully.' });
@@ -927,9 +927,6 @@ exports.manualSync = async (req, res) => {
           if (msg.includes('invalid_grant') || msg.includes('token') || msg.includes('unauthorized')) {
             userMsg = 'Google permissions have expired. Please sign out and sign in again with Google.';
             code = 'EXPIRED_TOKEN';
-          } else if (msg.includes('insufficient') || msg.includes('scope')) {
-            userMsg = 'Gmail access was not granted. Please sign out, then sign in again with Google to grant full email permissions.';
-            code = 'SCOPE_ERROR';
           }
 
           results.push({ email: acc.email, status: 'error', message: userMsg, code });
