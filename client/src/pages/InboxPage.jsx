@@ -224,6 +224,26 @@ export default function InboxPage({ folder = 'inbox' }) {
     <div className={`inbox-layout${compactView ? ' compact' : ''}`}>
       {/* Email list column */}
       <div className="inbox-list-col">
+        {/* Reconnect Banner */}
+        {accounts.some(a => a.needsReconnect && (activeAccount === 'all' || activeAccount === a.id)) && (
+          <div className="account-banner warning">
+            <div className="account-banner-content">
+              <span className="account-banner-icon">⚠️</span>
+              <span className="account-banner-text">
+                <b>Connection Repair Needed:</b> Some accounts have lost their Gmail sync permissions.
+              </span>
+            </div>
+            <button 
+              className="account-banner-action"
+              onClick={() => {
+                window.location.href = '/api/auth/google'
+              }}
+            >
+              Fix Connection
+            </button>
+          </div>
+        )}
+
         {/* Account Banner */}
         {activeAccount && activeAccount !== 'all' && (
           <div className="account-banner">

@@ -11,7 +11,7 @@ exports.listAccounts = async (req, res) => {
 
     if (error) throw error;
 
-    // For each account, get unread count
+    // For each account, get unread count and check health
     const enriched = await Promise.all((accounts || []).map(async (acc) => {
       const { count: unread } = await supabase
         .from('emails')
@@ -28,12 +28,16 @@ exports.listAccounts = async (req, res) => {
         .contains('labels', ['URGENT'])
         .eq('is_read', false);
 
+      const hasRefreshToken = !!(acc.google_tokens?.refreshToken || acc.google_tokens?.refresh_token);
+      const needsReconnect = acc.provider === 'google' && !hasRefreshToken;
+
       return {
         ...acc,
         unread: unread || 0,
         urgent: urgent || 0,
         type: acc.provider === 'google' ? 'GMAIL' : 'IMAP',
-        status: acc.status || 'active'
+        status: needsReconnect ? 'needs_reconnect' : (acc.status || 'active'),
+        needsReconnect
       };
     }));
 

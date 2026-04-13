@@ -85,6 +85,39 @@
   border-color: var(--border);
 }
 
+/* Warning Banner Variant */
+.account-banner.warning {
+  background: rgba(148, 30, 30, 0.4); /* Deep red theme */
+  border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.account-banner.warning .account-banner-icon {
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
+}
+
+.account-banner-action {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.account-banner-action:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.account-banner-action:active {
+  transform: translateY(0);
+}
+
 .inbox-tabs {
   display: flex;
   gap: 0;
