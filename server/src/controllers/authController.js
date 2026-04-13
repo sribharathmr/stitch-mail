@@ -287,9 +287,10 @@ exports.googleAuthCallback = async (req, res) => {
     }
 
     // Issue our own JWT and redirect to frontend
+    // Pass token in URL so the frontend can store it in per-tab sessionStorage
     const jwtToken = signToken(user.id);
     setCookie(res, jwtToken);
-    res.redirect(`${clientUrl}/inbox`);
+    res.redirect(`${clientUrl}/inbox?token=${jwtToken}`);
   } catch (err) {
     console.error('Google OAuth error:', err.message);
     res.redirect(`${clientUrl}/login?error=oauth_failed`);

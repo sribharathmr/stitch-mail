@@ -1,9 +1,25 @@
 import axios from 'axios'
 
+// ── Token management (sessionStorage = per-tab, so each tab can hold a different account) ──
+const TOKEN_KEY = 'stitch_token'
+
+export const getToken = () => sessionStorage.getItem(TOKEN_KEY)
+export const setToken = (token) => sessionStorage.setItem(TOKEN_KEY, token)
+export const clearToken = () => sessionStorage.removeItem(TOKEN_KEY)
+
 const api = axios.create({
   baseURL: '/api',
   withCredentials: true,
   timeout: 15000,
+})
+
+// ── Request interceptor: attach token from sessionStorage ───────────────────────
+api.interceptors.request.use((config) => {
+  const token = getToken()
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
 })
 
 // ── Response interceptor: handle 401 globally ──────────────────────────────────
@@ -13,6 +29,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       const currentPath = window.location.pathname
       if (currentPath !== '/login' && currentPath !== '/register') {
+        clearToken()
         window.location.href = '/login'
       }
     }
