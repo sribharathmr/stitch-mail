@@ -73,7 +73,7 @@ function avatarColor(name = '') {
 }
 
 export default function InboxPage({ folder = 'inbox' }) {
-  const { emails, loading, unreadCount, fetchEmails, openEmail, starEmail, activeEmail, activeAccount, dispatch } = useEmail()
+  const { emails, loading, unreadCount, fetchEmails, openEmail, starEmail, activeEmail, activeAccount, accounts, dispatch } = useEmail()
   const { settings } = useUI()
   const [activeTab, setActiveTab] = useState('primary')
   const [categorizing, setCategorizing] = useState(false)
@@ -226,14 +226,16 @@ export default function InboxPage({ folder = 'inbox' }) {
       <div className="inbox-list-col">
         {/* Account Banner */}
         {activeAccount && activeAccount !== 'all' && (
-          <div style={{ padding: '8px 16px', background: 'var(--bg-active)', borderBottom: '1px solid var(--border)', fontSize: '12px', fontWeight: '600', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: '14px' }}>{activeAccount === 'work' ? '💼' : activeAccount === 'personal' ? '🏠' : '🚀'}</span>
-              Viewing {activeAccount.charAt(0).toUpperCase() + activeAccount.slice(1)} Account
+          <div className="account-banner">
+            <div className="account-banner-content">
+              <span className="account-banner-icon">🚀</span>
+              <span className="account-banner-text">
+                Viewing <span className="account-email">{accounts.find(a => a.id === activeAccount)?.email || activeAccount}</span> Account
+              </span>
             </div>
             <button 
+              className="account-banner-clear"
               onClick={() => dispatch({ type: 'SET_ACCOUNT', payload: 'all' })}
-              style={{ fontSize: '11px', color: 'var(--text-muted)', textDecoration: 'underline', cursor: 'pointer' }}
             >
               Clear Filter
             </button>

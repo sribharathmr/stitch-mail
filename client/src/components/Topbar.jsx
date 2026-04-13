@@ -46,8 +46,8 @@ export default function Topbar() {
       </button>
 
       <form className="topbar-search" onSubmit={handleSearch}>
-        <svg className="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <input
           id="topbar-search-input"
@@ -69,18 +69,19 @@ export default function Topbar() {
       <div className="topbar-actions">
         <button
           id="topbar-compose-btn"
-          className="btn btn-primary btn-sm"
+          className="btn btn-primary topbar-compose-btn"
           onClick={() => dispatch({ type: 'OPEN_COMPOSE' })}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
             <path d="M12 5v14M5 12h14"/>
           </svg>
           <span className="topbar-compose-text">Compose</span>
         </button>
 
-        <button className="btn-icon" id="topbar-notif-btn" data-tooltip="Notifications">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+        <button className="btn-icon topbar-notif-btn" id="topbar-notif-btn" title="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
         </button>
       </div>

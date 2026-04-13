@@ -118,14 +118,8 @@ function colorFromName(name = '') {
 }
 
 function AccountList({ expanded, handleNavClick }) {
-  const { dispatch, activeAccount } = useEmail()
-  const [accounts, setAccounts] = useState([])
+  const { dispatch, activeAccount, accounts } = useEmail()
 
-  useEffect(() => {
-    accountsAPI.list()
-      .then(res => setAccounts(res.data?.accounts || []))
-      .catch(err => console.error('[Sidebar] Failed to load accounts:', err))
-  }, [])
 
   const handleSwitch = (id) => {
     dispatch({ type: 'SET_ACCOUNT', payload: id })

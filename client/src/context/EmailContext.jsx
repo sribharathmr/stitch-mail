@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
-import { emailAPI } from '../api'
+import { emailAPI, accountsAPI } from '../api'
 
 const EmailContext = createContext(null)
 
@@ -14,6 +14,7 @@ const initialState = {
   unreadCount: 0,
   folder: 'inbox',
   composeWindows: [], // Array of { id, to, cc, bcc, subject, bodyHtml, bodyText, attachments } 
+  accounts: [],
 }
 
 function reducer(state, action) {
@@ -56,6 +57,7 @@ function reducer(state, action) {
         composeWindows: state.composeWindows.map(w => w.id === action.payload.id ? { ...w, ...action.payload.updates } : w) 
       };
     case 'SET_UNREAD': return { ...state, unreadCount: action.payload }
+    case 'SET_ACCOUNTS': return { ...state, accounts: action.payload }
     default: return state
   }
 }
@@ -126,6 +128,13 @@ export function EmailProvider({ children }) {
 
     return () => clearInterval(pollInterval)
   }, [state.folder, state.loading])
+  
+  // Fetch accounts on mount
+  useEffect(() => {
+    accountsAPI.list()
+      .then(res => dispatch({ type: 'SET_ACCOUNTS', payload: res.data?.accounts || [] }))
+      .catch(err => console.error('[EmailContext] Failed to load accounts:', err))
+  }, [])
 
   return (
     <EmailContext.Provider value={{ ...state, dispatch, fetchEmails, openEmail, starEmail, moveEmail, deleteEmail }}>

@@ -25,6 +25,66 @@
   min-width: 0;
 }
 
+/* Account Banner */
+.account-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(30, 58, 95, 0.4); /* Subdued var(--bg-active) */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.account-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account-banner-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.4));
+}
+
+.account-banner-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.1px;
+}
+
+.account-email {
+  color: var(--accent);
+  font-weight: 700;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin: 0 2px;
+}
+
+.account-banner-clear {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.account-banner-clear:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
 .inbox-tabs {
   display: flex;
   gap: 0;
