@@ -129,7 +129,9 @@ const syncGmailEmails = async (userId, accountId, refreshToken, folder = 'inbox'
         .in('message_id', pageIds);
       
       const existingSet = new Set((existing || []).map(e => e.message_id));
-      const newInPage = msgs.filter(m => !existingSet.has(m.id));
+      // For the first page, we sync EVERYTHING to allow the new upsert logic to fix broken images.
+      // For subsequent pages, we still skip existing to save resources.
+      const newInPage = pg === 0 ? msgs : msgs.filter(m => !existingSet.has(m.id));
 
       if (existingSet.size > (msgs.length * 0.8) && pg > 0) {
         console.log(`[Sync] High redundancy detected for account ${accountId}. Stopping sync.`);
@@ -157,12 +159,19 @@ const syncGmailEmails = async (userId, accountId, refreshToken, folder = 'inbox'
             let bodyHtml = '', bodyText = '';
             const attachments = [];
             const extractBody = (payload) => {
+              // Extract part headers for inline attachment support (cid)
+              const partHeaders = payload.headers || [];
+              const getPartHeader = (name) => partHeaders.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || '';
+              const contentId = getPartHeader('Content-ID').replace(/[<>]/g, '');
+              const xAttachmentId = getPartHeader('X-Attachment-Id');
+
               if (payload.filename && payload.body?.attachmentId) {
                 attachments.push({
                   filename: payload.filename,
                   mimetype: payload.mimeType || 'application/octet-stream',
                   size: payload.body?.size || 0,
                   attachmentId: payload.body?.attachmentId,
+                  contentId: contentId || xAttachmentId || '',
                   partId: payload.partId,
                   path: `/api/emails/${msg.id}/attachments/${payload.body?.attachmentId || payload.partId}`
                 });
@@ -174,6 +183,20 @@ const syncGmailEmails = async (userId, accountId, refreshToken, folder = 'inbox'
               if (payload.parts) payload.parts.forEach(extractBody);
             };
             extractBody(full.data.payload || {});
+
+            // Transform cid: images to proxy URLs
+            if (bodyHtml && attachments.length > 0) {
+              attachments.forEach(att => {
+                if (att.contentId) {
+                  const cidPrefixes = ['cid:', 'CID:'];
+                  cidPrefixes.forEach(prefix => {
+                    // Replace standard cid references
+                    bodyHtml = bodyHtml.split(`${prefix}${att.contentId}`).join(att.path);
+                    // Also handle some variants with quotes if they exist (though split/join handles basic ones)
+                  });
+                }
+              });
+            }
             if (!bodyHtml && bodyText)
               bodyHtml = `<pre style="white-space:pre-wrap;font-family:inherit">${bodyText}</pre>`;
 
@@ -205,9 +228,12 @@ const syncGmailEmails = async (userId, accountId, refreshToken, folder = 'inbox'
       const emailRows = (await fetchDetailedBatch(newInPage)).filter(Boolean);
 
       if (emailRows.length > 0) {
-        const { error } = await supabase.from('emails').insert(emailRows);
+        // Use upsert to update existing emails with fixed bodies/attachments
+        const { error } = await supabase.from('emails').upsert(emailRows, {
+          onConflict: 'user_id,account_id,message_id'
+        });
         if (error) {
-          console.error('[Sync] DB Insert error:', error.message);
+          console.error('[Sync] DB Upsert error:', error.message);
         } else {
           totalSynced += emailRows.length;
         }
@@ -684,7 +710,7 @@ exports.getAttachment = async (req, res) => {
     const { data: email, error: emailErr } = await supabase
       .from('emails')
       .select('*')
-      .eq('id', id)
+      .or(`id.eq."${id}",message_id.eq."${id}"`)
       .eq('user_id', req.user.id)
       .single();
 
@@ -739,7 +765,7 @@ exports.getAttachment = async (req, res) => {
     const dataBuffer = Buffer.from(response.data.data, 'base64url');
 
     // Find the mimetype from the email record if possible
-    const attachmentInfo = email.attachments?.find(a => a.attachmentId === attachmentId || a.partId === attachmentId);
+    const attachmentInfo = email.attachments?.find(a => a.attachmentId === attachmentId || a.partId === attachmentId || a.contentId === attachmentId);
     const contentType = attachmentInfo?.mimetype || 'application/octet-stream';
     const filename = attachmentInfo?.filename || 'attachment';
 

@@ -113,6 +113,14 @@
   color: var(--text-primary);
 }
 
+.reader-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  display: block;
+  margin: 16px 0;
+}
+
 .reader-body p { margin-bottom: 12px; }
 .reader-body ul, .reader-body ol { margin: 12px 0 12px 20px; }
 .reader-body li { margin-bottom: 4px; }
