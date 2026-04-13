@@ -26,8 +26,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(59,130,246,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59,130,246,0.06) 1px, transparent 1px);
+    linear-gradient(rgba(79,74,168,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,74,168,0.06) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
@@ -125,9 +125,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(59,130,246,0.2);
-  border: 1.5px solid rgba(59,130,246,0.4);
-  color: #60A5FA;
+  background: rgba(79,74,168,0.2);
+  border: 1.5px solid rgba(79,74,168,0.4);
+  color: #6C67C7;
   font-size: 13px;
   font-weight: 800;
   display: flex;
@@ -288,7 +288,7 @@
 .btn-google:hover {
   background: var(--bg-hover);
   border-color: var(--accent);
-  box-shadow: 0 2px 8px rgba(59,130,246,0.12);
+  box-shadow: 0 2px 8px rgba(79,74,168,0.12);
   transform: translateY(-1px);
 }
 

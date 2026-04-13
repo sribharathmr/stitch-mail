@@ -4,40 +4,40 @@
 
 /* --- CSS Custom Properties (Design Tokens) --- */
 :root {
-  /* Brand */
-  --accent:        #3B82F6;
-  --accent-hover:  #2563EB;
-  --accent-light:  #EFF6FF;
-  --accent-muted:  #BFDBFE;
+  /* Brand — Deep Indigo Palette */
+  --accent:        #4F4AA8;
+  --accent-hover:  #3d3891;
+  --accent-light:  #EEEDF8;
+  --accent-muted:  #CFD2E6;
 
   /* Surfaces */
-  --bg-app:        #F8FAFC;
+  --bg-app:        #F7F8FC;
   --bg-sidebar:    #FFFFFF;
   --bg-card:       #FFFFFF;
-  --bg-hover:      #F1F5F9;
-  --bg-active:     #EFF6FF;
+  --bg-hover:      #EEEDF8;
+  --bg-active:     #E0DEF2;
 
   /* Text */
-  --text-primary:   #0F172A;
-  --text-secondary: #475569;
-  --text-muted:     #94A3B8;
+  --text-primary:   #14123D;
+  --text-secondary: #2A2673;
+  --text-muted:     #8B89B3;
   --text-inverse:   #FFFFFF;
 
   /* Borders */
-  --border:         #E2E8F0;
-  --border-strong:  #CBD5E1;
+  --border:         #CFD2E6;
+  --border-strong:  #B0B3CE;
 
   /* Status */
   --success:  #10B981;
   --warning:  #F59E0B;
   --danger:   #EF4444;
-  --purple:   #8B5CF6;
+  --purple:   #4F4AA8;
 
   /* Shadows */
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:  0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
-  --shadow-lg:  0 10px 30px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
-  --shadow-xl:  0 20px 60px rgba(0,0,0,0.14);
+  --shadow-sm:  0 1px 3px rgba(20,18,61,0.06), 0 1px 2px rgba(20,18,61,0.04);
+  --shadow-md:  0 4px 12px rgba(20,18,61,0.08), 0 2px 4px rgba(20,18,61,0.04);
+  --shadow-lg:  0 10px 30px rgba(20,18,61,0.10), 0 4px 8px rgba(20,18,61,0.06);
+  --shadow-xl:  0 20px 60px rgba(20,18,61,0.14);
 
   /* Radii */
   --radius-sm:   6px;
@@ -53,27 +53,27 @@
   --transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* --- Deep Space (Dark) Theme --- */
+/* --- Deep Indigo (Dark) Theme --- */
 [data-theme="deep-space"] {
-  --bg-app:         #0b0d13;
-  --bg-sidebar:     #0f111a;
-  --bg-card:        #151926;
-  --bg-hover:       #1e2335;
-  --bg-active:      #1e3a5f;
+  --bg-app:         #0d0c1e;
+  --bg-sidebar:     #14123D;
+  --bg-card:        #1c1952;
+  --bg-hover:       #2A2673;
+  --bg-active:      #3a3590;
 
-  --text-primary:   #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted:     #475569;
+  --text-primary:   #F7F8FC;
+  --text-secondary: #CFD2E6;
+  --text-muted:     #8B89B3;
 
-  --border:         #1e2235;
-  --border-strong:  #2d3755;
+  --border:         #2A2673;
+  --border-strong:  #3d3891;
 
-  --accent:         #3b82f6;
-  --accent-hover:   #2563eb;
-  --accent-light:   #1e3a5f;
-  --accent-muted:   #1d4ed8;
+  --accent:         #6C67C7;
+  --accent-hover:   #4F4AA8;
+  --accent-light:   #2A2673;
+  --accent-muted:   #3d3891;
   
-  --purple-brand:   #8b5cf6;
+  --purple-brand:   #6C67C7;
 }
 
 /* --- Reset & Base --- */
@@ -150,7 +150,7 @@ img { display: block; max-width: 100%; }
   background: var(--accent);
   color: #fff;
 }
-.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,74,168,0.4); }
 .btn-secondary {
   background: var(--bg-hover);
   color: var(--text-primary);
@@ -232,7 +232,7 @@ img { display: block; max-width: 100%; }
   transition: var(--transition);
   outline: none;
 }
-.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,74,168,0.12); }
 .input::placeholder { color: var(--text-muted); }
 
 /* --- Toggle Switch --- */
