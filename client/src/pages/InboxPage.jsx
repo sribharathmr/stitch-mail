@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useUI } from '../context/UIContext'
 import { format, isToday, isYesterday } from 'date-fns'
-import { aiAPI, settingsAPI } from '../api'
+import { aiAPI, settingsAPI, emailAPI } from '../api'
 import { segregateInbox, learnCorrection, ruleScore } from '../services/hybridClassifier'
 import './InboxPage.css'
 
