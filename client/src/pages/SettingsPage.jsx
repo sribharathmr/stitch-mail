@@ -207,10 +207,10 @@ export default function SettingsPage() {
                 fontFamily: signature.fontFamily || 'Arial, sans-serif',
                 fontSize: signature.fontSize || '14px', color: '#333'
               }}>
-                <div style={{ borderTop: '2px solid #3B82F6', paddingTop: 14, marginTop: 4 }}>
+                <div style={{ borderTop: '2px solid #4F4AA8', paddingTop: 14, marginTop: 4 }}>
                   {signature.imageUrl && (
                     <div style={{ marginBottom: 10 }}>
-                      <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 22, fontWeight: 700 }}>
+                      <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, #4F4AA8, #6C67C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 22, fontWeight: 700 }}>
                         {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'SM'}
                       </div>
                     </div>
@@ -222,10 +222,10 @@ export default function SettingsPage() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', fontSize: '0.9em', color: '#4A5568' }}>
                     {signature.phone && <span>📱 {signature.phone}</span>}
                     {user?.email && <span>✉️ {user.email}</span>}
-                    {signature.website && <span style={{ color: '#3B82F6' }}>🔗 {signature.website}</span>}
+                    {signature.website && <span style={{ color: '#4F4AA8' }}>🔗 {signature.website}</span>}
                   </div>
                   {signature.text && (
-                    <div style={{ marginTop: 10, fontStyle: 'italic', color: '#718096', fontSize: '0.9em', borderLeft: '3px solid #3B82F6', paddingLeft: 10 }}>
+                    <div style={{ marginTop: 10, fontStyle: 'italic', color: '#718096', fontSize: '0.9em', borderLeft: '3px solid #4F4AA8', paddingLeft: 10 }}>
                       "{signature.text}"
                     </div>
                   )}
@@ -294,7 +294,7 @@ export default function SettingsPage() {
               <div style={{ marginBottom: 14 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>PROFILE IMAGE</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 18, fontWeight: 700, flexShrink: 0 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg, #4F4AA8, #6C67C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 18, fontWeight: 700, flexShrink: 0 }}>
                     {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'SM'}
                   </div>
                   <div style={{ flex: 1 }}>
@@ -440,7 +440,7 @@ export default function SettingsPage() {
             <div className="settings-block">
               <h3 className="settings-block-title">PROFILE INFORMATION</h3>
               <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 4 }}>
-                <div className="avatar avatar-xl" style={{ background: '#3B82F6', color: '#fff', fontSize: 22, flexShrink: 0 }}>
+                <div className="avatar avatar-xl" style={{ background: '#4F4AA8', color: '#fff', fontSize: 22, flexShrink: 0 }}>
                   {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'DC'}
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -514,15 +514,15 @@ export default function SettingsPage() {
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>21%</span>
                 </div>
                 <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: '21%', background: 'linear-gradient(90deg, #3B82F6, #8B5CF6)', borderRadius: 3 }} />
+                  <div style={{ height: '100%', width: '21%', background: 'linear-gradient(90deg, #4F4AA8, #6C67C7)', borderRadius: 3 }} />
                 </div>
                 <div style={{ display: 'flex', gap: 20, marginTop: 10 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#3B82F6' }} />
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#4F4AA8' }} />
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Emails: 2.1 GB</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#8B5CF6' }} />
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#6C67C7' }} />
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Attachments: 1.1 GB</span>
                   </div>
                 </div>
@@ -615,10 +615,10 @@ export default function SettingsPage() {
                   </div>
                   <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {sessions.map((s, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: i === 0 ? 'rgba(59,130,246,0.06)' : 'var(--bg-hover)', borderRadius: 10, border: i === 0 ? '1px solid rgba(59,130,246,0.2)' : '1px solid var(--border)' }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: i === 0 ? 'rgba(79,74,168,0.06)' : 'var(--bg-hover)', borderRadius: 10, border: i === 0 ? '1px solid rgba(79,74,168,0.2)' : '1px solid var(--border)' }}>
                         <div style={{ fontSize: 24 }}>{s.icon}</div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600 }}>{s.device}{i === 0 && <span style={{ fontSize: 10, color: '#3B82F6', fontWeight: 700, marginLeft: 8 }}>CURRENT</span>}</div>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{s.device}{i === 0 && <span style={{ fontSize: 10, color: '#4F4AA8', fontWeight: 700, marginLeft: 8 }}>CURRENT</span>}</div>
                           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.location} · {s.lastActive}</div>
                         </div>
                         {i > 0 && (
@@ -651,7 +651,7 @@ export default function SettingsPage() {
             </div>
 
             {user?.google_id && (
-              <div className="settings-block" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.1)', borderRadius: 12, padding: 16, marginBottom: 24 }}>
+              <div className="settings-block" style={{ background: 'rgba(79, 74, 168, 0.05)', border: '1px solid rgba(79, 74, 168, 0.1)', borderRadius: 12, padding: 16, marginBottom: 24 }}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                   <div style={{ fontSize: 24 }}>🛡️</div>
                   <div>

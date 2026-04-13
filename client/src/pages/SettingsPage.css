@@ -98,15 +98,15 @@
 .theme-card-preview {
   height: 72px;
   display: flex;
-  background: #F8FAFC;
+  background: #F7F8FC;
 }
 
 .theme-card-preview[data-theme-preview="deep-space"] {
-  background: #0C0E14;
+  background: #14123D;
 }
 
 .theme-card-preview[data-theme-preview="system"] {
-  background: linear-gradient(135deg, #F8FAFC 50%, #0C0E14 50%);
+  background: linear-gradient(135deg, #F7F8FC 50%, #14123D 50%);
 }
 
 .preview-sidebar {
