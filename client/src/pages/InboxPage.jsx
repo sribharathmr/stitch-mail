@@ -35,6 +35,12 @@ const TabIcons = {
   ),
 }
 
+const SidebarIcon = ({ size = 20, color = 'currentColor', children }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    {children}
+  </svg>
+)
+
 const TABS = [
   { id: 'primary',    label: 'Primary',    Icon: TabIcons.primary },
   { id: 'social',     label: 'Social',     Icon: TabIcons.social },
@@ -251,7 +257,13 @@ export default function InboxPage({ folder = 'inbox' }) {
         {accounts.some(a => a.needsReconnect && (activeAccount === 'all' || activeAccount === a.id)) && (
           <div className="account-banner warning">
             <div className="account-banner-content">
-              <span className="account-banner-icon">⚠️</span>
+              <span className="account-banner-icon">
+                <SidebarIcon size={16} color="currentColor">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </SidebarIcon>
+              </span>
               <span className="account-banner-text">
                 <b>Connection Repair Needed:</b> Some accounts have lost their Gmail sync permissions.
               </span>
@@ -271,7 +283,14 @@ export default function InboxPage({ folder = 'inbox' }) {
         {activeAccount && activeAccount !== 'all' && (
           <div className="account-banner">
             <div className="account-banner-content">
-              <span className="account-banner-icon">🚀</span>
+              <span className="account-banner-icon">
+                <SidebarIcon size={16} color="currentColor">
+                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                  <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                  <path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3"/>
+                  <path d="M12 15v5s3.03-.55 5-2c2.2-1.62 3-5 3-5"/>
+                </SidebarIcon>
+              </span>
               <span className="account-banner-text">
                 Viewing <span className="account-email">{accounts.find(a => a.id === activeAccount)?.email || activeAccount}</span> Account
               </span>
@@ -321,7 +340,12 @@ export default function InboxPage({ folder = 'inbox' }) {
         {/* Empty state */}
         {!loading && filteredEmails.length === 0 && (
           <div className="empty-state" style={{ marginTop: 60 }}>
-            <div style={{ fontSize: 48 }}>📭</div>
+            <div style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
+              <SidebarIcon size={48} color="currentColor">
+                <path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5a2.5 2.5 0 0 1 5 0c0 .5.12 1.01.46 1.41l2.34 2.37c.34.4.84.62 1.36.62h1.68c.52 0 1.02-.22 1.36-.62l2.34-2.37c.34-.4.46-.91.46-1.41a2.5 2.5 0 0 1 5 0V17z"/>
+                <path d="M11 13H5"/>
+              </SidebarIcon>
+            </div>
             <p style={{ fontWeight: 600, fontSize: 16 }}>No emails here</p>
             <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 10 }}>Your {folder} is empty.</p>
             
@@ -438,10 +462,13 @@ export default function InboxPage({ folder = 'inbox' }) {
                 <button 
                   onClick={handleAddTask}
                   className="task-add-btn"
-                  style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg-active)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 'bold', cursor: 'pointer', border: 'none' }}
+                  style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg-active)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: 'none' }}
                   title="Add Task"
                 >
-                  +
+                  <SidebarIcon size={14} color="var(--accent)">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </SidebarIcon>
                 </button>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap: 10 }}>
@@ -501,7 +528,11 @@ export default function InboxPage({ folder = 'inbox' }) {
             {/* Weekly summary card */}
             <div className="card weekly-summary-card">
               <div className="weekly-summary-header">
-                <span>📊</span>
+                <SidebarIcon size={18} color="var(--accent)">
+                  <path d="M18 20V10"/>
+                  <path d="M12 20V4"/>
+                  <path d="M6 20v-6"/>
+                </SidebarIcon>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>Weekly Summary</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{getWeekRange()}</div>
@@ -526,7 +557,14 @@ export default function InboxPage({ folder = 'inbox' }) {
             {/* Smart Categorize CTA */}
             <div className="card smart-cta-card" style={{ marginTop: 16, padding: '16px 20px' }}>
               <div style={{ display:'flex', gap: 12, alignItems:'flex-start' }}>
-                <div style={{ fontSize: 24 }}>🤖</div>
+                <SidebarIcon size={24} color="var(--accent)">
+                  <path d="M12 8V4H8"/>
+                  <rect x="5" y="8" width="14" height="10" rx="2"/>
+                  <circle cx="9" cy="12" r="1"/>
+                  <circle cx="15" cy="12" r="1"/>
+                  <path d="M6 4l3.06 3.06"/>
+                  <path d="M18 4l-3.06 3.06"/>
+                </SidebarIcon>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Smart Categorize</div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10 }}>
@@ -555,10 +593,13 @@ export default function InboxPage({ folder = 'inbox' }) {
                 <button 
                   onClick={handleAddTask}
                   className="task-add-btn"
-                  style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg-active)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 'bold', cursor: 'pointer', border: 'none' }}
+                  style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg-active)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: 'none' }}
                   title="Add Task"
                 >
-                  +
+                  <SidebarIcon size={14} color="var(--accent)">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </SidebarIcon>
                 </button>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap: 10 }}>
