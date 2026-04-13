@@ -226,7 +226,8 @@ export default function InboxPage({ folder = 'inbox' }) {
         setSyncResult({ status: 'error', message: err.message, code: err.code })
       }
     } catch (err) {
-      setSyncResult({ status: 'error', message: 'Failed to contact sync service.' })
+      const serverMsg = err.response?.data?.message || err.message || 'Failed to contact sync service.';
+      setSyncResult({ status: 'error', message: `Sync failed: ${serverMsg}` })
     } finally {
       setSyncing(false)
     }

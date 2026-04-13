@@ -860,6 +860,7 @@ exports._getFullUser = getFullUser;
 
 // ─── Manual Sync — Direct feedback ──────────────────────────────────────────
 exports.manualSync = async (req, res) => {
+  console.log(`[ManualSync] Request received from user ${req.user?.id || 'unknown'}`);
   try {
     let { data: accounts, error: accErr } = await supabase
       .from('linked_accounts')
