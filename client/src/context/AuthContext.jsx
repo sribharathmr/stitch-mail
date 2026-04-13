@@ -21,6 +21,11 @@ export function AuthProvider({ children }) {
     authAPI.me()
       .then(res => {
         setUser(res.data.user)
+        // If we got a token but don't have it in session storage, save it now 
+        // to isolate this tab's session
+        if (res.data.token && !getToken()) {
+          setToken(res.data.token)
+        }
       })
       .catch(() => {
         setUser(null)

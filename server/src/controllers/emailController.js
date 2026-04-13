@@ -285,6 +285,7 @@ exports.sync = async (req, res) => {
         const fullUser = await getFullUser(req.user.id);
         const refreshToken = fullUser?.google_tokens?.refreshToken || fullUser?.google_tokens?.refresh_token;
         if (refreshToken) {
+          console.log(`[AutoSyncLink] Fix: Creating linked_account via sync fallback for ${req.user.email}`);
           const { data: newAcc } = await supabase
             .from('linked_accounts')
             .insert({
@@ -297,9 +298,11 @@ exports.sync = async (req, res) => {
             .select()
             .single();
           if (newAcc) accounts = [newAcc];
+        } else {
+          console.warn(`[AutoSyncLink] NO refresh token found for ${req.user.email}`);
         }
       } catch (autoLinkErr) {
-        console.error('[AutoLink] Sync fallback error:', autoLinkErr.message);
+        console.error('[AutoSyncLink] Error:', autoLinkErr.message);
       }
     }
 
@@ -336,9 +339,10 @@ exports.list = async (req, res) => {
         try {
           const fullUser = await getFullUser(req.user.id);
           const refreshToken = fullUser?.google_tokens?.refreshToken || fullUser?.google_tokens?.refresh_token;
+          
           if (refreshToken) {
-            console.log(`[AutoLink] Creating missing linked_account for user ${req.user.id} (${req.user.email})`);
-            const { data: newAcc } = await supabase
+            console.log(`[AutoLink] Correcting missing linked_account for ${req.user.email}`);
+            const { data: newAcc, error: linkErr } = await supabase
               .from('linked_accounts')
               .insert({
                 user_id: req.user.id,
@@ -349,10 +353,18 @@ exports.list = async (req, res) => {
               })
               .select()
               .single();
-            if (newAcc) accounts = [newAcc];
+            
+            if (newAcc) {
+              accounts = [newAcc];
+              console.log(`[AutoLink] Success! Created account ID: ${newAcc.id}`);
+            } else if (linkErr) {
+              console.error(`[AutoLink] Database error: ${linkErr.message}`);
+            }
+          } else {
+            console.warn(`[AutoLink] User has Google ID but NO refresh token found in tokens object.`);
           }
         } catch (autoLinkErr) {
-          console.error('[AutoLink] Error:', autoLinkErr.message);
+          console.error('[AutoLink] Critical failure:', autoLinkErr.message);
         }
       }
 

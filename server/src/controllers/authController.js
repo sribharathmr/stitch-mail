@@ -394,5 +394,6 @@ exports.logout = (req, res) => {
 
 // ─── Get current user ──────────────────────────────────────────────────────────
 exports.me = async (req, res) => {
-  res.json({ user: toSafeUser(req.user) });
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies?.token;
+  res.json({ user: toSafeUser(req.user), token });
 };
