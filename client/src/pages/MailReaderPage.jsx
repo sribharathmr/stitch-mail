@@ -460,7 +460,9 @@ export default function MailReaderPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
               {mediaAttachments.map((a, i) => {
                 const attachmentId = a.attachmentId || a.partId;
-                const proxyUrl = attachmentId ? `${process.env.REACT_APP_API_URL || ''}/api/emails/${email._id}/attachments/${attachmentId}` : (a.path || '#');
+                const encodedEmailId = encodeURIComponent(email._id);
+                const encodedAttachmentId = encodeURIComponent(attachmentId);
+                const proxyUrl = attachmentId ? `${process.env.REACT_APP_API_URL || ''}/api/emails/${encodedEmailId}/attachments/${encodedAttachmentId}` : (a.path || '#');
                 return (
                   <a key={i} href={proxyUrl} target="_blank" rel="noopener noreferrer" download
                     style={{
@@ -506,7 +508,9 @@ export default function MailReaderPage() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {docAttachments.map((a, i) => {
                 const attachmentId = a.attachmentId || a.partId;
-                const proxyUrl = attachmentId ? `${process.env.REACT_APP_API_URL || ''}/api/emails/${email._id}/attachments/${attachmentId}` : a.path;
+                const encodedEmailId = encodeURIComponent(email._id);
+                const encodedAttachmentId = encodeURIComponent(attachmentId);
+                const proxyUrl = attachmentId ? `${process.env.REACT_APP_API_URL || ''}/api/emails/${encodedEmailId}/attachments/${encodedAttachmentId}` : a.path;
                 return (
                   <a key={i} href={proxyUrl} download className="attachment-pill">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
