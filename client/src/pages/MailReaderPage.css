@@ -140,6 +140,59 @@
 }
 .attachment-pill:hover { border-color: var(--accent); color: var(--accent); }
 
+.attachment-card {
+  position: relative;
+}
+
+.attachment-download-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 10;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.attachment-card:hover .attachment-download-btn {
+  opacity: 1;
+}
+
+.attachment-download-btn:hover {
+  background: var(--accent);
+  transform: scale(1.1);
+}
+
+.attachment-pill-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pill-download-btn {
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.pill-download-btn:hover {
+  background: var(--bg-hover);
+  color: var(--accent);
+}
+
 .reader-quick-reply {
   display: flex;
   gap: 10px;
