@@ -919,12 +919,13 @@ exports.manualSync = async (req, res) => {
           syncGmailEmails(req.user.id, acc.id, refreshToken, 'inbox');
           results.push({ email: acc.email, status: 'success', message: 'Sync started successfully.' });
         } catch (err) {
-          const msg = err.message.toLowerCase();
-          let userMsg = 'Connection error.';
+          console.error(`[ManualSync] Gmail API error for ${acc.email}:`, err.message);
+          const msg = (err.message || '').toLowerCase();
+          let userMsg = `Gmail error: ${err.message}`;
           let code = 'AUTH_ERROR';
 
-          if (msg.includes('invalid_grant') || msg.includes('token')) {
-            userMsg = 'Google permissions have expired. Please Reconnect.';
+          if (msg.includes('invalid_grant') || msg.includes('token') || msg.includes('unauthorized')) {
+            userMsg = 'Google permissions have expired. Please sign out and sign in again with Google.';
             code = 'EXPIRED_TOKEN';
           }
 
