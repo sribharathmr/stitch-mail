@@ -97,13 +97,9 @@ export default function Topbar() {
           onClick={() => setShowDropdown(true)}
           title="Google Account"
         >
-          {user?.email?.toLowerCase().includes('sribharathmr@') ? (
-            <img src="https://images.unsplash.com/photo-1542596594-649edbc13630?w=64&auto=format&fit=crop" alt="User" />
-          ) : (
-            <div className="topbar-avatar-initials">
-              {(user?.name || user?.email || 'U')[0].toUpperCase()}
-            </div>
-          )}
+          <div className="topbar-avatar-initials">
+            {(user?.name || user?.email || 'U')[0].toUpperCase()}
+          </div>
         </button>
       </div>
 

@@ -44,9 +44,6 @@ export default function AccountDropdown({ onClose }) {
   const mainEmail = user?.email || 'user@example.com'
   const mainColor = colorFromName(user?.name || mainEmail)
 
-  // Use test photo if main user is sribharath to simulate the given image exactly
-  // otherwise, default to initials to be safe
-  const isSribharath = mainEmail.toLowerCase().includes('sribharathmr@');
 
   return (
     <div className="account-dropdown-overlay" onClick={onClose}>
@@ -63,11 +60,7 @@ export default function AccountDropdown({ onClose }) {
 
         <div className="account-dropdown-profile">
           <div className="account-dropdown-avatar-large">
-            {isSribharath ? (
-               <img src="https://images.unsplash.com/photo-1542596594-649edbc13630?w=160&auto=format&fit=crop" alt="Profile" className="avatar-image-actual" />
-            ) : (
-               <div className="avatar-placeholder" style={{ backgroundColor: mainColor }}>{getInitials(user?.name, user?.email)}</div>
-            )}
+            <div className="avatar-placeholder" style={{ backgroundColor: mainColor }}>{getInitials(user?.name, user?.email)}</div>
             
             <svg className="avatar-ring" viewBox="0 0 100 100">
                <circle cx="50" cy="50" r="47" className="ring-red"></circle>
