@@ -12,6 +12,7 @@ export default function Topbar() {
   const navigate = useNavigate()
   const [localQ, setLocalQ] = useState(searchQuery)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showHelpDropdown, setShowHelpDropdown] = useState(false)
   const debounceRef = useRef(null)
 
   useEffect(() => {
@@ -71,9 +72,9 @@ export default function Topbar() {
 
       <div className="topbar-actions">
         <button 
-          className="btn-icon topbar-icon-btn" 
+          className={`btn-icon topbar-icon-btn ${showHelpDropdown ? 'active' : ''}`} 
           title="Support" 
-          onClick={() => window.open('mailto:support@stitchmail.com', '_blank')}
+          onClick={() => setShowHelpDropdown(!showHelpDropdown)}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
@@ -110,6 +111,17 @@ export default function Topbar() {
           </div>
         </button>
       </div>
+
+      {showHelpDropdown && (
+        <div className="account-dropdown-overlay" onClick={() => setShowHelpDropdown(false)} style={{ zIndex: 9999 }}>
+          <div className="help-dropdown-container" onClick={e => e.stopPropagation()}>
+            <button className="help-dropdown-item" onClick={() => window.open('mailto:support@stitchmail.com', '_blank')}>Help</button>
+            <button className="help-dropdown-item">Training</button>
+            <div className="help-dropdown-divider" />
+            <button className="help-dropdown-item">Send feedback to Google</button>
+          </div>
+        </div>
+      )}
 
       {showDropdown && <AccountDropdown onClose={() => setShowDropdown(false)} />}
     </header>
