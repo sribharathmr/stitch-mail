@@ -307,47 +307,6 @@ export default function Sidebar() {
           <AccountList expanded={expanded} handleNavClick={handleNavClick} />
         </nav>
 
-        {/* Bottom Controls */}
-        <div className="sidebar-bottom">
-          <NavLink to="/settings" id="nav-settings" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`} onClick={handleNavClick} title={!expanded ? 'Settings' : undefined}>
-            <span className="nav-icon"><Icons.Settings /></span>
-            {expanded && <span className="nav-label">Settings</span>}
-          </NavLink>
-
-          <div 
-            className="sidebar-user" 
-            onClick={() => navigate('/accounts')}
-            style={{ cursor: 'pointer' }}
-            title="Switch Accounts"
-          >
-            <div className="avatar avatar-sm" style={{ background: avatarColor, color: '#fff', fontSize: 11 }}>
-              {getInitials(user?.name, user?.email)}
-            </div>
-            {expanded && (
-              <div className="sidebar-user-info" style={{ justifyContent: 'center' }}>
-                {user?.name && user.name.trim() !== '' && (
-                  <span className="sidebar-user-name">{user.name}</span>
-                )}
-                <span className="sidebar-user-email" style={(!user?.name || user.name.trim() === '') ? { fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 } : {}}>
-                  {user?.email}
-                </span>
-              </div>
-            )}
-            {expanded && (
-              <div
-                id="logout-btn"
-                className="btn-icon"
-                onClick={(e) => { e.stopPropagation(); handleLogout(); }}
-                style={{ marginLeft: 'auto', flexShrink: 0 }}
-                title="Sign out"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-                </svg>
-              </div>
-            )}
-          </div>
-        </div>
       </aside>
     </>
   )
