@@ -81,7 +81,7 @@ export default function AccountDropdown({ onClose }) {
           </div>
           
           <button className="manage-account-btn" onClick={() => { navigate('/settings'); onClose(); }}>
-            Manage your Google Account
+            Manage your Account
           </button>
         </div>
 

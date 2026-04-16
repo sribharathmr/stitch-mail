@@ -118,7 +118,7 @@ export default function Topbar() {
             <button className="help-dropdown-item" onClick={() => window.open('mailto:support@stitchmail.com', '_blank')}>Help</button>
             <button className="help-dropdown-item">Training</button>
             <div className="help-dropdown-divider" />
-            <button className="help-dropdown-item">Send feedback to Google</button>
+            <button className="help-dropdown-item">Send feedback</button>
           </div>
         </div>
       )}
