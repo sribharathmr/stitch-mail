@@ -14,7 +14,7 @@
   width: 400px;
   background-color: #E9EEF6;
   border-radius: 28px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05), 0 12px 32px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
   padding: 16px 12px;
@@ -101,24 +101,26 @@
 .avatar-ring circle {
   fill: none;
   stroke-width: 3.5;
-  stroke-dasharray: 66 270; 
+  stroke-linecap: round;
+  stroke-dasharray: 62 208.18; /* 2*pi*43 = 270.18 */
 }
 
 /* 4 colors evenly spaced */
 .ring-red { stroke: #EA4335; stroke-dashoffset: 0; }
-.ring-yellow { stroke: #FBBC05; stroke-dashoffset: -67.5; }
-.ring-green { stroke: #34A853; stroke-dashoffset: -135; }
-.ring-blue { stroke: #4285F4; stroke-dashoffset: -202.5; }
+.ring-yellow { stroke: #FBBC05; stroke-dashoffset: -67.54; }
+.ring-green { stroke: #34A853; stroke-dashoffset: -135.08; }
+.ring-blue { stroke: #4285F4; stroke-dashoffset: -202.62; }
 
 .camera-icon-badge {
   position: absolute;
-  bottom: 0px;
+  bottom: -2px;
   right: -2px;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   background-color: white;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  border: 1px solid #f1f3f4;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,22 +128,24 @@
 }
 
 .account-dropdown-greeting {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 400;
   color: #1f1f1f;
+  margin-top: 8px;
   margin-bottom: 16px;
+  letter-spacing: -0.2px;
 }
 
 .manage-account-btn {
   background-color: transparent;
   border: 1px solid #747775;
   color: #0b57d0;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 10px 24px;
+  border-radius: 100px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .manage-account-btn:hover {
