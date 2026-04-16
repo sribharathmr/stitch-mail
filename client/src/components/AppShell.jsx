@@ -3,11 +3,14 @@ import { useEffect } from 'react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import ComposeWindow from './ComposeWindow'
+import GeminiSidebar from './GeminiSidebar'
 import { useEmail } from '../context/EmailContext'
+import { useUI } from '../context/UIContext'
 import './AppShell.css'
 
 export default function AppShell() {
   const { composeWindows, dispatch } = useEmail()
+  const { geminiSidebarOpen } = useUI()
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -30,8 +33,11 @@ export default function AppShell() {
       <Sidebar />
       <div className="app-main">
         <Topbar />
-        <div className="app-content">
-          <Outlet />
+        <div className="app-content-wrapper">
+          <div className="app-content">
+            <Outlet />
+          </div>
+          <GeminiSidebar />
         </div>
       </div>
       {composeWindows.map((win, idx) => (

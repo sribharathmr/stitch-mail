@@ -7,13 +7,12 @@ import AccountDropdown from './AccountDropdown'
 import './Topbar.css'
 export default function Topbar() {
   const { dispatch } = useEmail()
-  const { searchQuery, setSearchQuery, setMobileMenuOpen } = useUI()
+  const { searchQuery, setSearchQuery, setMobileMenuOpen, geminiSidebarOpen, setGeminiSidebarOpen } = useUI()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [localQ, setLocalQ] = useState(searchQuery)
   const [showDropdown, setShowDropdown] = useState(false)
   const [showHelpDropdown, setShowHelpDropdown] = useState(false)
-  const [showAIToast, setShowAIToast] = useState(false)
   const debounceRef = useRef(null)
 
   useEffect(() => {
@@ -92,12 +91,9 @@ export default function Topbar() {
         </button>
 
         <button 
-          className="btn-icon topbar-icon-btn" 
+          className={`btn-icon topbar-icon-btn ${geminiSidebarOpen ? 'active' : ''}`}
           title="Gemini / AI Features"
-          onClick={() => {
-            setShowAIToast(true)
-            setTimeout(() => setShowAIToast(false), 4000)
-          }}
+          onClick={() => setGeminiSidebarOpen(v => !v)}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6z"></path>
@@ -128,20 +124,6 @@ export default function Topbar() {
       )}
 
       {showDropdown && <AccountDropdown onClose={() => setShowDropdown(false)} />}
-
-      {showAIToast && (
-        <div className="snackbar-toast">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a8c7fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6z"></path>
-          </svg>
-          <span>Stitch Mail AI is analyzing your inbox for smart replies and insights...</span>
-          <button className="snackbar-close" onClick={() => setShowAIToast(false)}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
     </header>
   )
 }

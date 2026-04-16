@@ -8,6 +8,7 @@ export function UIProvider({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const toggleSidebar = () => setSidebarExpanded(v => !v)
+  const [geminiSidebarOpen, setGeminiSidebarOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilters, setActiveFilters] = useState({})
   const [settings, setSettings] = useState(null)
@@ -43,6 +44,7 @@ export function UIProvider({ children }) {
       theme, setTheme,
       sidebarCollapsed, setSidebarCollapsed,
       sidebarExpanded, setSidebarExpanded, toggleSidebar,
+      geminiSidebarOpen, setGeminiSidebarOpen,
       mobileMenuOpen, setMobileMenuOpen,
       searchQuery, setSearchQuery,
       activeFilters, setActiveFilters,
