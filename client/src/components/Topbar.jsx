@@ -70,7 +70,11 @@ export default function Topbar() {
       </form>
 
       <div className="topbar-actions">
-        <button className="btn-icon topbar-icon-btn" title="Support">
+        <button 
+          className="btn-icon topbar-icon-btn" 
+          title="Support" 
+          onClick={() => window.open('mailto:support@stitchmail.com', '_blank')}
+        >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
@@ -85,7 +89,11 @@ export default function Topbar() {
           </svg>
         </button>
 
-        <button className="btn-icon topbar-icon-btn" title="Gemini / AI Features">
+        <button 
+          className="btn-icon topbar-icon-btn" 
+          title="Gemini / AI Features"
+          onClick={() => alert('Stitch Mail AI is currently analyzing your inbox for smart replies and insights! 🪄')}
+        >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6z"></path>
           </svg>
