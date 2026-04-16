@@ -118,49 +118,6 @@ function colorFromName(name = '') {
   return colors[Math.abs(hash) % colors.length]
 }
 
-function AccountList({ expanded, handleNavClick }) {
-  const { dispatch, activeAccount, accounts } = useEmail()
-
-
-  const handleSwitch = (id) => {
-    dispatch({ type: 'SET_ACCOUNT', payload: id })
-    handleNavClick()
-  }
-
-  return (
-    <div className="sidebar-accounts">
-      {expanded && <span className="sidebar-section-label">ACCOUNTS</span>}
-      {!expanded && <div className="sidebar-section-label-dot" />}
-      
-      <button 
-        className={`sidebar-nav-item ${activeAccount === 'all' ? 'active' : ''}`}
-        onClick={() => handleSwitch('all')}
-        title={!expanded ? 'All Accounts' : undefined}
-      >
-        <span className="nav-icon"><Icons.Accounts /></span>
-        {expanded && <span className="nav-label">All Accounts</span>}
-      </button>
-
-      {accounts.map(acc => (
-        <button 
-          key={acc.id}
-          className={`sidebar-nav-item ${activeAccount === acc.id ? 'active' : ''}`}
-          onClick={() => handleSwitch(acc.id)}
-          title={!expanded ? acc.email : undefined}
-        >
-          <div className="nav-icon">
-            <div className="avatar avatar-xs" style={{ background: '#8b5cf6', color: '#fff', fontSize: 10, borderRadius: '4px' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-            </div>
-          </div>
-          {expanded && <span className="nav-label" style={{ fontSize: 13, opacity: 0.9 }}>{acc.email}</span>}
-        </button>
-      ))}
-    </div>
-  )
-}
 
 export default function Sidebar() {
   const { unreadCount, dispatch } = useEmail()
@@ -304,7 +261,6 @@ export default function Sidebar() {
             {expanded && <span className="nav-label">Smart Unsubscribe</span>}
           </NavLink>
 
-          <AccountList expanded={expanded} handleNavClick={handleNavClick} />
         </nav>
 
       </aside>
