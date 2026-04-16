@@ -161,6 +161,47 @@
 }
 
 
+.snackbar-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  background: #323232;
+  color: white;
+  padding: 14px 16px 14px 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-family: 'Roboto', 'Inter', sans-serif;
+  box-shadow: 0 3px 5px -1px rgba(0,0,0,0.2), 0 6px 10px 0 rgba(0,0,0,0.14);
+  z-index: 9999;
+  animation: snackbarSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.snackbar-close {
+  background: none;
+  border: none;
+  color: #a8c7fa;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.snackbar-close:hover {
+  background-color: rgba(168, 199, 250, 0.15);
+}
+
+@keyframes snackbarSlideUp {
+  from { transform: translateY(100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 /* Hamburger — hidden on desktop, shown on mobile */
 .topbar-mobile-menu {
   display: none;
