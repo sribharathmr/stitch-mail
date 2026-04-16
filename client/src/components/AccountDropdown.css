@@ -70,10 +70,11 @@
 }
 
 .avatar-image-actual, .avatar-placeholder {
-  width: 74px;
-  height: 74px;
+  width: 78px;
+  height: 78px;
   border-radius: 50%;
   object-fit: cover;
+  z-index: 1;
 }
 
 .avatar-placeholder {
@@ -83,29 +84,31 @@
   color: white;
   font-size: 32px;
   font-weight: 400;
+  z-index: 1;
 }
 
 .avatar-ring {
   position: absolute;
-  top: -4px;
-  left: -4px;
-  width: 88px;
-  height: 88px;
+  top: -3px;
+  left: -3px;
+  width: 86px;
+  height: 86px;
   transform: rotate(-45deg);
+  z-index: 2;
+  pointer-events: none;
 }
 
 .avatar-ring circle {
   fill: none;
   stroke-width: 3.5;
-  stroke-dasharray: 66 300; 
-  /* Circumference is roughly 2*pi*47 = 295. Using 300 as max dash array */
+  stroke-dasharray: 66 270; 
 }
 
 /* 4 colors evenly spaced */
 .ring-red { stroke: #EA4335; stroke-dashoffset: 0; }
-.ring-yellow { stroke: #FBBC05; stroke-dashoffset: -73.75; }
-.ring-green { stroke: #34A853; stroke-dashoffset: -147.5; }
-.ring-blue { stroke: #4285F4; stroke-dashoffset: -221.25; }
+.ring-yellow { stroke: #FBBC05; stroke-dashoffset: -67.5; }
+.ring-green { stroke: #34A853; stroke-dashoffset: -135; }
+.ring-blue { stroke: #4285F4; stroke-dashoffset: -202.5; }
 
 .camera-icon-badge {
   position: absolute;
@@ -119,6 +122,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 3;
 }
 
 .account-dropdown-greeting {
@@ -184,8 +188,12 @@
   transition: transform 0.2s;
 }
 
-.chevron-icon.down {
+.chevron-icon.up {
   transform: rotate(180deg);
+}
+
+.chevron-icon.down {
+  transform: rotate(0deg);
 }
 
 .accounts-list {
