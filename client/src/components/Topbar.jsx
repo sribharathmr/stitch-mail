@@ -2,13 +2,16 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useUI } from '../context/UIContext'
+import { useAuth } from '../context/AuthContext'
+import AccountDropdown from './AccountDropdown'
 import './Topbar.css'
-
 export default function Topbar() {
   const { dispatch } = useEmail()
   const { searchQuery, setSearchQuery, setMobileMenuOpen } = useUI()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [localQ, setLocalQ] = useState(searchQuery)
+  const [showDropdown, setShowDropdown] = useState(false)
   const debounceRef = useRef(null)
 
   useEffect(() => {
@@ -84,7 +87,23 @@ export default function Topbar() {
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
         </button>
+
+        <button 
+          className="topbar-avatar-btn" 
+          onClick={() => setShowDropdown(true)}
+          title="Google Account"
+        >
+          {user?.email?.toLowerCase().includes('sribharathmr@') ? (
+            <img src="https://images.unsplash.com/photo-1542596594-649edbc13630?w=64&auto=format&fit=crop" alt="User" />
+          ) : (
+            <div className="topbar-avatar-initials">
+              {(user?.name || user?.email || 'U')[0].toUpperCase()}
+            </div>
+          )}
+        </button>
       </div>
+
+      {showDropdown && <AccountDropdown onClose={() => setShowDropdown(false)} />}
     </header>
   )
 }

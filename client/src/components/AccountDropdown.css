@@ -1,0 +1,287 @@
+.account-dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+}
+
+.account-dropdown-container {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: 400px;
+  background-color: #E9EEF6;
+  border-radius: 28px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+  font-family: 'Roboto', 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+
+.account-dropdown-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.account-dropdown-close:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+.account-dropdown-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.account-dropdown-email {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f1f1f;
+  margin-top: 4px;
+}
+
+.account-dropdown-avatar-large {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-image-actual, .avatar-placeholder {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 32px;
+  font-weight: 400;
+}
+
+.avatar-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 88px;
+  height: 88px;
+  transform: rotate(-45deg);
+}
+
+.avatar-ring circle {
+  fill: none;
+  stroke-width: 3.5;
+  stroke-dasharray: 66 300; 
+  /* Circumference is roughly 2*pi*47 = 295. Using 300 as max dash array */
+}
+
+/* 4 colors evenly spaced */
+.ring-red { stroke: #EA4335; stroke-dashoffset: 0; }
+.ring-yellow { stroke: #FBBC05; stroke-dashoffset: -73.75; }
+.ring-green { stroke: #34A853; stroke-dashoffset: -147.5; }
+.ring-blue { stroke: #4285F4; stroke-dashoffset: -221.25; }
+
+.camera-icon-badge {
+  position: absolute;
+  bottom: 0px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-dropdown-greeting {
+  font-size: 22px;
+  font-weight: 400;
+  color: #1f1f1f;
+  margin-bottom: 16px;
+}
+
+.manage-account-btn {
+  background-color: transparent;
+  border: 1px solid #747775;
+  color: #0b57d0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.manage-account-btn:hover {
+  background-color: rgba(11, 87, 208, 0.04);
+}
+
+.account-list-card {
+  background-color: #ffffff;
+  border-radius: 24px;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hide-more-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f1f1f;
+  cursor: pointer;
+}
+
+.hide-more-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.chevron-bg, .action-icon-bg {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f1f3f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chevron-icon {
+  transition: transform 0.2s;
+}
+
+.chevron-icon.down {
+  transform: rotate(180deg);
+}
+
+.accounts-list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px;
+}
+
+.other-account-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-top: 1px solid #f8f9fa;
+}
+
+.other-account-item:hover {
+  background-color: #f8f9fa;
+}
+
+.other-account-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  margin-right: 14px;
+}
+
+.other-account-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.other-account-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f1f1f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.other-account-email {
+  font-size: 12px;
+  color: #444746;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.add-account-btn, .signout-all-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f1f1f;
+  cursor: pointer;
+  gap: 14px;
+  border-top: 1px solid #f1f3f4;
+}
+
+.add-account-btn {
+  border-top: none;
+}
+
+.add-account-btn:hover, .signout-all-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.account-dropdown-footer {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 0 8px;
+  font-size: 12px;
+  color: #444746;
+}
+
+.account-dropdown-footer a {
+  color: #444746;
+  text-decoration: none;
+}
+
+.account-dropdown-footer a:hover {
+  text-decoration: underline;
+}
