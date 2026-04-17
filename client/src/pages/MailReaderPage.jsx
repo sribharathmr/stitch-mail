@@ -64,15 +64,10 @@ export default function MailReaderPage() {
 
   const fetchThread = async (threadId) => {
     try {
-      // Search for all emails with same threadId from the emails list
-      const res = await emailAPI.list({ folder: 'inbox', limit: 50 })
-      const allEmails = res.data.emails || []
-      const thread = allEmails.filter(e => e.threadId === threadId || e._id === id)
-      // Sort chronologically
-      thread.sort((a, b) => new Date(a.receivedAt || a.createdAt) - new Date(b.receivedAt || b.createdAt))
+      const res = await emailAPI.getByThread(threadId)
+      const thread = res.data.emails || []
       if (thread.length > 1) {
         setThreadEmails(thread)
-        // Expand the current email by default
         setExpandedThreadIds(new Set([id]))
       }
     } catch (err) {
@@ -444,13 +439,53 @@ export default function MailReaderPage() {
                       <path d="M6 9l6 6 6-6"/>
                     </svg>
                   </div>
-                  {isExpanded && (
+                  {isExpanded && (() => {
+                    const tMedia = (tEmail.attachments || []).filter(isMediaAttachment)
+                    const tDocs = (tEmail.attachments || []).filter(a => !isMediaAttachment(a))
+                    return (
                     <div style={{ padding: '0 14px 14px', borderTop: '1px solid var(--border)' }}>
                       <div style={{ padding: '12px 0', fontSize: 14, lineHeight: 1.7 }}>
                         <EmailBodyRenderer bodyHtml={tEmail.bodyHtml} bodyText={tEmail.bodyText} />
                       </div>
+                      {tMedia.length > 0 && (
+                        <div style={{ marginTop: 8 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                            Media ({tMedia.length})
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            {tMedia.map((a, i) => {
+                              const attId = a.attachmentId || a.partId;
+                              const url = attId ? `/api/emails/${encodeURIComponent(tEmail._id)}/attachments/${encodeURIComponent(attId)}` : (a.path || '#');
+                              return (
+                                <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                                  style={{ display: 'block', width: 100, height: 75, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--bg-hover)' }}>
+                                  {(a.mimetype || '').startsWith('image/') ? (
+                                    <img src={url} alt={a.filename} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  ) : (
+                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🎬</div>
+                                  )}
+                                </a>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {tDocs.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                          {tDocs.map((a, i) => {
+                            const attId = a.attachmentId || a.partId;
+                            const url = attId ? `/api/emails/${encodeURIComponent(tEmail._id)}/attachments/${encodeURIComponent(attId)}` : a.path;
+                            return (
+                              <a key={i} href={url} download={a.filename} className="attachment-pill" style={{ fontSize: 12, padding: '6px 10px' }}>
+                                📎 {a.filename} {a.size ? `(${(a.size/1024).toFixed(0)}KB)` : ''}
+                              </a>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  )}
+                    )
+                  })()}
                 </div>
               )
             })}

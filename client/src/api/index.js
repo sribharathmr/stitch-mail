@@ -64,6 +64,7 @@ export const emailAPI = {
   search: (params) => api.get('/emails/search', { params }),
   tree: (params) => api.get('/emails/tree', { params }),
   treeOverride: (id, orgDomain) => api.patch(`/emails/${id}/tree-override`, { orgDomain }),
+  getByThread: (threadId) => api.get(`/emails/thread/${threadId}`),
 }
 
 // Threads

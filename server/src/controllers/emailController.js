@@ -481,6 +481,25 @@ exports.getOne = async (req, res) => {
   }
 };
 
+// GET /api/emails/thread/:threadId — fast thread fetch (no sync)
+exports.getByThread = async (req, res) => {
+  try {
+    const { threadId } = req.params;
+    const { data: emails, error } = await supabase
+      .from('emails')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .eq('thread_id', threadId)
+      .order('received_at', { ascending: true });
+
+    if (error) throw error;
+
+    res.json({ emails: (emails || []).map(mapEmail) });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // POST /api/emails/send
 exports.send = async (req, res) => {
   try {
