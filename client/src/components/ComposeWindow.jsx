@@ -350,6 +350,12 @@ export default function ComposeWindow({ windowState, index }) {
     return () => document.removeEventListener('selectionchange', handleSelection)
   }, [])
 
+  useEffect(() => {
+    if (editorRef.current && windowState.bodyHtml && !editorRef.current.innerHTML) {
+      editorRef.current.innerHTML = windowState.bodyHtml
+    }
+  }, [windowState.bodyHtml])
+
   // Close popovers on click outside
   useEffect(() => {
     const handleClick = (e) => {

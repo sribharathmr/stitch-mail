@@ -110,9 +110,18 @@ export default function MailReaderPage() {
   const handleMoveTo  = (folder) => { moveEmail(email._id, folder); setShowMoveMenu(false); navigate('/inbox'); window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: `Moved to ${folder}` } })) }
   const handleMarkUnread = async () => { try { const { emailAPI } = await import('../api'); await emailAPI.update(email._id, { isRead: false }); navigate('/inbox'); window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'info', message: 'Marked as unread' } })) } catch(_){} }
   const handlePrint = () => { const w = window.open('','_blank'); w.document.write(`<html><head><title>${email.subject}</title></head><body><h2>${email.subject}</h2><p>From: ${email.from?.name} &lt;${email.from?.address}&gt;</p><hr>${email.bodyHtml || email.bodyText || ''}</body></html>`); w.document.close(); w.print() }
+  const getQuotedHtml = () => {
+    if (!email.bodyHtml) return '';
+    return `<br><br><div class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">${email.bodyHtml}</div>`;
+  }
+
   const handleReply   = () => dispatch({ type: 'OPEN_COMPOSE', payload: {
-    to: email.from?.address ? [email.from.address] : [], subject: `Re: ${email.subject}`, bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\nDate: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}\n\n${email.bodyText || ''}`
+    to: email.from?.address ? [email.from.address] : [], 
+    subject: `Re: ${email.subject}`, 
+    bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\nDate: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}\n\n${email.bodyText || ''}`,
+    bodyHtml: getQuotedHtml()
   }})
+
   const handleReplyAll = () => {
     const allRecipients = [email.from, ...(email.to || []), ...(email.cc || [])]
       .filter(r => r?.address)
@@ -120,12 +129,49 @@ export default function MailReaderPage() {
     dispatch({ type: 'OPEN_COMPOSE', payload: {
       to: email.from?.address ? [email.from.address] : [], 
       cc: allRecipients.filter(addr => addr !== email.from?.address),
-      subject: `Re: ${email.subject}`, bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\n\n${email.bodyText || ''}`
+      subject: `Re: ${email.subject}`, 
+      bodyText: `\n\n--- Original Message ---\nFrom: ${email.from?.name || email.from?.address}\n\n${email.bodyText || ''}`,
+      bodyHtml: getQuotedHtml()
     }})
   }
-  const handleForward = () => dispatch({ type: 'OPEN_COMPOSE', payload: {
-    subject: `Fwd: ${email.subject}`, bodyText: `\n\n--- Forwarded Message ---\nFrom: ${email.from?.name || email.from?.address}\nTo: ${email.to?.map(t => t.address).join(', ')}\nDate: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}\n\n${email.bodyText || ''}`
-  }})
+
+  const handleForward = async () => {
+    window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'info', message: 'Preparing attachments...' } }))
+    const newAttachments = []
+    
+    if (email.attachments && email.attachments.length > 0) {
+      try {
+        const token = sessionStorage.getItem('stitch_token') || ''
+        for (const a of email.attachments) {
+          const attachmentId = a.attachmentId || a.partId;
+          const encodedEmailId = encodeURIComponent(email._id);
+          const encodedAttachmentId = encodeURIComponent(attachmentId);
+          const url = attachmentId ? `${process.env.REACT_APP_API_URL || ''}/api/emails/${encodedEmailId}/attachments/${encodedAttachmentId}` : a.path;
+          
+          if (url) {
+            const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+            if (res.ok) {
+              const blob = await res.blob()
+              const file = new File([blob], a.filename, { type: a.mimetype || blob.type })
+              newAttachments.push(file)
+            }
+          }
+        }
+      } catch(e) {
+        console.error('Failed to parse attachments', e)
+      }
+    }
+
+    const fwdHeader = `---------- Forwarded message ---------<br>From: ${email.from?.name || email.from?.address}<br>Date: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}<br>Subject: ${email.subject}<br>To: ${email.to?.map(t => t.address).join(', ')}<br><br>`;
+    const fwdHtml = email.bodyHtml ? `<br><br><div class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">${fwdHeader}${email.bodyHtml}</div>` : '';
+
+    dispatch({ type: 'OPEN_COMPOSE', payload: {
+      subject: `Fwd: ${email.subject}`, 
+      bodyText: `\n\n--- Forwarded Message ---\nFrom: ${email.from?.name || email.from?.address}\nTo: ${email.to?.map(t => t.address).join(', ')}\nDate: ${email.receivedAt ? format(new Date(email.receivedAt), 'MMM d, yyyy h:mm a') : ''}\n\n${email.bodyText || ''}`,
+      bodyHtml: fwdHtml,
+      attachments: newAttachments
+    }})
+  }
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true)
