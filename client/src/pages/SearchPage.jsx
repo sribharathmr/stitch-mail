@@ -28,11 +28,9 @@ export default function SearchPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [activeFilters, setActiveFilters] = useState({ hasAttachment: false })
-  const [localQ, setLocalQ] = useState(query)
 
   useEffect(() => {
     if (query) {
-      setLocalQ(query)
       doSearch(query)
     }
   }, [query])
@@ -60,28 +58,8 @@ export default function SearchPage() {
     if (query) doSearch(query, next)
   }
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-    if (localQ.trim()) navigate(`/search?q=${encodeURIComponent(localQ)}`)
-  }
-
-  return (
-    <div className="search-layout">
-      {/* Search bar */}
+      {/* Search Header */}
       <div className="search-header">
-        <form className="search-bar-large" onSubmit={handleSearch}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: 'var(--accent)', flexShrink: 0 }}>
-            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-          </svg>
-          <input
-            id="search-main-input"
-            value={localQ}
-            onChange={e => setLocalQ(e.target.value)}
-            className="search-main-input"
-            placeholder="Search emails..."
-          />
-          <button type="submit" className="btn btn-primary btn-sm">Search</button>
-        </form>
 
         {query && (
           <div className="search-meta">
@@ -159,7 +137,7 @@ export default function SearchPage() {
               <button
                 key={s}
                 className="suggestion-item"
-                onClick={() => { setLocalQ(s); navigate(`/search?q=${encodeURIComponent(s)}`) }}
+                onClick={() => navigate(`/search?q=${encodeURIComponent(s)}`)}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
