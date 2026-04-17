@@ -58,6 +58,8 @@ export default function SearchPage() {
     if (query) doSearch(query, next)
   }
 
+  return (
+    <div className="search-layout">
       {/* Search Header */}
       <div className="search-header">
 
