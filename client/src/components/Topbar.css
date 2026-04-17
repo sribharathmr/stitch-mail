@@ -45,14 +45,25 @@
 
 .topbar-search-input::placeholder { color: var(--text-muted); }
 
-.search-clear {
-  color: var(--text-muted);
-  padding: 2px;
-  border-radius: 4px;
+.search-clear,
+.search-options-btn {
+  color: var(--text-secondary, #444746);
+  padding: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
-.search-clear:hover { color: var(--text-primary); background: var(--border); }
+
+.search-clear:hover,
+.search-options-btn:hover { 
+  color: var(--text-primary); 
+  background: var(--bg-hover, rgba(0,0,0,0.06)); 
+}
 
 .topbar-actions {
   display: flex;
