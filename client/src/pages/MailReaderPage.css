@@ -330,3 +330,69 @@
   }
 }
 
+
+/* EmailBodyRenderer Styles */
+.email-body-renderer {
+  font-family: inherit;
+}
+
+.email-body-renderer.pre-wrap {
+  white-space: pre-wrap;
+}
+
+.email-body-renderer .body-text-p {
+  margin-bottom: 12px;
+  line-height: 1.7;
+}
+
+.email-body-renderer .body-quote-block {
+  display: flex;
+  margin: 16px 0;
+  padding: 8px 0;
+  background: rgba(var(--accent-rgb), 0.02);
+  border-radius: 0 8px 8px 0;
+}
+
+.email-body-renderer .quote-indicator {
+  width: 3px;
+  background: var(--accent);
+  margin-right: 16px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.email-body-renderer .quote-content {
+  color: var(--text-muted);
+  font-size: 0.95em;
+  flex: 1;
+}
+
+.email-body-renderer .forwarded-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 20px 0;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.email-body-renderer .forwarded-banner svg {
+  color: var(--accent);
+}
+
+.email-body-renderer .reply-header-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border);
+}
+

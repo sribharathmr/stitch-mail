@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { emailAPI, aiAPI } from '../api'
 import { format } from 'date-fns'
+import EmailBodyRenderer from '../components/EmailBodyRenderer'
 import './MailReaderPage.css'
-
 function getInitials(name = '') {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
@@ -401,11 +401,7 @@ export default function MailReaderPage() {
                   {isExpanded && (
                     <div style={{ padding: '0 14px 14px', borderTop: '1px solid var(--border)' }}>
                       <div style={{ padding: '12px 0', fontSize: 14, lineHeight: 1.7 }}>
-                        {tEmail.bodyHtml ? (
-                          <div dangerouslySetInnerHTML={{ __html: tEmail.bodyHtml }} />
-                        ) : (
-                          <pre style={{ fontFamily: 'inherit', whiteSpace: 'pre-wrap', fontSize: 14 }}>{tEmail.bodyText}</pre>
-                        )}
+                        <EmailBodyRenderer bodyHtml={tEmail.bodyHtml} bodyText={tEmail.bodyText} />
                       </div>
                     </div>
                   )}
@@ -440,11 +436,7 @@ export default function MailReaderPage() {
         {/* Body — only show if not in thread mode or thread has <= 1 email */}
         {(threadEmails.length <= 1) && (
           <div className="reader-body">
-            {email.bodyHtml ? (
-              <div dangerouslySetInnerHTML={{ __html: email.bodyHtml }} />
-            ) : (
-              <pre style={{ fontFamily: 'inherit', whiteSpace: 'pre-wrap', fontSize: 14 }}>{email.bodyText}</pre>
-            )}
+            <EmailBodyRenderer bodyHtml={email.bodyHtml} bodyText={email.bodyText} />
           </div>
         )}
 
