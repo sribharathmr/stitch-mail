@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
+// Note: useEffect is used in ContactNode and OrgNode for forceExpand
 import { useNavigate } from 'react-router-dom'
 import { emailAPI } from '../api'
 import { format, isToday, isYesterday } from 'date-fns'
@@ -81,8 +82,12 @@ function EmailLeaf({ email, onOpen, onDragStart }) {
 }
 
 // ── Contact Node ───────────────────────────────────────────────────────────────
-function ContactNode({ contact, onOpenEmail, onDragStart, defaultExpanded = false }) {
+function ContactNode({ contact, onOpenEmail, onDragStart, defaultExpanded = false, forceExpand }) {
   const [expanded, setExpanded] = useState(defaultExpanded)
+
+  useEffect(() => {
+    if (forceExpand !== undefined) setExpanded(forceExpand)
+  }, [forceExpand])
 
   return (
     <div className="tree-contact-node">
@@ -124,8 +129,12 @@ function ContactNode({ contact, onOpenEmail, onDragStart, defaultExpanded = fals
 }
 
 // ── Organization Node ──────────────────────────────────────────────────────────
-function OrgNode({ org, onOpenEmail, onDragStart, onDrop, isDragOver, onDragOver, onDragLeave, searchQuery }) {
+function OrgNode({ org, onOpenEmail, onDragStart, onDrop, isDragOver, onDragOver, onDragLeave, searchQuery, forceExpand }) {
   const [expanded, setExpanded] = useState(org.unreadCount > 0 || org.priorityScore >= 10)
+
+  useEffect(() => {
+    if (forceExpand !== undefined) setExpanded(forceExpand)
+  }, [forceExpand])
   const color = orgColor(org.orgName)
 
   return (
@@ -140,7 +149,7 @@ function OrgNode({ org, onOpenEmail, onDragStart, onDrop, isDragOver, onDragOver
           <path d="M9 18l6-6-6-6"/>
         </svg>
         <div className="tree-org-avatar" style={{ background: color }}>
-          <span className="tree-org-icon">🏢</span>
+          <svg className="tree-org-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><path d="M3 21h18M3 7v14M21 7v14M9 3h6l3 4H6l3-4zM9 21v-4h6v4M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/></svg>
         </div>
         <div className="tree-org-info">
           <div className="tree-org-name-row">
@@ -157,7 +166,7 @@ function OrgNode({ org, onOpenEmail, onDragStart, onDrop, isDragOver, onDragOver
       </div>
       {isDragOver && (
         <div className="tree-drop-indicator">
-          <span>📥 Drop to move to {org.orgName}</span>
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{verticalAlign:'middle',marginRight:4}}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Drop to move to {org.orgName}</span>
         </div>
       )}
       <div className={`tree-org-children ${expanded ? 'expanded' : ''}`}>
@@ -168,6 +177,7 @@ function OrgNode({ org, onOpenEmail, onDragStart, onDrop, isDragOver, onDragOver
             onOpenEmail={onOpenEmail}
             onDragStart={onDragStart}
             defaultExpanded={searchQuery ? true : contact.unreadCount > 0}
+            forceExpand={forceExpand}
           />
         ))}
       </div>
@@ -185,7 +195,7 @@ function TreeStats({ stats, tree }) {
       {/* Overview Card */}
       <div className="card tree-stats-card">
         <div className="tree-stats-header">
-          <span>📊</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2"><rect x="18" y="3" width="4" height="18" rx="1"/><rect x="10" y="9" width="4" height="12" rx="1"/><rect x="2" y="13" width="4" height="8" rx="1"/></svg>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700 }}>Tree Overview</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Email Distribution</div>
@@ -240,24 +250,24 @@ function TreeStats({ stats, tree }) {
       {/* Quick Tips */}
       <div className="card tree-tips-card">
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
-          <span style={{ fontSize: 18 }}>💡</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/></svg>
           <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tips</span>
         </div>
         <div className="tree-tips-list">
           <div className="tree-tip-item">
-            <span className="tree-tip-icon">🖱️</span>
+            <svg className="tree-tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a5 5 0 00-5 5v6a5 5 0 0010 0V7a5 5 0 00-5-5zM12 2v6"/></svg>
             <span>Click org/contact to expand</span>
           </div>
           <div className="tree-tip-item">
-            <span className="tree-tip-icon">🔍</span>
+            <svg className="tree-tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <span>Search by name, email, or subject</span>
           </div>
           <div className="tree-tip-item">
-            <span className="tree-tip-icon">✋</span>
+            <svg className="tree-tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8V6a2 2 0 00-4 0v2M14 8V4a2 2 0 00-4 0v4M10 8V6a2 2 0 00-4 0v6l-1.3-1.3a2 2 0 00-2.83 2.83L8 20h8a4 4 0 004-4v-5a2 2 0 00-4 0v1"/></svg>
             <span>Drag emails between organizations</span>
           </div>
           <div className="tree-tip-item">
-            <span className="tree-tip-icon">⌨️</span>
+            <svg className="tree-tip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>
             <span>Press / to focus search</span>
           </div>
         </div>
@@ -422,7 +432,7 @@ export default function TreeViewPage() {
         {/* Header */}
         <div className="tree-header">
           <div className="tree-header-left">
-            <div className="tree-header-icon">🌳</div>
+            <div className="tree-header-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2"><path d="M17 14l3-3-3-3M7 14l-3-3 3-3M14 4l-4 16"/></svg></div>
             <div>
               <h1 className="tree-header-title">Structured Inbox</h1>
               <p className="tree-header-subtitle">
@@ -483,7 +493,7 @@ export default function TreeViewPage() {
         {/* Empty state */}
         {!loading && tree.length === 0 && (
           <div className="tree-empty">
-            <div className="tree-empty-icon">🌲</div>
+            <div className="tree-empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5"><path d="M12 2L2 22h20L12 2zM12 22v-4M12 2v4"/></svg></div>
             <h3>No emails to organize</h3>
             <p>{searchQuery ? `No results for "${searchQuery}"` : 'Your inbox is empty. Emails will be organized here automatically.'}</p>
           </div>
@@ -494,7 +504,8 @@ export default function TreeViewPage() {
           {tree.map((org, index) => (
             <OrgNode
               key={org.domain}
-              org={{...org, contacts: org.contacts.map(c => ({...c, emails: expandAll ? c.emails : c.emails}))}}
+              org={org}
+              forceExpand={expandAll ? true : undefined}
               onOpenEmail={handleOpenEmail}
               onDragStart={handleDragStart}
               onDrop={handleDrop}
