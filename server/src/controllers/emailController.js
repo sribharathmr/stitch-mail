@@ -437,19 +437,35 @@ exports.list = async (req, res) => {
 // GET /api/emails/search
 exports.search = async (req, res) => {
   try {
-    const { q, page = 1, limit = 20 } = req.query;
+    const { q, page = 1, limit = 20, hasAttachment, unread, sender } = req.query;
     if (!q) return res.json({ emails: [], total: 0 });
 
     const offset = (parseInt(page) - 1) * parseInt(limit);
     const lim = parseInt(limit);
+    
+    // Escape % and _ characters in the search query for ilike, and double quote the pattern to safely handle spaces and commas in the .or() syntax
+    const escapeForLike = (str) => str.replace(/[%_]/g, '\\$&');
+    const pattern = `"%${escapeForLike(q)}%"`;
 
-    const { data: emails, count, error } = await supabase
+    let query = supabase
       .from('emails')
       .select('*', { count: 'exact' })
       .eq('user_id', req.user.id)
-      .textSearch('fts', q.split(' ').join(' & '))
+      .or(`subject.ilike.${pattern},body_text.ilike.${pattern},from_address->>address.ilike.${pattern},from_address->>name.ilike.${pattern}`)
       .range(offset, offset + lim - 1)
       .order('received_at', { ascending: false });
+
+    if (hasAttachment === 'true') {
+      query = query.not('attachments', 'is', null).neq('attachments', '[]');
+    }
+    if (unread === 'true') {
+      query = query.eq('is_read', false);
+    }
+    if (sender) {
+      query = query.ilike('from_address->>address', `%${sender}%`);
+    }
+
+    const { data: emails, count, error } = await query;
 
     if (error) throw error;
 
@@ -460,6 +476,7 @@ exports.search = async (req, res) => {
       pages: Math.ceil((count || 0) / lim)
     });
   } catch (err) {
+    console.error('[Search] Error:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
