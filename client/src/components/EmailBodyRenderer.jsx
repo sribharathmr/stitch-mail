@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { getToken } from '../api';
 
 const EmailBodyRenderer = ({ bodyHtml, bodyText }) => {
   const [showQuote, setShowQuote] = useState(false);
 
-  // If there's HTML, we'll do some basic cleanup, but mostly render it as is.
-  // However, we can try to style common thread structures.
-  if (bodyHtml) {
-    // Basic detection for forwarded/quoted blocks in standard HTML clients
-    // Often they are in <div class="gmail_quote"> or similar
+  // Transform HTML to inject auth token into inline attachment image URLs
+  const processedHtml = useMemo(() => {
+    if (!bodyHtml) return '';
+    const token = getToken();
+    if (!token) return bodyHtml;
+    // Add ?token= to /api/emails/.../attachments/... URLs that don't already have it
+    return bodyHtml.replace(
+      /(src=["'])(\/api\/emails\/[^"']*\/attachments\/[^"'?]*)(["'])/gi,
+      (match, prefix, url, suffix) => `${prefix}${url}?token=${token}${suffix}`
+    );
+  }, [bodyHtml]);
+
+  if (processedHtml) {
     return (
-      <div className="email-body-renderer html-mode" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+      <div className="email-body-renderer html-mode" dangerouslySetInnerHTML={{ __html: processedHtml }} />
     );
   }
 
