@@ -82,7 +82,10 @@ function avatarColor(name = '') {
 export default function InboxPage({ folder = 'inbox' }) {
   const { emails, loading, unreadCount, fetchEmails, openEmail, starEmail, activeEmail, activeAccount, accounts, dispatch } = useEmail()
   const { settings } = useUI()
-  const [activeTab, setActiveTab] = useState('primary')
+  const location = useLocation()
+  const searchParams = new URLSearchParams(location.search)
+  const activeTab = searchParams.get('tab') || 'primary'
+
   const [categorizing, setCategorizing] = useState(false)
   const [tasks, setTasks] = useState([])
   const [hasLoadedTasks, setHasLoadedTasks] = useState(false)
@@ -179,10 +182,15 @@ export default function InboxPage({ folder = 'inbox' }) {
     let emailsToDisplay = activeEmails;
 
     if (folder === 'inbox') {
-      emailsToDisplay = activeEmails.filter(e => {
-        const tab = classifications[e._id] || ruleScore(e).tab;
-        return tab === activeTab;
-      });
+      if (activeTab === 'all') {
+        // Return everything if tab is 'all'
+        emailsToDisplay = activeEmails;
+      } else {
+        emailsToDisplay = activeEmails.filter(e => {
+          const tab = classifications[e._id] || ruleScore(e).tab;
+          return tab === activeTab;
+        });
+      }
     }
 
     // Group by threadId, effectively showing only the newest email per thread
@@ -306,45 +314,11 @@ export default function InboxPage({ folder = 'inbox' }) {
           </div>
         )}
 
-        {/* Tab switcher / Mobile Category Rows */}
-        {folder === 'inbox' && (
-          <div className="inbox-tabs">
-            {TABS.map(tab => {
-              const badgeCount = activeEmails.filter(e => {
-                const eTab = classifications[e._id] || ruleScore(e).tab;
-                return !e.isRead && eTab === tab.id;
-              }).length;
-              
-              const isActive = activeTab === tab.id;
-
-              return (
-              <button
-                key={tab.id}
-                id={`tab-${tab.id}`}
-                className={`inbox-tab ${isActive ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.Icon && <span className="tab-icon"><tab.Icon /></span>}
-                <span className="tab-label">
-                  {tab.label}
-                  <span className="tab-mobile-subtitle">
-                    {tab.id === 'social' ? 'YouTube, LinkedIn' 
-                     : tab.id === 'promotions' ? 'Swiggy, Amazon' 
-                     : tab.id === 'updates' ? 'GitHub, Vercel' : ''}
-                  </span>
-                </span>
-                {badgeCount > 0 && <span className={`tab-badge badge-${tab.id}`}>{badgeCount > 99 ? '99+' : badgeCount} new</span>}
-              </button>
-              )
-            })}
-          </div>
-        )}
-
         {/* Folder / Tab Mobile Header */}
         {(folder !== 'inbox' || (folder === 'inbox' && window.innerWidth <= 768)) && (
-          <div className="folder-header" style={{ display: folder === 'inbox' ? 'none' : 'flex' }}>
+          <div className="folder-header" style={{ display: folder === 'inbox' && activeTab !== 'all' ? 'none' : 'flex' }}>
             <h1 className="folder-title">
-              {folder === 'inbox' ? TABS.find(t => t.id === activeTab)?.label : folder.charAt(0).toUpperCase() + folder.slice(1)}
+              {folder === 'inbox' ? (activeTab === 'all' ? 'All INBOXES' : activeTab.toUpperCase()) : folder.charAt(0).toUpperCase() + folder.slice(1)}
             </h1>
             <span className="folder-count">{activeEmails.length} messages</span>
           </div>

@@ -232,16 +232,30 @@
 
 /* Inbox unread dot when collapsed */
 .nav-badge-dot {
-  width: 6px;
-  height: 6px;
-  background: #3b82f6;
-  border: 1.5px solid var(--bg-sidebar);
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  position: absolute;
-  top: 6px;
-  right: 14px;
-  z-index: 2;
+  padding: 0;
+  min-width: 0;
 }
+
+/* Sidebar Category Specific Badges (Matches Gmail colors) */
+.sidebar-cat-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.badge-primary { background: var(--accent); color: #fff; }
+.badge-social { background: #E8F0FE; color: #1967D2; }
+.badge-promotions { background: #E6F4EA; color: #137333; }
+.badge-updates { background: #FEF7E0; color: #E37400; }
+
+[data-theme="deep-space"] .badge-social { background: rgba(66, 133, 244, 0.2); color: #8AB4F8; }
+[data-theme="deep-space"] .badge-promotions { background: rgba(52, 168, 83, 0.2); color: #81C995; }
+[data-theme="deep-space"] .badge-updates { background: rgba(251, 188, 5, 0.2); color: #FDD663; }
 
 .sidebar-icon-only .sidebar-nav-item {
   justify-content: center;

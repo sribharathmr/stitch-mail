@@ -96,14 +96,23 @@ const Icons = {
   ),
 }
 
-const navItems = [
-  { to: '/inbox',     label: 'Inbox',     Icon: Icons.Inbox,     folder: 'inbox' },
+const navItemsTop = [
+  { to: '/inbox?tab=all',        label: 'All inboxes', Icon: Icons.Inbox,          folder: 'inbox', tabParam: 'all' },
+  { to: '/inbox?tab=primary',    label: 'Primary',     Icon: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><path d="M22 6l-10 7L2 6"/></svg>, folder: 'inbox', tabParam: 'primary' },
+  { to: '/inbox?tab=promotions', label: 'Promotions',  Icon: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>, folder: 'inbox', tabParam: 'promotions' },
+  { to: '/inbox?tab=social',     label: 'Social',      Icon: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>, folder: 'inbox', tabParam: 'social' },
+  { to: '/inbox?tab=updates',    label: 'Updates',     Icon: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>, folder: 'inbox', tabParam: 'updates' }
+]
+
+const navItemsBottom = [
   { to: '/starred',   label: 'Starred',   Icon: Icons.Starred,   folder: 'starred' },
+  { to: '/snoozed',   label: 'Snoozed',   Icon: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, folder: 'snoozed' },
+  { to: '/important', label: 'Important', Icon: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>, folder: 'important' },
   { to: '/sent',      label: 'Sent',      Icon: Icons.Sent,      folder: 'sent' },
   { to: '/drafts',    label: 'Drafts',    Icon: Icons.Drafts,    folder: 'drafts' },
+  { to: '/archive',   label: 'Archive',   Icon: Icons.Archive,   folder: 'archive' },
   { to: '/spam',      label: 'Spam',      Icon: Icons.Spam,      folder: 'spam' },
   { to: '/trash',     label: 'Trash',     Icon: Icons.Trash,     folder: 'trash' },
-  { to: '/archive',   label: 'Archive',   Icon: Icons.Archive,   folder: 'archive' },
 ]
 
 function getInitials(name = '', email = '') {
@@ -126,6 +135,7 @@ export default function Sidebar() {
   const [hoverExpanded, setHoverExpanded] = useState(false)
   const hoverTimeoutRef = useRef(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
@@ -226,22 +236,55 @@ export default function Sidebar() {
           {!expanded && <span className="sidebar-section-label-dot" />}
           {expanded && <span className="sidebar-section-label">MAILBOXES</span>}
 
-          {navItems.map(({ to, label, Icon, folder }) => (
+          {/* App-controlled items (inboxes/tabs) */}
+          {navItemsTop.map(({ to, label, Icon, folder, tabParam }) => {
+            const searchParams = new URLSearchParams(location.search);
+            const currentTab = searchParams.get('tab') || 'primary';
+            const isActive = location.pathname.startsWith('/inbox') && folder === 'inbox' && currentTab === tabParam;
+
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                id={`nav-${tabParam}`}
+                className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+                onClick={handleNavClick}
+                title={!expanded ? label : undefined}
+              >
+                <span className="nav-icon"><Icon /></span>
+                {expanded && <span className="nav-label">{label}</span>}
+                {/* Simulated counts for specific categories, falling back to unreadCount */}
+                {(tabParam === 'primary' || tabParam === 'updates' || tabParam === 'promotions' || tabParam === 'social') && unreadCount > 0 && (
+                  <span className={`badge nav-badge sidebar-cat-badge badge-${tabParam} ${!expanded ? 'nav-badge-dot' : ''}`}>
+                    {expanded ? (
+                        tabParam === 'primary' ? (unreadCount > 99 ? '99+' : unreadCount) 
+                      : tabParam === 'promotions' ? '10 new'
+                      : tabParam === 'social' ? '10 new'
+                      : tabParam === 'updates' ? '17 new' 
+                      : ''
+                    ) : ''}
+                  </span>
+                )}
+              </NavLink>
+            )
+          })}
+
+          <div style={{ padding: '8px 12px 2px 16px', fontSize: '11px', color: 'var(--text-muted)' }}>
+            {expanded ? 'All labels' : <span className="sidebar-section-label-dot" />}
+          </div>
+
+          {/* Standard labels (folders) */}
+          {navItemsBottom.map(({ to, label, Icon, folder }) => (
             <NavLink
               key={to}
               to={to}
               id={`nav-${folder}`}
-              className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+              className={({ isActive }) => `sidebar-nav-item ${isActive && !location.pathname.startsWith('/inbox') ? 'active' : ''}`}
               onClick={handleNavClick}
               title={!expanded ? label : undefined}
             >
               <span className="nav-icon"><Icon /></span>
               {expanded && <span className="nav-label">{label}</span>}
-              {folder === 'inbox' && unreadCount > 0 && (
-                <span className={`badge badge-accent nav-badge ${!expanded ? 'nav-badge-dot' : ''}`}>
-                  {expanded ? (unreadCount > 99 ? '99+' : unreadCount) : ''}
-                </span>
-              )}
             </NavLink>
           ))}
 
