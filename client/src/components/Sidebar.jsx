@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useEmail } from '../context/EmailContext'
 import { useAuth } from '../context/AuthContext'
 import { useUI } from '../context/UIContext'
