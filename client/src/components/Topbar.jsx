@@ -243,16 +243,6 @@ export default function Topbar() {
           </svg>
         </button>
 
-        <button 
-          className={`btn-icon topbar-icon-btn ${geminiSidebarOpen ? 'active' : ''}`}
-          title="Gemini / AI Features"
-          onClick={() => setGeminiSidebarOpen(v => !v)}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6z"></path>
-          </svg>
-        </button>
-
 
         <button 
           className="topbar-avatar-btn" 
