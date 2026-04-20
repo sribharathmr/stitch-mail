@@ -395,94 +395,96 @@ function CardView({ tree, onOpenEmail }) {
         })}
       </div>
 
-      {/* Slide-in Drawer */}
+      {/* Centered Modal Overlay */}
       {selected && (
-        <div className="card-drawer" style={{ '--drawer-color': color }}>
-          {/* Drawer header */}
-          <div className="card-drawer-header" style={{ borderBottom: `2px solid ${color}30` }}>
-            <div className="card-drawer-identity">
-              <div className="card-drawer-avatar" style={{ background: color }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-                  <path d="M3 21h18M3 7v14M21 7v14M9 3h6l3 4H6l3-4zM9 21v-4h6v4M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/>
-                </svg>
-              </div>
-              <div>
-                <div className="card-drawer-org-name">{selected.orgName}</div>
-                <div className="card-drawer-org-domain">{selected.domain}</div>
-              </div>
-            </div>
-            <div className="card-drawer-meta">
-              <span className="card-drawer-badge">{selected.totalEmails} emails</span>
-              {selected.unreadCount > 0 && (
-                <span className="card-drawer-badge unread" style={{ background: `${color}20`, color }}>
-                  {selected.unreadCount} unread
-                </span>
-              )}
-            </div>
-            <button className="card-drawer-close" onClick={() => setSelectedOrg(null)}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-
-          {/* Drawer email list grouped by contact */}
-          <div className="card-drawer-body">
-            {selected.contacts.map(contact => (
-              <div key={contact.address} className="card-drawer-contact-group">
-                {/* Contact header */}
-                <div className="card-drawer-contact-header">
-                  <div
-                    className="card-drawer-contact-avatar"
-                    style={{ background: contactColor(contact.address) }}
-                  >
-                    {getInitials(contact.name)}
-                  </div>
-                  <div className="card-drawer-contact-info">
-                    <span className="card-drawer-contact-name">{contact.name || contact.address}</span>
-                    <span className="card-drawer-contact-meta">
-                      {contact.emailCount} email{contact.emailCount !== 1 ? 's' : ''}
-                      {contact.unreadCount > 0 && (
-                        <span className="card-drawer-contact-unread" style={{ color }}>
-                          · {contact.unreadCount} unread
-                        </span>
-                      )}
-                    </span>
-                  </div>
+        <div className="card-modal-overlay" onClick={() => setSelectedOrg(null)}>
+          <div className="card-modal" style={{ '--drawer-color': color }} onClick={(e) => e.stopPropagation()}>
+            {/* Modal header */}
+            <div className="card-modal-header" style={{ borderBottom: `2px solid ${color}30` }}>
+              <div className="card-modal-identity">
+                <div className="card-modal-avatar" style={{ background: color }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+                    <path d="M3 21h18M3 7v14M21 7v14M9 3h6l3 4H6l3-4zM9 21v-4h6v4M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/>
+                  </svg>
                 </div>
+                <div>
+                  <div className="card-modal-org-name">{selected.orgName}</div>
+                  <div className="card-modal-org-domain">{selected.domain}</div>
+                </div>
+              </div>
+              <div className="card-modal-meta">
+                <span className="card-modal-badge">{selected.totalEmails} emails</span>
+                {selected.unreadCount > 0 && (
+                  <span className="card-modal-badge unread" style={{ background: `${color}20`, color }}>
+                    {selected.unreadCount} unread
+                  </span>
+                )}
+              </div>
+              <button className="card-modal-close" onClick={() => setSelectedOrg(null)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
 
-                {/* Emails under this contact */}
-                <div className="card-drawer-email-list">
-                  {[...contact.emails]
-                    .sort((a, b) => new Date(b.receivedAt || b.createdAt) - new Date(a.receivedAt || a.createdAt))
-                    .map(email => (
-                      <div
-                        key={email._id}
-                        className={`card-drawer-email-row ${!email.isRead ? 'unread' : ''}`}
-                        onClick={() => onOpenEmail(email)}
-                      >
-                        <div className="card-drawer-email-indicator" style={{ background: !email.isRead ? color : 'transparent', borderColor: !email.isRead ? color : 'var(--border-strong)' }} />
-                        <div className="card-drawer-email-content">
-                          <div className="card-drawer-email-subject">{email.subject || '(No Subject)'}</div>
-                          <div className="card-drawer-email-preview">{email.bodyText?.slice(0, 80) || ''}</div>
-                        </div>
-                        <div className="card-drawer-email-right">
-                          <span className="card-drawer-email-time">{formatTime(email.receivedAt || email.createdAt)}</span>
-                          <div className="card-drawer-email-icons">
-                            {email.isStarred && <span className="card-drawer-star">★</span>}
-                            {email.attachments?.length > 0 && (
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
-                              </svg>
-                            )}
+            {/* Modal email list grouped by contact */}
+            <div className="card-modal-body">
+              {selected.contacts.map(contact => (
+                <div key={contact.address} className="card-modal-contact-group">
+                  {/* Contact header */}
+                  <div className="card-modal-contact-header">
+                    <div
+                      className="card-modal-contact-avatar"
+                      style={{ background: contactColor(contact.address) }}
+                    >
+                      {getInitials(contact.name)}
+                    </div>
+                    <div className="card-modal-contact-info">
+                      <span className="card-modal-contact-name">{contact.name || contact.address}</span>
+                      <span className="card-modal-contact-meta">
+                        {contact.emailCount} email{contact.emailCount !== 1 ? 's' : ''}
+                        {contact.unreadCount > 0 && (
+                          <span className="card-modal-contact-unread" style={{ color }}>
+                            · {contact.unreadCount} unread
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Emails under this contact */}
+                  <div className="card-modal-email-list">
+                    {[...contact.emails]
+                      .sort((a, b) => new Date(b.receivedAt || b.createdAt) - new Date(a.receivedAt || a.createdAt))
+                      .map(email => (
+                        <div
+                          key={email._id}
+                          className={`card-modal-email-row ${!email.isRead ? 'unread' : ''}`}
+                          onClick={() => onOpenEmail(email)}
+                        >
+                          <div className="card-modal-email-indicator" style={{ background: !email.isRead ? color : 'transparent', borderColor: !email.isRead ? color : 'var(--border-strong)' }} />
+                          <div className="card-modal-email-content">
+                            <div className="card-modal-email-subject">{email.subject || '(No Subject)'}</div>
+                            <div className="card-modal-email-preview">{email.bodyText?.slice(0, 80) || ''}</div>
+                          </div>
+                          <div className="card-modal-email-right">
+                            <span className="card-modal-email-time">{formatTime(email.receivedAt || email.createdAt)}</span>
+                            <div className="card-modal-email-icons">
+                              {email.isStarred && <span className="card-modal-star">★</span>}
+                              {email.attachments?.length > 0 && (
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                                </svg>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))
-                  }
+                      ))
+                    }
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
