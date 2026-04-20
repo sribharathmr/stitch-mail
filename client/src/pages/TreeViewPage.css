@@ -1043,6 +1043,8 @@
 .card-view-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-auto-rows: max-content;
+  align-items: start;
   gap: 14px;
 }
 
@@ -1058,6 +1060,7 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: default;
   animation: nodeSlideIn 0.3s ease-out both;
+  min-height: min-content;
 }
 
 .card-org-card:hover {
