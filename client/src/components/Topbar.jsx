@@ -131,6 +131,18 @@ export default function Topbar() {
               <line x1="17" y1="16" x2="23" y2="16"></line>
             </svg>
           </button>
+          
+          <button 
+            type="button"
+            className="topbar-avatar-btn" 
+            onClick={() => setShowDropdown(true)}
+            title="Google Account"
+          >
+            <div className="topbar-avatar-initials">
+              {(user?.name || user?.email || 'U')[0].toUpperCase()}
+            </div>
+          </button>
+
         </form>
 
         {showAdvancedSearch && (
@@ -244,15 +256,7 @@ export default function Topbar() {
         </button>
 
 
-        <button 
-          className="topbar-avatar-btn" 
-          onClick={() => setShowDropdown(true)}
-          title="Google Account"
-        >
-          <div className="topbar-avatar-initials">
-            {(user?.name || user?.email || 'U')[0].toUpperCase()}
-          </div>
-        </button>
+
       </div>
 
       {showHelpDropdown && (
