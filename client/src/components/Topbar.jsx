@@ -25,6 +25,32 @@ export default function Topbar() {
     e.stopPropagation()
   }
 
+  const [showHelpDropdown, setShowHelpDropdown] = useState(false)
+  const debounceRef = useRef(null)
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      const q = localQ || ''
+      if (q.trim()) {
+        setSearchQuery(q)
+        navigate(`/search?q=${encodeURIComponent(q)}`)
+      } else if (q === '' && searchQuery) {
+        setSearchQuery('')
+      }
+    }, 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [localQ])
+
+  const handleSearch = (e) => {
+    if (e) e.preventDefault()
+    const q = localQ || ''
+    if (q.trim()) {
+      setSearchQuery(q)
+      navigate(`/search?q=${encodeURIComponent(q)}`)
+    }
+  }
+
   const submitAdvancedSearch = (e) => {
     if (e) e.preventDefault()
     
