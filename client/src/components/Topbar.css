@@ -15,8 +15,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.08); /* Dark mode pill background */
-  border: none;
+  background: #f1f3f4; /* Light mode pill background */
+  border: 1px solid transparent;
   border-radius: 24px; /* Pill shape */
   padding: 0 16px;
   height: 48px; /* Taller */
@@ -26,8 +26,17 @@
 }
 
 .topbar-search:focus-within {
-  background: rgba(255, 255, 255, 0.12);
+  background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="deep-space"] .topbar-search {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="deep-space"] .topbar-search:focus-within {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .search-icon { color: var(--text-muted); flex-shrink: 0; width: 20px; height: 20px; }
