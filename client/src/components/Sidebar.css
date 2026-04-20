@@ -353,7 +353,17 @@
 
   .sidebar.mobile-open .sidebar-nav-item {
     justify-content: flex-start;
-    padding: 10px 12px;
+    padding: 14px 16px 14px 24px;
+    margin: 2px 12px 2px 0;
+    border-radius: 0 24px 24px 0 !important;
+    width: calc(100% - 12px);
+  }
+
+  /* Make active pill pop on mobile */
+  .sidebar.mobile-open .sidebar-nav-item.active {
+    background: var(--bg-active);
+    color: var(--accent);
+    font-weight: 700;
   }
 
   .sidebar.mobile-open .sidebar-user {

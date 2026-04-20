@@ -239,33 +239,71 @@
 /* ── Mobile ── */
 @media (max-width: 768px) {
   .topbar {
-    padding: 0 10px;
-    gap: 8px;
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    right: 12px;
     height: 52px;
+    border-radius: 26px;
+    padding: 0 6px 0 2px;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 100;
+  }
+
+  [data-glass="true"] .topbar {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  [data-theme="deep-space"][data-glass="true"] .topbar {
+    background: rgba(43, 41, 103, 0.6);
   }
 
   .topbar-mobile-menu {
     display: flex;
     flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+  }
+
+  .topbar-search-container {
+    flex: 1;
+    position: static; /* Let dropdown position relate to the viewport */
   }
 
   .topbar-search {
-    max-width: none;
-    flex: 1;
-    padding: 6px 10px;
+    background: transparent !important;
+    border: none;
+    box-shadow: none !important;
+    padding: 0 4px;
+    height: 100%;
   }
 
   .topbar-search-input {
-    font-size: 13px;
+    font-size: 15px;
+  }
+
+  .topbar-search-input::placeholder {
+    color: var(--text-primary);
+    opacity: 0.8;
   }
 
   .topbar-compose-text {
     display: none;
   }
 
-  /* Hide notification button on mobile to save space */
-  #topbar-notif-btn {
+  /* Hide help and settings on mobile topbar */
+  .topbar-actions > .topbar-icon-btn {
     display: none;
+  }
+
+  .topbar-avatar-btn {
+    width: 34px;
+    height: 34px;
+    margin-right: 4px;
   }
 }
 

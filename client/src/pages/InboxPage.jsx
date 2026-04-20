@@ -306,7 +306,7 @@ export default function InboxPage({ folder = 'inbox' }) {
           </div>
         )}
 
-        {/* Tab switcher — only for inbox */}
+        {/* Tab switcher / Mobile Category Rows */}
         {folder === 'inbox' && (
           <div className="inbox-tabs">
             {TABS.map(tab => {
@@ -315,26 +315,37 @@ export default function InboxPage({ folder = 'inbox' }) {
                 return !e.isRead && eTab === tab.id;
               }).length;
               
+              const isActive = activeTab === tab.id;
+
               return (
               <button
                 key={tab.id}
                 id={`tab-${tab.id}`}
-                className={`inbox-tab ${activeTab === tab.id ? 'active' : ''}`}
+                className={`inbox-tab ${isActive ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
               >
                 {tab.Icon && <span className="tab-icon"><tab.Icon /></span>}
-                {tab.label}
-                {badgeCount > 0 && <span className="tab-badge">{badgeCount}</span>}
+                <span className="tab-label">
+                  {tab.label}
+                  <span className="tab-mobile-subtitle">
+                    {tab.id === 'social' ? 'YouTube, LinkedIn' 
+                     : tab.id === 'promotions' ? 'Swiggy, Amazon' 
+                     : tab.id === 'updates' ? 'GitHub, Vercel' : ''}
+                  </span>
+                </span>
+                {badgeCount > 0 && <span className={`tab-badge badge-${tab.id}`}>{badgeCount > 99 ? '99+' : badgeCount} new</span>}
               </button>
               )
             })}
           </div>
         )}
 
-        {/* Folder title for non-inbox */}
-        {folder !== 'inbox' && (
-          <div className="folder-header">
-            <h1 className="folder-title">{folder.charAt(0).toUpperCase() + folder.slice(1)}</h1>
+        {/* Folder / Tab Mobile Header */}
+        {(folder !== 'inbox' || (folder === 'inbox' && window.innerWidth <= 768)) && (
+          <div className="folder-header" style={{ display: folder === 'inbox' ? 'none' : 'flex' }}>
+            <h1 className="folder-title">
+              {folder === 'inbox' ? TABS.find(t => t.id === activeTab)?.label : folder.charAt(0).toUpperCase() + folder.slice(1)}
+            </h1>
             <span className="folder-count">{activeEmails.length} messages</span>
           </div>
         )}

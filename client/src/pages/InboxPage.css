@@ -455,21 +455,85 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Tabs become horizontally scrollable */
+  /* Mobile Category Rows Styling */
   .inbox-tabs {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 0 10px;
-    gap: 0;
-    scrollbar-width: none;
+    flex-direction: column;
+    padding: 12px;
+    gap: 8px;
+    background: transparent;
+    border-bottom: none;
+    overflow-x: hidden;
   }
-  .inbox-tabs::-webkit-scrollbar { display: none; }
 
   .inbox-tab {
-    padding: 10px 12px;
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 600;
     white-space: nowrap;
-    flex-shrink: 0;
+    border-radius: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    justify-content: flex-start;
+    color: var(--text-primary);
+  }
+
+  /* Active tab is hidden because it acts as the main email list context */
+  .inbox-tab.active {
+    display: none;
+  }
+
+  .inbox-tab .tab-icon {
+    margin-right: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* Badges matching screenshot colors */
+  .tab-badge {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+  }
+  
+  .badge-social { background: #E8F0FE; color: #1967D2; }
+  .badge-promotions { background: #E6F4EA; color: #137333; }
+  .badge-updates { background: #FEF7E0; color: #E37400; }
+  
+  [data-theme="deep-space"] .badge-social { background: rgba(66, 133, 244, 0.2); color: #8AB4F8; }
+  [data-theme="deep-space"] .badge-promotions { background: rgba(52, 168, 83, 0.2); color: #81C995; }
+  [data-theme="deep-space"] .badge-updates { background: rgba(251, 188, 5, 0.2); color: #FDD663; }
+
+  /* Tab label with subtitle */
+  .tab-label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tab-mobile-subtitle {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .folder-header {
+    display: block !important;
+    padding: 4px 16px 12px;
+    border-bottom: none;
+  }
+
+  .folder-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  .folder-count {
+    display: none;
   }
 
   .folder-header {
