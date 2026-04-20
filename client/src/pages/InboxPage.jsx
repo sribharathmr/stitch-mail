@@ -313,11 +313,38 @@ export default function InboxPage({ folder = 'inbox' }) {
           </div>
         )}
 
-        {/* Folder / Tab Mobile Header */}
-        {(folder !== 'inbox' || (folder === 'inbox' && window.innerWidth <= 768)) && (
-          <div className="folder-header" style={{ display: folder === 'inbox' && activeTab !== 'all' ? 'none' : 'flex' }}>
+        {/* DESKTOP: Horizontal tab switcher (hidden on mobile via CSS) */}
+        {folder === 'inbox' && (
+          <div className="inbox-tabs inbox-tabs-desktop">
+            {TABS.map(tab => {
+              const badgeCount = activeEmails.filter(e => {
+                const eTab = classifications[e._id] || ruleScore(e).tab;
+                return !e.isRead && eTab === tab.id;
+              }).length;
+              
+              const isActive = activeTab === tab.id;
+
+              return (
+              <button
+                key={tab.id}
+                id={`tab-${tab.id}`}
+                className={`inbox-tab ${isActive ? 'active' : ''}`}
+                onClick={() => navigate(`/inbox?tab=${tab.id}`)}
+              >
+                {tab.Icon && <span className="tab-icon"><tab.Icon /></span>}
+                <span className="tab-label">{tab.label}</span>
+                {badgeCount > 0 && <span className={`tab-badge badge-${tab.id}`}>{badgeCount > 99 ? '99+' : badgeCount} new</span>}
+              </button>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Folder header for non-inbox folders */}
+        {folder !== 'inbox' && (
+          <div className="folder-header">
             <h1 className="folder-title">
-              {folder === 'inbox' ? (activeTab === 'all' ? 'All INBOXES' : activeTab.toUpperCase()) : folder.charAt(0).toUpperCase() + folder.slice(1)}
+              {folder.charAt(0).toUpperCase() + folder.slice(1)}
             </h1>
             <span className="folder-count">{activeEmails.length} messages</span>
           </div>

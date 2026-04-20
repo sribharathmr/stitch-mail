@@ -455,6 +455,11 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Hide desktop horizontal tabs on mobile */
+  .inbox-tabs-desktop {
+    display: none !important;
+  }
+
   .folder-header {
     display: block !important;
     padding: 4px 16px 12px;

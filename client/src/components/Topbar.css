@@ -243,6 +243,16 @@
   display: none;
 }
 
+/* Avatar: mobile version hidden on desktop */
+.topbar-avatar-mobile {
+  display: none;
+}
+
+/* Avatar: desktop version shown on desktop */
+.topbar-avatar-desktop {
+  display: flex;
+}
+
 /* ── Mobile ── */
 @media (max-width: 768px) {
   .topbar {
@@ -305,22 +315,20 @@
 
   /* Hide help and settings on mobile topbar */
   .topbar-actions {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    gap: 4px;
-    margin-right: 4px;
-  }
-
-  .topbar-actions > .topbar-icon-btn {
     display: none;
   }
 
-  .topbar-avatar-btn {
+  /* Mobile: show pill-avatar, hide desktop avatar */
+  .topbar-avatar-mobile {
+    display: flex;
     width: 32px;
     height: 32px;
     margin-left: 4px;
     flex-shrink: 0;
+  }
+
+  .topbar-avatar-desktop {
+    display: none !important;
   }
 }
 

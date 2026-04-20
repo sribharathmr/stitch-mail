@@ -132,9 +132,10 @@ export default function Topbar() {
             </svg>
           </button>
           
+          {/* Avatar inside pill - MOBILE ONLY (hidden on desktop via CSS) */}
           <button 
             type="button"
-            className="topbar-avatar-btn" 
+            className="topbar-avatar-btn topbar-avatar-mobile" 
             onClick={() => setShowDropdown(true)}
             title="Google Account"
           >
@@ -255,8 +256,16 @@ export default function Topbar() {
           </svg>
         </button>
 
-
-
+        {/* Avatar in topbar-actions - DESKTOP ONLY (hidden on mobile via CSS) */}
+        <button 
+          className="topbar-avatar-btn topbar-avatar-desktop" 
+          onClick={() => setShowDropdown(true)}
+          title="Google Account"
+        >
+          <div className="topbar-avatar-initials">
+            {(user?.name || user?.email || 'U')[0].toUpperCase()}
+          </div>
+        </button>
       </div>
 
       {showHelpDropdown && (

@@ -236,40 +236,60 @@ export default function Sidebar() {
           {!expanded && <span className="sidebar-section-label-dot" />}
           {expanded && <span className="sidebar-section-label">MAILBOXES</span>}
 
-          {/* App-controlled items (inboxes/tabs) */}
-          {navItemsTop.map(({ to, label, Icon, folder, tabParam }) => {
-            const searchParams = new URLSearchParams(location.search);
-            const currentTab = searchParams.get('tab') || 'primary';
-            const isActive = location.pathname.startsWith('/inbox') && folder === 'inbox' && currentTab === tabParam;
+          {/* DESKTOP: Single Inbox item (hidden on mobile via CSS) */}
+          <div className="sidebar-desktop-nav">
+            <NavLink
+              to="/inbox"
+              id="nav-inbox"
+              className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
+              title={!expanded ? 'Inbox' : undefined}
+            >
+              <span className="nav-icon"><Icons.Inbox /></span>
+              {expanded && <span className="nav-label">Inbox</span>}
+              {unreadCount > 0 && (
+                <span className={`badge badge-accent nav-badge ${!expanded ? 'nav-badge-dot' : ''}`}>
+                  {expanded ? (unreadCount > 99 ? '99+' : unreadCount) : ''}
+                </span>
+              )}
+            </NavLink>
+          </div>
 
-            return (
-              <NavLink
-                key={to}
-                to={to}
-                id={`nav-${tabParam}`}
-                className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-                onClick={handleNavClick}
-                title={!expanded ? label : undefined}
-              >
-                <span className="nav-icon"><Icon /></span>
-                {expanded && <span className="nav-label">{label}</span>}
-                {/* Simulated counts for specific categories, falling back to unreadCount */}
-                {(tabParam === 'primary' || tabParam === 'updates' || tabParam === 'promotions' || tabParam === 'social') && unreadCount > 0 && (
-                  <span className={`badge nav-badge sidebar-cat-badge badge-${tabParam} ${!expanded ? 'nav-badge-dot' : ''}`}>
-                    {expanded ? (
-                        tabParam === 'primary' ? (unreadCount > 99 ? '99+' : unreadCount) 
-                      : tabParam === 'promotions' ? '10 new'
-                      : tabParam === 'social' ? '10 new'
-                      : tabParam === 'updates' ? '17 new' 
-                      : ''
-                    ) : ''}
-                  </span>
-                )}
-              </NavLink>
-            )
-          })}
+          {/* MOBILE: Categorized inbox items (hidden on desktop via CSS) */}
+          <div className="sidebar-mobile-nav">
+            {navItemsTop.map(({ to, label, Icon, folder, tabParam }) => {
+              const searchParams = new URLSearchParams(location.search);
+              const currentTab = searchParams.get('tab') || 'primary';
+              const isActive = location.pathname.startsWith('/inbox') && folder === 'inbox' && currentTab === tabParam;
 
-          <div style={{ padding: '8px 12px 2px 16px', fontSize: '11px', color: 'var(--text-muted)' }}>
+              return (
+                <NavLink
+                  key={to}
+                  to={to}
+                  id={`nav-${tabParam}`}
+                  className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+                  onClick={handleNavClick}
+                  title={!expanded ? label : undefined}
+                >
+                  <span className="nav-icon"><Icon /></span>
+                  {expanded && <span className="nav-label">{label}</span>}
+                  {(tabParam === 'primary' || tabParam === 'updates' || tabParam === 'promotions' || tabParam === 'social') && unreadCount > 0 && (
+                    <span className={`badge nav-badge sidebar-cat-badge badge-${tabParam} ${!expanded ? 'nav-badge-dot' : ''}`}>
+                      {expanded ? (
+                          tabParam === 'primary' ? (unreadCount > 99 ? '99+' : unreadCount) 
+                        : tabParam === 'promotions' ? '10 new'
+                        : tabParam === 'social' ? '10 new'
+                        : tabParam === 'updates' ? '17 new' 
+                        : ''
+                      ) : ''}
+                    </span>
+                  )}
+                </NavLink>
+              )
+            })}
+          </div>
+
+          <div className="sidebar-labels-divider" style={{ padding: '8px 12px 2px 16px', fontSize: '11px', color: 'var(--text-muted)' }}>
             {expanded ? 'All labels' : <span className="sidebar-section-label-dot" />}
           </div>
 

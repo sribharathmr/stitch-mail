@@ -403,5 +403,31 @@
   .sidebar.mobile-open .sidebar-compose {
     padding: 14px 10px 8px;
   }
+
+  /* Mobile: show categories, hide desktop inbox */
+  .sidebar-desktop-nav {
+    display: none !important;
+  }
+  .sidebar-mobile-nav {
+    display: block !important;
+  }
 }
 
+/* Desktop: show inbox, hide mobile categories */
+.sidebar-mobile-nav {
+  display: none;
+}
+.sidebar-desktop-nav {
+  display: block;
+}
+
+/* Desktop: hide All labels divider (only useful on mobile with categories) */
+.sidebar-labels-divider {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-labels-divider {
+    display: block;
+  }
+}
