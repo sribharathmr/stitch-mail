@@ -378,11 +378,11 @@ function CardView({ tree, onOpenEmail }) {
                 }
               </div>
 
-              {/* View all pill */}
+              {/* View all drawer trigger */}
               <div className="card-view-all-row">
-                <span className="card-view-all-pill">
-                  {isSelected ? 'Close' : `View all ${org.totalEmails} emails`}
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <span className="card-view-all-text">
+                  {isSelected ? 'Close drawer' : `View all ${org.totalEmails} emails`}
+                  <svg className="card-view-all-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d={isSelected ? 'M18 6L6 18M6 6l12 12' : 'M5 12h14M12 5l7 7-7 7'}/>
                   </svg>
                 </span>
