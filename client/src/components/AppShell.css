@@ -36,8 +36,9 @@
     display: none !important;
   }
 
-  /* Shift content down on mobile to allow for bottom nav bar */
+  /* Shift content down on mobile to allow for bottom nav bar and top pill */
   .app-content {
+    padding-top: 68px;
     padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;

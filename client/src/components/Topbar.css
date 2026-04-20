@@ -296,14 +296,24 @@
   }
 
   /* Hide help and settings on mobile topbar */
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 4px;
+    margin-right: 4px;
+  }
+
   .topbar-actions > .topbar-icon-btn {
     display: none;
   }
 
   .topbar-avatar-btn {
-    width: 34px;
-    height: 34px;
-    margin-right: 4px;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
   }
 }
 
