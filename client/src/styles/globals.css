@@ -76,6 +76,33 @@
   --purple-brand:   #6C67C7;
 }
 
+/* --- Liquid Glass (Glassmorphism) Overrides --- */
+[data-glass="true"] {
+  --bg-sidebar: rgba(255, 255, 255, 0.45);
+  --bg-card: rgba(255, 255, 255, 0.65);
+}
+
+[data-theme="deep-space"][data-glass="true"] {
+  --bg-sidebar: rgba(20, 18, 61, 0.45);
+  --bg-card: rgba(28, 25, 82, 0.55);
+}
+
+[data-glass="true"] .sidebar,
+[data-glass="true"] .card,
+[data-glass="true"] .adv-search-dropdown,
+[data-glass="true"] .modal,
+[data-glass="true"] .compose-panel,
+[data-glass="true"] .search-suggestions,
+[data-glass="true"] .account-dropdown {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+[data-glass="true"] .topbar {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: var(--bg-sidebar); /* ensure topbar catches translucency */
+}
+
 /* --- Reset & Base --- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

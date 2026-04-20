@@ -5,6 +5,7 @@ const UIContext = createContext(null)
 
 export function UIProvider({ children }) {
   const [theme, setThemeState] = useState(() => localStorage.getItem('theme') || 'light')
+  const [glassMode, setGlassModeState] = useState(() => localStorage.getItem('glassMode') === 'true')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const toggleSidebar = () => setSidebarExpanded(v => !v)
@@ -13,7 +14,7 @@ export function UIProvider({ children }) {
   const [activeFilters, setActiveFilters] = useState({})
   const [settings, setSettings] = useState(null)
 
-  // Apply theme to document
+  // Apply theme and glass mode to document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'deep-space' : 'light')
@@ -22,9 +23,19 @@ export function UIProvider({ children }) {
     localStorage.setItem('theme', theme)
   }, [theme])
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-glass', glassMode ? 'true' : 'false')
+    localStorage.setItem('glassMode', glassMode)
+  }, [glassMode])
+
   const setTheme = async (t) => {
     setThemeState(t)
     try { await settingsAPI.update({ preferences: { theme: t } }) } catch (_) {}
+  }
+
+  const setGlassMode = async (g) => {
+    setGlassModeState(g)
+    try { await settingsAPI.update({ preferences: { glassMode: g } }) } catch (_) {}
   }
 
   const loadSettings = async () => {
@@ -34,6 +45,9 @@ export function UIProvider({ children }) {
       if (res.data.settings?.preferences?.theme) {
         setThemeState(res.data.settings.preferences.theme)
       }
+      if (res.data.settings?.preferences?.glassMode !== undefined) {
+        setGlassModeState(res.data.settings.preferences.glassMode)
+      }
     } catch (_) {}
   }
 
@@ -42,6 +56,7 @@ export function UIProvider({ children }) {
   return (
     <UIContext.Provider value={{
       theme, setTheme,
+      glassMode, setGlassMode,
       sidebarCollapsed, setSidebarCollapsed,
       sidebarExpanded, setSidebarExpanded, toggleSidebar,
       geminiSidebarOpen, setGeminiSidebarOpen,

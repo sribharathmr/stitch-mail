@@ -25,7 +25,7 @@ const THEME_OPTIONS = [
 ]
 
 export default function SettingsPage() {
-  const { theme, setTheme, settings, loadSettings } = useUI()
+  const { theme, setTheme, glassMode, setGlassMode, settings, loadSettings } = useUI()
   const { user, setUser } = useAuth()
   const [activeSection, setActiveSection] = useState('general')
   const [prefs, setPrefs] = useState({
@@ -150,6 +150,23 @@ export default function SettingsPage() {
                     </div>
                   </button>
                 ))}
+              </div>
+
+              <div style={{ marginTop: 24 }}>
+                <div className="toggle-row">
+                  <div>
+                    <div className="toggle-label">Liquid Glass Interface</div>
+                    <div className="toggle-desc">Enable frosted translucent blurs across panels</div>
+                  </div>
+                  <label className="toggle">
+                    <input
+                      type="checkbox"
+                      checked={!!glassMode}
+                      onChange={(e) => setGlassMode(e.target.checked)}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
+                </div>
               </div>
             </div>
 
