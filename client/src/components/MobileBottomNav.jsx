@@ -36,27 +36,11 @@ export default function MobileBottomNav() {
       {NAV_ITEMS.map((item) => {
         const isActive = item.to && location.pathname.startsWith(item.to)
 
-        if (item.isCompose) {
-          return (
-            <button
-              key="compose"
-              className="mobile-nav-item mobile-nav-compose"
-              onClick={() => dispatch({ type: 'OPEN_COMPOSE' })}
-              aria-label="Compose"
-            >
-              <div className="mobile-nav-compose-icon">
-                {item.icon}
-                <span>{item.label}</span>
-              </div>
-            </button>
-          )
-        }
-
         return (
           <button
-            key={item.to}
+            key={item.label}
             className={`mobile-nav-item ${isActive ? 'active' : ''}`}
-            onClick={() => navigate(item.to)}
+            onClick={() => item.isCompose ? dispatch({ type: 'OPEN_COMPOSE' }) : navigate(item.to)}
             aria-label={item.label}
           >
             <span className="mobile-nav-icon">
