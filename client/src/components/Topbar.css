@@ -278,36 +278,38 @@
 
 .adv-search-dropdown {
   position: absolute;
-  top: 56px;
+  top: 52px;
   left: 0;
   right: 0;
   background: var(--bg-card, #fff);
   border-radius: 8px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
   border: 1px solid var(--border);
   z-index: 1001;
-  padding: 20px 24px;
+  padding: 16px 24px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
   min-width: 480px;
 }
 
 [data-theme="deep-space"] .adv-search-dropdown {
   background: var(--bg-sidebar);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
   border: 1px solid var(--border-strong);
 }
 
 .adv-search-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;   /* slightly wider gap between label and input */
+  padding-bottom: 2px;
 }
 
 .adv-search-row label {
-  width: 140px;
+  width: 120px;
   font-size: 13px;
+  font-weight: 500;
   color: var(--text-secondary);
   text-align: right;
   flex-shrink: 0;
@@ -319,18 +321,24 @@
   flex: 1;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border, #ccc);
+  border-bottom: 1px solid var(--border, #e0e0e0);
   color: var(--text-primary);
   font-size: 14px;
-  padding: 6px 0;
+  padding: 4px 0;
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s;
 }
 
+[data-theme="deep-space"] .adv-search-row input[type="text"],
+[data-theme="deep-space"] .adv-search-row input[type="number"],
+[data-theme="deep-space"] .adv-search-row select {
+  border-bottom-color: var(--border-strong);
+}
+
 .adv-search-row input:focus,
 .adv-search-row select:focus {
-  border-bottom-color: var(--accent);
+  border-bottom-color: var(--accent) !important;
 }
 
 .adv-search-row.inline-group input,
@@ -351,7 +359,8 @@
   display: flex;
   align-items: center;
   gap: 32px;
-  margin-left: 156px;
+  margin-left: 144px;
+  padding: 8px 0;
 }
 
 .checkbox-label {
@@ -367,24 +376,30 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
+  accent-color: var(--accent);
 }
 
 .adv-search-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
 }
 
 .adv-search-btn {
-  background: var(--accent);
+  background: #0b57d0; /* Google blue */
   color: #fff;
   border: none;
-  padding: 8px 32px;
-  border-radius: 20px;
+  padding: 8px 24px;
+  border-radius: 24px; /* Pill shape */
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.2s, background 0.2s;
   font-size: 14px;
+}
+
+[data-theme="deep-space"] .adv-search-btn {
+  background: var(--accent);
 }
 
 .adv-search-btn:hover {

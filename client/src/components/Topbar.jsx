@@ -131,7 +131,8 @@ export default function Topbar() {
         </form>
 
         {showAdvancedSearch && (
-          <div className="adv-search-overlay" onClick={() => setShowAdvancedSearch(false)}>
+          <>
+            <div className="adv-search-overlay" onClick={() => setShowAdvancedSearch(false)}></div>
             <div className="adv-search-dropdown" onClick={handleAdvSearchContainerClick}>
               <div className="adv-search-row">
                 <label>From</label>
@@ -215,7 +216,7 @@ export default function Topbar() {
                 <button type="button" className="adv-search-btn" onClick={submitAdvancedSearch}>Search</button>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
 
