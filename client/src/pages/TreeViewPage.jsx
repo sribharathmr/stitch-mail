@@ -276,6 +276,102 @@ function TreeStats({ stats, tree }) {
   )
 }
 
+// ── Card View Component ────────────────────────────────────────────────────────
+function CardView({ tree, onOpenEmail }) {
+  return (
+    <div className="card-view-grid">
+      {tree.map((org) => {
+        const color = orgColor(org.orgName)
+        const hasUnread = org.unreadCount > 0
+        const priorityLevel = org.priorityScore >= 15 ? 'high' : org.priorityScore >= 5 ? 'medium' : 'low'
+        return (
+          <div
+            key={org.domain}
+            className={`card-org-card ${hasUnread ? 'has-unread' : ''} priority-${priorityLevel}`}
+            style={{ '--org-color': color }}
+          >
+            {/* Notification badge */}
+            {org.unreadCount > 0 && (
+              <div className={`card-notif-badge ${priorityLevel === 'high' ? 'pulse' : ''}`}>
+                {org.unreadCount > 99 ? '99+' : org.unreadCount}
+              </div>
+            )}
+
+            {/* Top accent bar */}
+            <div className="card-org-accent" style={{ background: `linear-gradient(90deg, ${color}, ${color}80)` }} />
+
+            {/* Org identity */}
+            <div className="card-org-identity">
+              <div className="card-org-avatar" style={{ background: color }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+                  <path d="M3 21h18M3 7v14M21 7v14M9 3h6l3 4H6l3-4zM9 21v-4h6v4M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/>
+                </svg>
+              </div>
+              <div className="card-org-meta">
+                <span className="card-org-name">{org.orgName}</span>
+                <span className="card-org-domain">{org.domain}</span>
+              </div>
+            </div>
+
+            {/* Stats row */}
+            <div className="card-org-stats">
+              <div className="card-stat">
+                <span className="card-stat-val">{org.totalEmails}</span>
+                <span className="card-stat-key">Emails</span>
+              </div>
+              <div className="card-stat-divider" />
+              <div className="card-stat">
+                <span className="card-stat-val" style={org.unreadCount > 0 ? { color } : {}}>
+                  {org.unreadCount}
+                </span>
+                <span className="card-stat-key">Unread</span>
+              </div>
+              <div className="card-stat-divider" />
+              <div className="card-stat">
+                <span className="card-stat-val">{org.contactCount}</span>
+                <span className="card-stat-key">Contacts</span>
+              </div>
+            </div>
+
+            {/* Starred indicator */}
+            {org.starredCount > 0 && (
+              <div className="card-starred-row">
+                <span className="card-starred-icon">{'★'.repeat(Math.min(org.starredCount, 3))}</span>
+                <span className="card-starred-label">{org.starredCount} starred</span>
+              </div>
+            )}
+
+            {/* Recent emails preview */}
+            <div className="card-email-preview-list">
+              {org.contacts
+                .flatMap(c => c.emails)
+                .sort((a, b) => new Date(b.receivedAt || b.createdAt) - new Date(a.receivedAt || a.createdAt))
+                .slice(0, 3)
+                .map(email => (
+                  <div
+                    key={email._id}
+                    className={`card-email-preview-item ${!email.isRead ? 'unread' : ''}`}
+                    onClick={() => onOpenEmail(email)}
+                  >
+                    <div className="card-preview-dot" style={{ background: !email.isRead ? color : 'var(--border-strong)' }} />
+                    <div className="card-preview-text">
+                      <span className="card-preview-subject">{email.subject || '(No Subject)'}</span>
+                      <span className="card-preview-time">{formatTime(email.receivedAt || email.createdAt)}</span>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+
+            {/* Hover overlay */}
+            <div className="card-org-overlay" style={{ background: `${color}10` }} />
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Main TreeView Page ─────────────────────────────────────────────────────────
 export default function TreeViewPage() {
   const navigate = useNavigate()
@@ -288,6 +384,7 @@ export default function TreeViewPage() {
   const [draggedEmail, setDraggedEmail] = useState(null)
   const [toast, setToast] = useState(null)
   const [expandAll, setExpandAll] = useState(false)
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('structuredViewMode') || 'tree')
   const searchRef = useRef(null)
   const pollTimerRef = useRef(null)
 
@@ -412,6 +509,12 @@ export default function TreeViewPage() {
     setExpandAll(!expandAll)
   }
 
+  const handleViewToggle = () => {
+    const next = viewMode === 'tree' ? 'card' : 'tree'
+    setViewMode(next)
+    localStorage.setItem('structuredViewMode', next)
+  }
+
   if (loading && tree.length === 0) {
     return (
       <div className="tree-loading">
@@ -462,21 +565,51 @@ export default function TreeViewPage() {
               )}
               <kbd className="tree-search-kbd">/</kbd>
             </div>
-            <button
-              className="btn btn-ghost tree-expand-btn"
-              onClick={handleExpandAll}
-              title={expandAll ? 'Collapse All' : 'Expand All'}
-            >
-              {expandAll ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 15l-6-6-6 6"/>
+
+            {/* View Mode Toggle Switch */}
+            <div className="view-mode-toggle" title={viewMode === 'tree' ? 'Switch to Card View' : 'Switch to Tree View'}>
+              <button
+                id="view-toggle-tree"
+                className={`view-toggle-btn ${viewMode === 'tree' ? 'active' : ''}`}
+                onClick={() => { setViewMode('tree'); localStorage.setItem('structuredViewMode', 'tree') }}
+                aria-label="Tree View"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 14l3-3-3-3M7 14l-3-3 3-3M14 4l-4 16"/>
                 </svg>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 9l6 6 6-6"/>
+                Tree
+              </button>
+              <button
+                id="view-toggle-card"
+                className={`view-toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
+                onClick={() => { setViewMode('card'); localStorage.setItem('structuredViewMode', 'card') }}
+                aria-label="Card View"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="3" width="8" height="8" rx="1.5"/><rect x="14" y="3" width="8" height="8" rx="1.5"/>
+                  <rect x="2" y="13" width="8" height="8" rx="1.5"/><rect x="14" y="13" width="8" height="8" rx="1.5"/>
                 </svg>
-              )}
-            </button>
+                Cards
+              </button>
+            </div>
+
+            {viewMode === 'tree' && (
+              <button
+                className="btn btn-ghost tree-expand-btn"
+                onClick={handleExpandAll}
+                title={expandAll ? 'Collapse All' : 'Expand All'}
+              >
+                {expandAll ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 15l-6-6-6 6"/>
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                )}
+              </button>
+            )}
             <button
               className={`btn btn-ghost tree-refresh-btn ${loading ? 'loading' : ''}`}
               onClick={() => { setLoading(true); fetchTree(searchQuery) }}
@@ -502,23 +635,29 @@ export default function TreeViewPage() {
           </div>
         )}
 
-        {/* Tree container */}
-        <div className="tree-container">
-          {tree.map((org, index) => (
-            <OrgNode
-              key={org.domain}
-              org={org}
-              forceExpand={expandAll}
-              onOpenEmail={handleOpenEmail}
-              onDragStart={handleDragStart}
-              onDrop={handleDrop}
-              isDragOver={dragOverDomain === org.domain}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              searchQuery={searchQuery}
-            />
-          ))}
-        </div>
+        {/* Tree or Card container */}
+        {viewMode === 'tree' ? (
+          <div className="tree-container">
+            {tree.map((org) => (
+              <OrgNode
+                key={org.domain}
+                org={org}
+                forceExpand={expandAll}
+                onOpenEmail={handleOpenEmail}
+                onDragStart={handleDragStart}
+                onDrop={handleDrop}
+                isDragOver={dragOverDomain === org.domain}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                searchQuery={searchQuery}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="card-view-scroll">
+            <CardView tree={tree} onOpenEmail={handleOpenEmail} />
+          </div>
+        )}
       </div>
 
       {/* Right panel */}
