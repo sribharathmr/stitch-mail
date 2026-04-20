@@ -136,7 +136,6 @@ export default function InboxPage({ folder = 'inbox' }) {
   }
 
   const navigate = useNavigate()
-  const location = useLocation()
 
   const compactView = settings?.preferences?.compactView ?? false
 
