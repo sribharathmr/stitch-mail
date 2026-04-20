@@ -414,20 +414,14 @@
 }
 
 /* Desktop: show inbox, hide mobile categories */
-.sidebar-mobile-nav {
-  display: none;
-}
-.sidebar-desktop-nav {
-  display: block;
-}
-
-/* Desktop: hide All labels divider (only useful on mobile with categories) */
-.sidebar-labels-divider {
-  display: none;
-}
-
-@media (max-width: 768px) {
+@media (min-width: 769px) {
+  .sidebar-mobile-nav {
+    display: none !important;
+  }
+  .sidebar-desktop-nav {
+    display: block !important;
+  }
   .sidebar-labels-divider {
-    display: block;
+    display: none !important;
   }
 }
