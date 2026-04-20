@@ -107,6 +107,9 @@ export default function Topbar() {
             value={localQ}
             onChange={e => setLocalQ(e.target.value)}
             className="topbar-search-input"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
           />
           {localQ && (
             <button type="button" className="search-clear" onClick={() => { setLocalQ(''); setSearchQuery('') }}>
