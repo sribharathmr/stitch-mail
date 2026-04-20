@@ -278,96 +278,214 @@ function TreeStats({ stats, tree }) {
 
 // ── Card View Component ────────────────────────────────────────────────────────
 function CardView({ tree, onOpenEmail }) {
+  const [selectedOrg, setSelectedOrg] = useState(null)
+
+  const selected = tree.find(o => o.domain === selectedOrg) || null
+  const color = selected ? orgColor(selected.orgName) : '#3B82F6'
+
   return (
-    <div className="card-view-grid">
-      {tree.map((org) => {
-        const color = orgColor(org.orgName)
-        const hasUnread = org.unreadCount > 0
-        const priorityLevel = org.priorityScore >= 15 ? 'high' : org.priorityScore >= 5 ? 'medium' : 'low'
-        return (
-          <div
-            key={org.domain}
-            className={`card-org-card ${hasUnread ? 'has-unread' : ''} priority-${priorityLevel}`}
-            style={{ '--org-color': color }}
-          >
-            {/* Notification badge */}
-            {org.unreadCount > 0 && (
-              <div className={`card-notif-badge ${priorityLevel === 'high' ? 'pulse' : ''}`}>
-                {org.unreadCount > 99 ? '99+' : org.unreadCount}
+    <div className={`card-view-wrapper ${selected ? 'has-drawer' : ''}`}>
+      {/* Cards Grid */}
+      <div className="card-view-grid">
+        {tree.map((org) => {
+          const c = orgColor(org.orgName)
+          const hasUnread = org.unreadCount > 0
+          const priorityLevel = org.priorityScore >= 15 ? 'high' : org.priorityScore >= 5 ? 'medium' : 'low'
+          const isSelected = selectedOrg === org.domain
+          return (
+            <div
+              key={org.domain}
+              className={`card-org-card ${hasUnread ? 'has-unread' : ''} priority-${priorityLevel} ${isSelected ? 'selected' : ''}`}
+              style={{ '--org-color': c }}
+              onClick={() => setSelectedOrg(isSelected ? null : org.domain)}
+            >
+              {/* Notification badge */}
+              {org.unreadCount > 0 && (
+                <div className={`card-notif-badge ${priorityLevel === 'high' ? 'pulse' : ''}`}>
+                  {org.unreadCount > 99 ? '99+' : org.unreadCount}
+                </div>
+              )}
+
+              {/* Top accent bar */}
+              <div className="card-org-accent" style={{ background: `linear-gradient(90deg, ${c}, ${c}80)` }} />
+
+              {/* Org identity */}
+              <div className="card-org-identity">
+                <div className="card-org-avatar" style={{ background: c }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+                    <path d="M3 21h18M3 7v14M21 7v14M9 3h6l3 4H6l3-4zM9 21v-4h6v4M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/>
+                  </svg>
+                </div>
+                <div className="card-org-meta">
+                  <span className="card-org-name">{org.orgName}</span>
+                  <span className="card-org-domain">{org.domain}</span>
+                </div>
+                <svg
+                  className={`card-expand-chevron ${isSelected ? 'open' : ''}`}
+                  width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                >
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
               </div>
-            )}
 
-            {/* Top accent bar */}
-            <div className="card-org-accent" style={{ background: `linear-gradient(90deg, ${color}, ${color}80)` }} />
+              {/* Stats row */}
+              <div className="card-org-stats">
+                <div className="card-stat">
+                  <span className="card-stat-val">{org.totalEmails}</span>
+                  <span className="card-stat-key">Emails</span>
+                </div>
+                <div className="card-stat-divider" />
+                <div className="card-stat">
+                  <span className="card-stat-val" style={org.unreadCount > 0 ? { color: c } : {}}>
+                    {org.unreadCount}
+                  </span>
+                  <span className="card-stat-key">Unread</span>
+                </div>
+                <div className="card-stat-divider" />
+                <div className="card-stat">
+                  <span className="card-stat-val">{org.contactCount}</span>
+                  <span className="card-stat-key">Contacts</span>
+                </div>
+              </div>
 
-            {/* Org identity */}
-            <div className="card-org-identity">
-              <div className="card-org-avatar" style={{ background: color }}>
+              {/* Starred indicator */}
+              {org.starredCount > 0 && (
+                <div className="card-starred-row">
+                  <span className="card-starred-icon">{'★'.repeat(Math.min(org.starredCount, 3))}</span>
+                  <span className="card-starred-label">{org.starredCount} starred</span>
+                </div>
+              )}
+
+              {/* Recent emails preview (3 max) */}
+              <div className="card-email-preview-list">
+                {org.contacts
+                  .flatMap(contact => contact.emails)
+                  .sort((a, b) => new Date(b.receivedAt || b.createdAt) - new Date(a.receivedAt || a.createdAt))
+                  .slice(0, 3)
+                  .map(email => (
+                    <div
+                      key={email._id}
+                      className={`card-email-preview-item ${!email.isRead ? 'unread' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); onOpenEmail(email) }}
+                    >
+                      <div className="card-preview-dot" style={{ background: !email.isRead ? c : 'var(--border-strong)' }} />
+                      <div className="card-preview-text">
+                        <span className="card-preview-subject">{email.subject || '(No Subject)'}</span>
+                        <span className="card-preview-time">{formatTime(email.receivedAt || email.createdAt)}</span>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+
+              {/* View all pill */}
+              <div className="card-view-all-row">
+                <span className="card-view-all-pill">
+                  {isSelected ? 'Close' : `View all ${org.totalEmails} emails`}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d={isSelected ? 'M18 6L6 18M6 6l12 12' : 'M5 12h14M12 5l7 7-7 7'}/>
+                  </svg>
+                </span>
+              </div>
+
+              {/* Hover overlay */}
+              <div className="card-org-overlay" style={{ background: `${c}10` }} />
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Slide-in Drawer */}
+      {selected && (
+        <div className="card-drawer" style={{ '--drawer-color': color }}>
+          {/* Drawer header */}
+          <div className="card-drawer-header" style={{ borderBottom: `2px solid ${color}30` }}>
+            <div className="card-drawer-identity">
+              <div className="card-drawer-avatar" style={{ background: color }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
                   <path d="M3 21h18M3 7v14M21 7v14M9 3h6l3 4H6l3-4zM9 21v-4h6v4M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/>
                 </svg>
               </div>
-              <div className="card-org-meta">
-                <span className="card-org-name">{org.orgName}</span>
-                <span className="card-org-domain">{org.domain}</span>
+              <div>
+                <div className="card-drawer-org-name">{selected.orgName}</div>
+                <div className="card-drawer-org-domain">{selected.domain}</div>
               </div>
             </div>
-
-            {/* Stats row */}
-            <div className="card-org-stats">
-              <div className="card-stat">
-                <span className="card-stat-val">{org.totalEmails}</span>
-                <span className="card-stat-key">Emails</span>
-              </div>
-              <div className="card-stat-divider" />
-              <div className="card-stat">
-                <span className="card-stat-val" style={org.unreadCount > 0 ? { color } : {}}>
-                  {org.unreadCount}
+            <div className="card-drawer-meta">
+              <span className="card-drawer-badge">{selected.totalEmails} emails</span>
+              {selected.unreadCount > 0 && (
+                <span className="card-drawer-badge unread" style={{ background: `${color}20`, color }}>
+                  {selected.unreadCount} unread
                 </span>
-                <span className="card-stat-key">Unread</span>
-              </div>
-              <div className="card-stat-divider" />
-              <div className="card-stat">
-                <span className="card-stat-val">{org.contactCount}</span>
-                <span className="card-stat-key">Contacts</span>
-              </div>
+              )}
             </div>
-
-            {/* Starred indicator */}
-            {org.starredCount > 0 && (
-              <div className="card-starred-row">
-                <span className="card-starred-icon">{'★'.repeat(Math.min(org.starredCount, 3))}</span>
-                <span className="card-starred-label">{org.starredCount} starred</span>
-              </div>
-            )}
-
-            {/* Recent emails preview */}
-            <div className="card-email-preview-list">
-              {org.contacts
-                .flatMap(c => c.emails)
-                .sort((a, b) => new Date(b.receivedAt || b.createdAt) - new Date(a.receivedAt || a.createdAt))
-                .slice(0, 3)
-                .map(email => (
-                  <div
-                    key={email._id}
-                    className={`card-email-preview-item ${!email.isRead ? 'unread' : ''}`}
-                    onClick={() => onOpenEmail(email)}
-                  >
-                    <div className="card-preview-dot" style={{ background: !email.isRead ? color : 'var(--border-strong)' }} />
-                    <div className="card-preview-text">
-                      <span className="card-preview-subject">{email.subject || '(No Subject)'}</span>
-                      <span className="card-preview-time">{formatTime(email.receivedAt || email.createdAt)}</span>
-                    </div>
-                  </div>
-                ))
-              }
-            </div>
-
-            {/* Hover overlay */}
-            <div className="card-org-overlay" style={{ background: `${color}10` }} />
+            <button className="card-drawer-close" onClick={() => setSelectedOrg(null)}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
-        )
-      })}
+
+          {/* Drawer email list grouped by contact */}
+          <div className="card-drawer-body">
+            {selected.contacts.map(contact => (
+              <div key={contact.address} className="card-drawer-contact-group">
+                {/* Contact header */}
+                <div className="card-drawer-contact-header">
+                  <div
+                    className="card-drawer-contact-avatar"
+                    style={{ background: contactColor(contact.address) }}
+                  >
+                    {getInitials(contact.name)}
+                  </div>
+                  <div className="card-drawer-contact-info">
+                    <span className="card-drawer-contact-name">{contact.name || contact.address}</span>
+                    <span className="card-drawer-contact-meta">
+                      {contact.emailCount} email{contact.emailCount !== 1 ? 's' : ''}
+                      {contact.unreadCount > 0 && (
+                        <span className="card-drawer-contact-unread" style={{ color }}>
+                          · {contact.unreadCount} unread
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Emails under this contact */}
+                <div className="card-drawer-email-list">
+                  {[...contact.emails]
+                    .sort((a, b) => new Date(b.receivedAt || b.createdAt) - new Date(a.receivedAt || a.createdAt))
+                    .map(email => (
+                      <div
+                        key={email._id}
+                        className={`card-drawer-email-row ${!email.isRead ? 'unread' : ''}`}
+                        onClick={() => onOpenEmail(email)}
+                      >
+                        <div className="card-drawer-email-indicator" style={{ background: !email.isRead ? color : 'transparent', borderColor: !email.isRead ? color : 'var(--border-strong)' }} />
+                        <div className="card-drawer-email-content">
+                          <div className="card-drawer-email-subject">{email.subject || '(No Subject)'}</div>
+                          <div className="card-drawer-email-preview">{email.bodyText?.slice(0, 80) || ''}</div>
+                        </div>
+                        <div className="card-drawer-email-right">
+                          <span className="card-drawer-email-time">{formatTime(email.receivedAt || email.createdAt)}</span>
+                          <div className="card-drawer-email-icons">
+                            {email.isStarred && <span className="card-drawer-star">★</span>}
+                            {email.attachments?.length > 0 && (
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -654,16 +772,16 @@ export default function TreeViewPage() {
             ))}
           </div>
         ) : (
-          <div className="card-view-scroll">
-            <CardView tree={tree} onOpenEmail={handleOpenEmail} />
-          </div>
+          <CardView tree={tree} onOpenEmail={handleOpenEmail} />
         )}
       </div>
 
-      {/* Right panel */}
-      <div className="tree-right-col">
-        <TreeStats stats={stats} tree={tree} />
-      </div>
+      {/* Right panel — hidden in card mode (drawer serves this purpose) */}
+      {viewMode === 'tree' && (
+        <div className="tree-right-col">
+          <TreeStats stats={stats} tree={tree} />
+        </div>
+      )}
 
       {/* Toast notification */}
       {toast && (
