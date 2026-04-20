@@ -80,11 +80,27 @@
 [data-glass="true"] {
   --bg-sidebar: rgba(255, 255, 255, 0.45);
   --bg-card: rgba(255, 255, 255, 0.65);
+  --bg-app: rgba(255, 255, 255, 0.3);
+  --bg-hover: rgba(255, 255, 255, 0.5);
+}
+
+body[data-glass="true"] {
+  /* Vibrant liquid glass background */
+  background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+  background-attachment: fixed;
 }
 
 [data-theme="deep-space"][data-glass="true"] {
   --bg-sidebar: rgba(20, 18, 61, 0.45);
-  --bg-card: rgba(28, 25, 82, 0.55);
+  --bg-card: rgba(35, 30, 95, 0.55);
+  --bg-app: rgba(13, 12, 30, 0.35);
+  --bg-hover: rgba(50, 45, 110, 0.45);
+}
+
+body[data-theme="deep-space"][data-glass="true"] {
+  /* Deep mesh gradient for dark glass mode */
+  background: radial-gradient(circle at 10% 20%, rgb(45, 35, 100) 0%, rgb(18, 15, 30) 90%);
+  background-attachment: fixed;
 }
 
 [data-glass="true"] .sidebar,
@@ -93,13 +109,16 @@
 [data-glass="true"] .modal,
 [data-glass="true"] .compose-panel,
 [data-glass="true"] .search-suggestions,
-[data-glass="true"] .account-dropdown {
+[data-glass="true"] .account-dropdown,
+[data-glass="true"] .app-main,
+[data-glass="true"] .email-item,
+[data-glass="true"] .settings-main {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 [data-glass="true"] .topbar {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   background: var(--bg-sidebar); /* ensure topbar catches translucency */
 }
 
