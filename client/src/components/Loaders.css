@@ -1,0 +1,179 @@
+/* ========================================================================= */
+/* SKELETON INBOX LOADER */
+/* ========================================================================= */
+.skeleton-inbox-loader {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  animation: skeletonPulse 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.skeleton-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-active);
+  flex-shrink: 0;
+}
+
+.skeleton-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton-line-top {
+  height: 12px;
+  border-radius: 4px;
+  background: var(--bg-active);
+  width: 40%;
+}
+
+.skeleton-line-bottom {
+  height: 12px;
+  border-radius: 4px;
+  background: var(--bg-active);
+  width: 80%;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+[data-glass="true"] .skeleton-avatar,
+[data-glass="true"] .skeleton-line-top,
+[data-glass="true"] .skeleton-line-bottom {
+  /* Make the shimmer pop more over the mesh background */
+  background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+  background-size: 200% 100%;
+  animation: shimmerFlow 2s infinite linear;
+}
+
+[data-theme="deep-space"][data-glass="true"] .skeleton-avatar,
+[data-theme="deep-space"][data-glass="true"] .skeleton-line-top,
+[data-theme="deep-space"][data-glass="true"] .skeleton-line-bottom {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(108,103,199,0.3), rgba(255,255,255,0.05));
+  background-size: 200% 100%;
+}
+
+@keyframes shimmerFlow {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ========================================================================= */
+/* GLASS PULSE LOADER */
+/* ========================================================================= */
+.glass-pulse-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+  padding: 40px;
+}
+
+.glass-pulse-loader {
+  display: flex;
+  gap: 6px;
+}
+
+.glass-pill {
+  width: 10px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--accent);
+  opacity: 0.8;
+  animation: barBounce 1s infinite ease-in-out;
+}
+
+[data-glass="true"] .glass-pill {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+[data-theme="deep-space"][data-glass="true"] .glass-pill {
+  background: rgba(108,103,199,0.4);
+  border: 1px solid rgba(108,103,199,0.8);
+}
+
+.glass-pill:nth-child(1) { animation-delay: -0.3s; }
+.glass-pill:nth-child(2) { animation-delay: -0.15s; }
+
+@keyframes barBounce {
+  0%, 100% { transform: scaleY(1); opacity: 0.6; }
+  50% { transform: scaleY(1.8); opacity: 1; }
+}
+
+.glass-pulse-message {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  animation: pulseOpacity 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseOpacity {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ========================================================================= */
+/* BRANDED STITCH LOADER */
+/* ========================================================================= */
+.branded-stitch-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  height: 100%;
+  width: 100%;
+}
+
+.stitch-envelope-svg {
+  filter: drop-shadow(0 0 12px var(--accent-hover));
+}
+
+.stitch-path {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: dashStitch 2s ease-in-out infinite alternate;
+}
+
+[data-glass="true"] .stitch-path {
+  stroke: #ffffff;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+}
+
+[data-theme="deep-space"] .stitch-path {
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 16px var(--accent));
+}
+
+@keyframes dashStitch {
+  0% { stroke-dashoffset: 60; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.stitch-loader-message {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  animation: pulseOpacity 2s infinite ease-in-out;
+}

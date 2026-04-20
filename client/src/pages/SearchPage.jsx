@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { emailAPI } from '../api'
 import { format } from 'date-fns'
+import { GlassPulseLoader } from '../components/Loaders'
 import './SearchPage.css'
 
 const FILTER_TYPES = [
@@ -123,7 +124,7 @@ export default function SearchPage() {
       {/* Results */}
       <div className="search-results">
         {loading && (
-          <div className="empty-state"><div className="spinner" /><span>Searching...</span></div>
+          <GlassPulseLoader message="Searching..." />
         )}
 
         {!loading && !results.length && query && (

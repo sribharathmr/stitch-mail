@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { aiAPI } from '../api'
+import { GlassPulseLoader } from '../components/Loaders'
 
 export default function SubscriptionsPage() {
   const [subs, setSubs] = useState([])
@@ -41,10 +42,7 @@ export default function SubscriptionsPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
-          <div className="spinner" style={{ margin: '0 auto 16px', borderColor: 'var(--accent)', borderRightColor: 'transparent' }} />
-          Analyzing recent emails with Gemini AI...
-        </div>
+        <GlassPulseLoader message="Analyzing recent emails with Gemini AI..." />
       ) : subs.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px', background: 'var(--bg-hover)', borderRadius: '12px' }}>
           <div style={{ fontSize: '40px', marginBottom: '16px' }}>✨</div>

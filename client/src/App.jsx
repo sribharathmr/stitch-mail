@@ -14,12 +14,13 @@ import InboxZeroPage from './pages/InboxZeroPage'
 import AccountsPage from './pages/AccountsPage'
 import SubscriptionsPage from './pages/SubscriptionsPage'
 import TreeViewPage from './pages/TreeViewPage'
+import { BrandedStitchLoader } from './components/Loaders'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <div className="spinner" style={{ width: 32, height: 32, borderWidth: 3 }} />
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-app)' }}>
+      <BrandedStitchLoader />
     </div>
   )
   return user ? children : <Navigate to="/login" replace />

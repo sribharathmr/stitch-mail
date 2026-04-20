@@ -5,6 +5,7 @@ import { useUI } from '../context/UIContext'
 import { format, isToday, isYesterday } from 'date-fns'
 import { aiAPI, settingsAPI, emailAPI, clearToken } from '../api'
 import { segregateInbox, learnCorrection, ruleScore } from '../services/hybridClassifier'
+import { SkeletonInboxLoader } from '../components/Loaders'
 import './InboxPage.css'
 
 const TabIcons = {
@@ -242,9 +243,10 @@ export default function InboxPage({ folder = 'inbox' }) {
 
   if (loading && !emails.length) {
     return (
-      <div className="inbox-loading">
-        <div className="spinner" style={{ width: 28, height: 28, borderWidth: 3 }} />
-        <span>Loading {folder}...</span>
+      <div className={`inbox-layout${compactView ? ' compact' : ''}`}>
+        <div className="inbox-list-col">
+          <SkeletonInboxLoader count={10} />
+        </div>
       </div>
     )
   }
