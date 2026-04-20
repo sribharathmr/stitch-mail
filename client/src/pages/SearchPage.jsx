@@ -30,18 +30,22 @@ export default function SearchPage() {
   const [activeFilters, setActiveFilters] = useState({ hasAttachment: false })
 
   useEffect(() => {
-    if (query) {
-      doSearch(query)
+    if (searchParams.toString()) {
+      doSearch()
     }
-  }, [query])
+  }, [searchParams])
 
-  const doSearch = async (q, filters = activeFilters) => {
+  const doSearch = async (filters = activeFilters) => {
     setLoading(true)
     try {
-      const params = { q }
+      // Build parameters natively from URL
+      const params = Object.fromEntries(searchParams.entries())
+      
+      // Merge local page filter chips overrides
       if (filters.hasAttachment) params.hasAttachment = 'true'
       if (filters.unread) params.unread = 'true'
-      if (filters.sender) params.sender = filters.sender
+      if (filters.sender && !params.sender) params.sender = filters.sender
+
       const res = await emailAPI.search(params)
       setResults(res.data.emails)
       setTotal(res.data.total)
@@ -55,7 +59,7 @@ export default function SearchPage() {
   const toggleFilter = (id) => {
     const next = { ...activeFilters, [id]: !activeFilters[id] }
     setActiveFilters(next)
-    if (query) doSearch(query, next)
+    if (searchParams.toString()) doSearch(next)
   }
 
   return (
@@ -90,7 +94,7 @@ export default function SearchPage() {
             <button
               id="filter-reset"
               className="filter-chip reset"
-              onClick={() => { setActiveFilters({}); if (query) doSearch(query, {}) }}
+              onClick={() => { setActiveFilters({}); if (searchParams.toString()) doSearch({}) }}
             >
               Reset
             </button>

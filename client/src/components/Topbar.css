@@ -9,6 +9,14 @@
   flex-shrink: 0;
 }
 
+.topbar-search-container {
+  flex: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+}
+
 /* Search bar - Gmail Style */
 .topbar-search {
   flex: 1;
@@ -21,8 +29,7 @@
   padding: 0 16px;
   height: 48px; /* Taller */
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  max-width: 720px;
-  margin: 0 auto; /* Center it */
+  width: 100%;
 }
 
 .topbar-search:focus-within {
@@ -260,4 +267,126 @@
   #topbar-notif-btn {
     display: none;
   }
+}
+
+/* ── Advanced Search Dropdown ── */
+.adv-search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.adv-search-dropdown {
+  position: absolute;
+  top: 56px;
+  left: 0;
+  right: 0;
+  background: var(--bg-card, #fff);
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  border: 1px solid var(--border);
+  z-index: 1001;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 480px;
+}
+
+[data-theme="deep-space"] .adv-search-dropdown {
+  background: var(--bg-sidebar);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  border: 1px solid var(--border-strong);
+}
+
+.adv-search-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.adv-search-row label {
+  width: 140px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.adv-search-row input[type="text"],
+.adv-search-row input[type="number"],
+.adv-search-row select {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border, #ccc);
+  color: var(--text-primary);
+  font-size: 14px;
+  padding: 6px 0;
+  outline: none;
+  border-radius: 0;
+  transition: border-color 0.2s;
+}
+
+.adv-search-row input:focus,
+.adv-search-row select:focus {
+  border-bottom-color: var(--accent);
+}
+
+.adv-search-row.inline-group input,
+.adv-search-row.inline-group select {
+  flex: 0 1 auto;
+}
+
+.adv-search-row.inline-group .size-input {
+  width: 60px;
+  text-align: center;
+}
+
+.adv-search-row.inline-group select {
+  width: 120px;
+}
+
+.adv-search-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-left: 156px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.adv-search-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.adv-search-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 32px;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.2s;
+  font-size: 14px;
+}
+
+.adv-search-btn:hover {
+  filter: brightness(1.1);
 }

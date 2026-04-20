@@ -437,43 +437,120 @@ exports.list = async (req, res) => {
 // GET /api/emails/search
 exports.search = async (req, res) => {
   try {
-    const { q, page = 1, limit = 20, hasAttachment, unread, sender } = req.query;
-    if (!q) return res.json({ emails: [], total: 0 });
+    const { 
+      q, page = 1, limit = 20, hasAttachment, unread, 
+      sender, to, subject, excludes, 
+      sizeComparator, sizeVal, sizeUnit, dateRange, folder 
+    } = req.query;
+
+    if (!q && !sender && !to && !subject && !excludes && !hasAttachment && !folder && !dateRange && !sizeVal) {
+        return res.json({ emails: [], total: 0 });
+    }
 
     const offset = (parseInt(page) - 1) * parseInt(limit);
     const lim = parseInt(limit);
     
-    // Escape % and _ characters in the search query for ilike, and double quote the pattern to safely handle spaces and commas in the .or() syntax
+    // Escape % and _ characters for ilike
     const escapeForLike = (str) => str.replace(/[%_]/g, '\\$&');
-    const pattern = `"%${escapeForLike(q)}%"`;
 
-    let query = supabase
+    let dbQuery = supabase
       .from('emails')
       .select('*', { count: 'exact' })
       .eq('user_id', req.user.id)
-      .or(`subject.ilike.${pattern},body_text.ilike.${pattern},from_address->>address.ilike.${pattern},from_address->>name.ilike.${pattern}`)
-      .range(offset, offset + lim - 1)
       .order('received_at', { ascending: false });
 
-    if (hasAttachment === 'true') {
-      query = query.not('attachments', 'is', null).neq('attachments', '[]');
-    }
-    if (unread === 'true') {
-      query = query.eq('is_read', false);
-    }
-    if (sender) {
-      query = query.ilike('from_address->>address', `%${sender}%`);
+    // Base Search (includes)
+    if (q && q.trim()) {
+      const pattern = `"%${escapeForLike(q.trim())}%"`;
+      dbQuery = dbQuery.or(`subject.ilike.${pattern},body_text.ilike.${pattern},from_address->>address.ilike.${pattern},from_address->>name.ilike.${pattern}`);
     }
 
-    const { data: emails, count, error } = await query;
+    if (hasAttachment === 'true') {
+      dbQuery = dbQuery.not('attachments', 'is', null).neq('attachments', '[]');
+    }
+    if (unread === 'true') {
+      dbQuery = dbQuery.eq('is_read', false);
+    }
+    if (sender) {
+      dbQuery = dbQuery.ilike('from_address->>address', `%${escapeForLike(sender)}%`);
+    }
+    if (subject) {
+      dbQuery = dbQuery.ilike('subject', `%${escapeForLike(subject)}%`);
+    }
+    if (excludes) {
+      dbQuery = dbQuery.not('subject', 'ilike', `%${escapeForLike(excludes)}%`);
+      dbQuery = dbQuery.not('body_text', 'ilike', `%${escapeForLike(excludes)}%`);
+    }
+    if (folder && folder.toLowerCase() !== 'all mail') {
+      dbQuery = dbQuery.eq('folder', folder.toLowerCase());
+    }
+    if (dateRange) {
+      const now = new Date();
+      let days = 0;
+      if (dateRange === '1 day') days = 1;
+      else if (dateRange === '3 days') days = 3;
+      else if (dateRange.includes('week')) days = parseInt(dateRange) * 7;
+      else if (dateRange.includes('month')) days = parseInt(dateRange) * 30;
+      else if (dateRange.includes('year')) days = 365;
+      
+      if (days > 0) {
+        now.setDate(now.getDate() - days);
+        dbQuery = dbQuery.gte('received_at', now.toISOString());
+      }
+    }
+
+    // Features requiring post-filtering due to Supabase JSON constraints
+    const needsPostFilter = !!sizeVal || !!to;
+
+    if (!needsPostFilter) {
+      dbQuery = dbQuery.range(offset, offset + lim - 1);
+    } else {
+      dbQuery = dbQuery.limit(500); // Guard limit when post-filtering memory
+    }
+
+    const { data: emailsDB, count: dbCount, error } = await dbQuery;
 
     if (error) throw error;
 
+    let finalEmails = emailsDB || [];
+    
+    // Process post-filters in Node.js memory
+    if (needsPostFilter) {
+      if (sizeVal) {
+        let sizeBytes = parseFloat(sizeVal);
+        if (sizeUnit === 'MB') sizeBytes *= 1024 * 1024;
+        else if (sizeUnit === 'KB') sizeBytes *= 1024;
+        
+        finalEmails = finalEmails.filter(email => {
+          const totalAttachmentSize = (email.attachments || []).reduce((sum, att) => sum + (att.size || 0), 0);
+          if (sizeComparator === 'greater than') return totalAttachmentSize >= sizeBytes;
+          return totalAttachmentSize <= sizeBytes;
+        });
+      }
+
+      if (to) {
+        const toLower = to.toLowerCase();
+        finalEmails = finalEmails.filter(email => {
+          return (email.to_addresses || []).some(addr => 
+            (addr.name && addr.name.toLowerCase().includes(toLower)) || 
+            (addr.address && addr.address.toLowerCase().includes(toLower))
+          );
+        });
+      }
+    }
+
+    const totalCount = needsPostFilter ? finalEmails.length : (dbCount || 0);
+
+    if (needsPostFilter) {
+      // Re-apply pagination manually on filtered results
+      finalEmails = finalEmails.slice(offset, offset + lim);
+    }
+
     res.json({
-      emails: (emails || []).map(mapEmail),
-      total: count || 0,
+      emails: finalEmails.map(mapEmail),
+      total: totalCount,
       page: parseInt(page),
-      pages: Math.ceil((count || 0) / lim)
+      pages: Math.ceil((totalCount) / lim)
     });
   } catch (err) {
     console.error('[Search] Error:', err.message);
