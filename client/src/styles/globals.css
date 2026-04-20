@@ -84,7 +84,7 @@
   --bg-hover: rgba(255, 255, 255, 0.5);
 }
 
-body[data-glass="true"] {
+[data-glass="true"] body {
   /* Vibrant liquid glass background */
   background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
   background-attachment: fixed;
@@ -97,7 +97,7 @@ body[data-glass="true"] {
   --bg-hover: rgba(50, 45, 110, 0.45);
 }
 
-body[data-theme="deep-space"][data-glass="true"] {
+[data-theme="deep-space"][data-glass="true"] body {
   /* Deep mesh gradient for dark glass mode */
   background: radial-gradient(circle at 10% 20%, rgb(45, 35, 100) 0%, rgb(18, 15, 30) 90%);
   background-attachment: fixed;
