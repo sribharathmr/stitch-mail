@@ -4,6 +4,7 @@ import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import ComposeWindow from './ComposeWindow'
 import GeminiSidebar from './GeminiSidebar'
+import MobileBottomNav from './MobileBottomNav'
 import { useEmail } from '../context/EmailContext'
 import { useUI } from '../context/UIContext'
 import './AppShell.css'
@@ -43,6 +44,7 @@ export default function AppShell() {
       {composeWindows.map((win, idx) => (
         <ComposeWindow key={win.id} windowState={win} index={idx} />
       ))}
+      <MobileBottomNav />
     </div>
   )
 }

@@ -439,13 +439,20 @@
   .inbox-layout {
     flex-direction: column;
     overflow-y: auto;
+    height: 100%;
     -webkit-overflow-scrolling: touch;
   }
-  
+
+  /* Hide tasks/stats panel — takes too much space on phone */
+  .inbox-right-col {
+    display: none !important;
+  }
+
   .inbox-list-col {
-    overflow-y: visible;
-    flex: none;
+    overflow-y: auto;
+    flex: 1;
     border-right: none;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Tabs become horizontally scrollable */

@@ -1,0 +1,127 @@
+/* ============================================================ */
+/* MOBILE BOTTOM NAVIGATION BAR                                  */
+/* ============================================================ */
+
+.mobile-bottom-nav {
+  display: none; /* Hidden on desktop */
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--bg-sidebar);
+    border-top: 1px solid var(--border);
+    z-index: 900;
+    align-items: stretch;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Glass mode enhancement */
+  [data-glass="true"] .mobile-bottom-nav {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  [data-theme="deep-space"][data-glass="true"] .mobile-bottom-nav {
+    background: rgba(20, 18, 61, 0.7);
+    border-top: 1px solid rgba(108, 103, 199, 0.3);
+  }
+
+  .mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    padding: 0;
+    position: relative;
+    min-height: 60px;
+  }
+
+  .mobile-nav-item:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-nav-item.active {
+    color: var(--accent);
+  }
+
+  .mobile-nav-item.active .mobile-nav-label {
+    font-weight: 700;
+  }
+
+  .mobile-nav-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+  }
+
+  .mobile-nav-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  /* Unread badge */
+  .mobile-nav-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    border: 2px solid var(--bg-sidebar);
+  }
+
+  /* Compose FAB button — centered pill style */
+  .mobile-nav-compose {
+    flex: 0 0 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-nav-compose-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(108, 103, 199, 0.5);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .mobile-nav-compose:active .mobile-nav-compose-icon {
+    transform: scale(0.9);
+    box-shadow: 0 2px 8px rgba(108, 103, 199, 0.4);
+  }
+}

@@ -28,3 +28,22 @@
   flex-direction: column;
   min-width: 0;
 }
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  /* Sidebar spacer is zero-width — sidebar becomes a drawer */
+  .sidebar-spacer {
+    display: none !important;
+  }
+
+  /* Shift content down on mobile to allow for bottom nav bar */
+  .app-content {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-content-wrapper {
+    overflow: visible;
+  }
+}
